@@ -1,53 +1,82 @@
-import React, { useState } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { ThemeProvider } from "./components/theme-provider";
+import ProtectedRoute from "./components/protected-route";
+
+
 import { Button } from "@/components/ui/button";
-
-// 👇 Your actual ComingSoon component
-function ComingSoon() {
-  const [notified, setNotified] = useState(false);
-
-  const handleNotifyClick = () => {
-    setNotified(true);
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white flex flex-col items-center justify-center p-6">
-      <h1 className="text-4xl md:text-6xl font-bold mb-4 text-center">
-        🚀 MMTiJobs — The Future of Hiring
-      </h1>
-      <p className="text-xl text-purple-400 font-semibold mb-6 text-center tracking-widest">
-      COMING SOON
-      </p>
-      <p className="text-lg md:text-xl text-gray-300 text-center max-w-xl mb-8">
-        Apply for jobs, post roles, and hire top talent effortlessly. <br />
-        <span className="text-white font-semibold">
-          Smart filters. Fast matches. Zero noise.
-        </span>
-      </p>
-      <Button
-        onClick={handleNotifyClick}
-        className="bg-white text-black hover:bg-gray-200 text-lg px-6 py-3 rounded-xl shadow-lg transition"
-      >
-        {notified ? "✅ You're Subscribed" : "Notify Me"}
-      </Button>
-    </div>
-  );
-}
-
-// 👇 Use ComingSoon as the layout/page
-function AppLayout() {
-  return <ComingSoon />;
-}
-
+import AppLayout from "./layouts/app-layout";
+import LandingPage from "./pages/landing";
+import Onboarding from "./pages/onboarding";
+import JobListing from "./pages/job-listing";
+import JobPage from "./pages/job";
+import PostJob from "./pages/post-job";
+import SavedJobs from "./pages/saved-job";
+import MyJobs from "./pages/my-jobs";
+ 
 const router = createBrowserRouter([
   {
-    path: "/",
-    element: <AppLayout />
+    element:<AppLayout />,
+    children:[
+      {
+        path: "/",
+        element:<LandingPage />
+      },
+      {
+        path: "/onboarding",
+        element: (
+          <ProtectedRoute>
+            <Onboarding />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/jobs",
+        element: (
+          <ProtectedRoute>
+            <JobListing />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/post-job",
+        element: (
+          <ProtectedRoute>
+            <PostJob />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/my-jobs",
+        element: (
+          <ProtectedRoute>
+            <MyJobs />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/saved-jobs",
+        element: (
+          <ProtectedRoute>
+            <SavedJobs />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/job/:id",
+        element: (
+          <ProtectedRoute>
+            <JobPage />
+          </ProtectedRoute>
+        ),
+      },
+    ]
   }
 ]);
-
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+    <RouterProvider router={router} />
+  </ThemeProvider>
+  );
 }
-
 export default App;
