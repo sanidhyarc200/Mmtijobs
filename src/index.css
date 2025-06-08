@@ -1,130 +1,377 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@import "@shadcn/ui/styles.css";
-
-
-
-@layer base {
-  :root {
-
-    --background: 0 0% 100%;
-
-    --foreground: 222.2 84% 4.9%;
-
-    --card: 0 0% 100%;
-
-    --card-foreground: 222.2 84% 4.9%;
-
-    --popover: 0 0% 100%;
-
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-
-    --input: 214.3 31.8% 91.4%;
-
-    --ring: 222.2 84% 4.9%;
-
-    --chart-1: 12 76% 61%;
-
-    --chart-2: 173 58% 39%;
-
-    --chart-3: 197 37% 24%;
-
-    --chart-4: 43 74% 66%;
-
-    --chart-5: 27 87% 67%;
-
-    --radius: 0.5rem
-  }
-  .dark {
-
-    --background: 222.2 84% 4.9%;
-
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-
-    --input: 217.2 32.6% 17.5%;
-
-    --ring: 212.7 26.8% 83.9%;
-
-    --chart-1: 220 70% 50%;
-
-    --chart-2: 160 60% 45%;
-
-    --chart-3: 30 80% 55%;
-
-    --chart-4: 280 65% 60%;
-
-    --chart-5: 340 75% 55%
-  }
+/* Global Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-@layer utilities {
-  .gradient {
-    @apply bg-gradient-to-br from-gray-500 via-gray-200 to-white;
-  }
-  .gradient-title {
-    @apply gradient text-transparent bg-clip-text;
-  }
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f5f7fa;
+  color: #1f2937;
+  line-height: 1.6;
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+/* Container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Header */
+header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 20px 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 1.8em;
+  color: #0a66c2;
+  font-weight: 700;
+}
+
+nav a {
+  margin-left: 25px;
+  text-decoration: none;
+  color: #4b5563;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+nav a:hover {
+  color: #0a66c2;
+}
+
+/* Hero Section */
+.hero {
+  text-align: center;
+  background: linear-gradient(to right, #eef2f7, #ffffff);
+  padding: 60px 20px;
+}
+
+.hero h2 {
+  font-size: 2.4em;
+  margin-bottom: 12px;
+}
+
+.hero p {
+  font-size: 1.1em;
+  margin-bottom: 30px;
+}
+
+/* Search Bar */
+/* Search Bar Container */
+.search-bar-container {
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+  background-color: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 100px;
+  max-width: 1200px;
+  width: 100%;
+  background-color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Input Fields */
+.search-input {
+  width: 220px; /* Adjusted width to fit input and dropdown */
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1em;
+  transition: border 0.3s ease;
+}
+
+.search-input:focus {
+  border-color: #0a66c2;
+  outline: none;
+}
+
+/* Experience Dropdown */
+.search-input option {
+  font-size: 1em;
+}
+
+/* Remote Toggle */
+.remote-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.remote-toggle input {
+  margin: 0;
+}
+
+.remote-toggle label {
+  font-size: 0.9em;
+  color: #374151;
+}
+
+/* Search Button */
+.search-button {
+  padding: 12px 20px;
+  background-color: #0a66c2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1em;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.search-button:hover {
+  background-color: #004182;
+}
+
+
+/* Job Listings */
+.job-listings {
+  padding: 50px 0;
+}
+
+.job-listings h3 {
+  font-size: 1.8em;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.jobs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 25px;
+}
+
+.job-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+}
+
+.job-card:hover {
+  transform: translateY(-4px);
+}
+
+.job-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.job-header h4 {
+  font-size: 1.2em;
+  color: #0a66c2;
+}
+
+.badge {
+  background-color: #e0ecff;
+  color: #0a66c2;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 0.8em;
+  font-weight: 600;
+}
+
+.company {
+  color: #374151;
+  margin-top: 8px;
+  font-size: 0.95em;
+}
+
+.tags {
+  margin-top: 5px;
+  font-size: 0.9em;
+  color: #6b7280;
+}
+
+.job-card button {
+  margin-top: 15px;
+  background-color: #0a66c2;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.job-card button:hover {
+  background-color: #004182;
+}
+
+/* Trusted Companies Section */
+.trusted-by {
+  padding: 60px 20px;
+  background-color: #ffffff;
+  border-top: 1px solid #e5e7eb;
+}
+
+.trusted-by h3 {
+  font-size: 1.8em;
+  text-align: center;
+  margin-bottom: 30px;
+  color: #1f2937;
+}
+
+.companies {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+  justify-items: center;
+}
+
+.company-card {
+  background-color: #f0f4f8;
+  padding: 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  color: #0a66c2;
+  font-size: 1em;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: center;
+}
+
+.company-card:hover {
+  background-color: #e0ecff;
+  transform: translateY(-3px);
+}
+footer {
+  background-color: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  padding: 20px 0;
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.9em;
+  margin-top: 50px;
+}
+
+.footer p {
+  margin: 0;
+}
+.search-bar input[type="text"],
+.search-bar select {
+  flex: 1;
+  max-width: 200px;
+}
+/* Hire Section */
+.hire-section {
+  background: linear-gradient(90deg, #0a66c2, #004182);
+  color: white;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.hire-section h2 {
+  font-size: 2.5em;
+  margin-bottom: 20px;
+  font-weight: 700;
+}
+
+.hire-section p {
+  font-size: 1.2em;
+  margin-bottom: 40px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hire-button {
+  padding: 15px 30px;
+  background-color: #ffffff;
+  color: #0a66c2;
+  font-size: 1.2em;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.hire-button:hover {
+  background-color: #e0ecff;
+  color: #004182;
+}
+
+/* Top Recruiters Section */
+.top-recruiters {
+  padding: 60px 20px;
+  background-color: #f9fafb;
+  text-align: center;
+}
+
+.top-recruiters h2 {
+  font-size: 2.2em;
+  margin-bottom: 40px;
+  color: #1f2937;
+  font-weight: 700;
+}
+
+.recruiter-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+}
+
+.recruiter-card {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.recruiter-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+.recruiter-logo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 15px;
+}
+
+.recruiter-card h3 {
+  font-size: 1.5em;
+  color: #0a66c2;
+  margin-bottom: 8px;
+}
+
+.job-count {
+  font-size: 1.1em;
+  color: #6b7280;
+  margin-bottom: 12px;
+}
+
+.recruiter-description {
+  font-size: 1em;
+  color: #374151;
 }
