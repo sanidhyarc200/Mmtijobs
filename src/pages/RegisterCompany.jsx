@@ -72,10 +72,14 @@ export default function RegisterCompany() {
         fontFamily: "'Arial', sans-serif",
       }}
     >
-      <h2 style={{ textAlign: "center", color: "#0a66c2" }}>Register Your Company</h2>
+      <h2 style={{ textAlign: "center", color: "#0a66c2" }}>
+        Register Your Company
+      </h2>
 
       <div style={{ marginBottom: 15 }}>
-        <label style={{ display: "block", fontWeight: "bold", marginBottom: 5 }}>
+        <label
+          style={{ display: "block", fontWeight: "bold", marginBottom: 5 }}
+        >
           Company Name
         </label>
         <input
@@ -96,7 +100,9 @@ export default function RegisterCompany() {
       </div>
 
       <div style={{ marginBottom: 15 }}>
-        <label style={{ display: "block", fontWeight: "bold", marginBottom: 5 }}>
+        <label
+          style={{ display: "block", fontWeight: "bold", marginBottom: 5 }}
+        >
           Company Email
         </label>
         <input
@@ -117,7 +123,9 @@ export default function RegisterCompany() {
       </div>
 
       <div style={{ marginBottom: 15 }}>
-        <label style={{ display: "block", fontWeight: "bold", marginBottom: 5 }}>
+        <label
+          style={{ display: "block", fontWeight: "bold", marginBottom: 5 }}
+        >
           Contact Number
         </label>
         <input
@@ -138,7 +146,9 @@ export default function RegisterCompany() {
       </div>
 
       <div style={{ marginBottom: 15 }}>
-        <label style={{ display: "block", fontWeight: "bold", marginBottom: 5 }}>
+        <label
+          style={{ display: "block", fontWeight: "bold", marginBottom: 5 }}
+        >
           Password
         </label>
         <input
@@ -175,21 +185,40 @@ export default function RegisterCompany() {
           Register
         </button>
       ) : (
-        <button
-          onClick={() => navigate("/post-job")}
-          style={{
-            padding: "12px 20px",
-            backgroundColor: "#198754",
-            color: "white",
-            border: "none",
-            borderRadius: 6,
-            fontWeight: "bold",
-            cursor: "pointer",
-            width: "100%",
-          }}
-        >
-          Post a Job
-        </button>
+        <>
+          <button
+            onClick={() => navigate("/post-job")}
+            style={{
+              padding: "12px 20px",
+              backgroundColor: "#198754",
+              color: "white",
+              border: "none",
+              borderRadius: 6,
+              fontWeight: "bold",
+              cursor: "pointer",
+              width: "100%",
+              marginBottom: 10,
+            }}
+          >
+            Post a Job
+          </button>
+
+          <button
+            onClick={() => navigate("/company-profile")}
+            style={{
+              padding: "12px 20px",
+              backgroundColor: "#rgb(10, 102, 194)",
+              color: "white",
+              border: "none",
+              borderRadius: 6,
+              fontWeight: "bold",
+              cursor: "pointer",
+              width: "100%",
+            }}
+          >
+            View Profile
+          </button>
+        </>
       )}
     </div>
   );

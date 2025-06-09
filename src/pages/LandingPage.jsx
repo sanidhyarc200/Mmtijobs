@@ -281,7 +281,7 @@ export default function LandingPage() {
 
       <footer>
         <div className="container footer">
-          <p>© {year} JobHunt — All rights reserved.</p>
+          <p>© {year} MMtijobs — All rights reserved.</p>
         </div>
       </footer>
     </>
