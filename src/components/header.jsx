@@ -5,7 +5,9 @@ export default function Header({ onPostJobClick }) {
   return (
     <header>
       <div className="container nav" style={styles.nav}>
-        <div className="logo" style={styles.logo}>MMTijobs</div>
+        <Link to="/" style={{ ...styles.logo, textDecoration: 'none', color: 'inherit' }}>
+          MMTijobs
+        </Link>
         <nav style={styles.navLinks}>
           <Link to="/" style={styles.link}>Home</Link>
           <Link to="/maintenance" style={styles.link}>About</Link>
