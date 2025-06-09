@@ -21,7 +21,7 @@ export default function Header({ onPostJobClick }) {
             Post a Job
           </span>
 
-          <Link to="/maintenance" style={styles.link}>Company</Link>
+          {/* <Link to="/maintenance" style={styles.link}>Company</Link> */}
         </nav>
       </div>
     </header>

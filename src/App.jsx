@@ -85,6 +85,7 @@ import JobsPage from './pages/JobsPage';
 import LandingPage from './pages/LandingPage';
 import MaintenancePage from './pages/MaintenancePage';
 import RegisterCompany from './pages/RegisterCompany';
+import PostJob from './pages/PostJob';
 
 // Dummy PostJobPage placeholder for now
 function PostJobPage() {
@@ -180,7 +181,7 @@ export default function App() {
         <Route path="/jobs" element={<JobsPage />} />
         <Route path="/maintenance" element={<MaintenancePage />} />
         <Route path="/register-company" element={<RegisterCompany />} />
-        <Route path="/post-job" element={<PostJobPage />} />
+        <Route path="/post-job" element={<PostJob />} />
       </Routes>
 
       {showPostJobModal && (
