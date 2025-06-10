@@ -127,7 +127,7 @@ export default function LandingPage() {
     setFilteredJobs(filtered);
   }, [keyword, location, experience]);
 
-  const handlePostJobClick = () => navigate('/maintenance');
+  const handlePostJobClick = () => navigate('/post-job');
   const handleApply = () => alert('Please login or sign up to apply.');
   const handleView = (job) => {
     setSelectedJob(job);
@@ -201,11 +201,11 @@ export default function LandingPage() {
       <section className="hire-section">
         <h2>Are you a recruiter?</h2>
         <p>
-          Want to post a job? register now !!
+          Want to post a job? register now !! use the post a job fetaure in the header to continue !!!
         </p>
-        <button className="hire-button" onClick={handlePostJobClick}>
+        {/* <button className="hire-button" onClick={handlePostJobClick}>
           Post a Job
-        </button>
+        </button> */}
       </section>
 
       <footer>
