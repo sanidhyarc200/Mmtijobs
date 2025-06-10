@@ -162,10 +162,9 @@ export default function LandingPage() {
   const [showMaintenanceModal, setShowMaintenanceModal] = useState(false);
 
   const handleSignUpClick = () => {
-    setShowApplyModal(false);
-    setShowMaintenanceModal(true);
+    setShowApplyModal(false);  // Close the apply modal
+    navigate('/onboarding');   // Navigate to the onboarding page
   };
-
   const jobCardStyles = {
     container: {
       width: '70%',

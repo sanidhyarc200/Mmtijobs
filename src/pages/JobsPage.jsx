@@ -64,8 +64,8 @@ const JobsPage = () => {
   };
 
   const handleSignUpClick = () => {
-    setShowApplyModal(false);
-    setShowMaintenanceModal(true);
+    setShowApplyModal(false);  // Close the apply modal
+    navigate('/onboarding');   // Navigate to the onboarding page
   };
 
   return (
