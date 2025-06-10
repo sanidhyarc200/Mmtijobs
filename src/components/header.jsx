@@ -10,7 +10,7 @@ export default function Header({ onPostJobClick }) {
         </Link>
         <nav style={styles.navLinks}>
           <Link to="/" style={styles.link}>Home</Link>
-          <Link to="/maintenance" style={styles.link}>About</Link>
+          <Link to="/About" style={styles.link}>About</Link>
           <Link to="/jobs" style={styles.link}>Jobs</Link>
 
           {/* Post a Job - separate button look */}

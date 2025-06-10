@@ -83,8 +83,9 @@ const styles = {
 import Header from './components/header';
 import JobsPage from './pages/JobsPage';
 import LandingPage from './pages/LandingPage';
-import MaintenancePage from './pages/MaintenancePage';
+import MaintenancePage from './pages/Maintenance';
 import RegisterCompany from './pages/RegisterCompany';
+import AboutPage from './pages/AboutPage';
 import PostJob from './pages/PostJob';
 
 // Dummy PostJobPage placeholder for now
@@ -181,6 +182,7 @@ export default function App() {
         <Route path="/jobs" element={<JobsPage />} />
         <Route path="/maintenance" element={<MaintenancePage />} />
         <Route path="/register-company" element={<RegisterCompany />} />
+        <Route path="/about" element={<AboutPage />} />
         <Route path="/post-job" element={<PostJob />} />
       </Routes>
 

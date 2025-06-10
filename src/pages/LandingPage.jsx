@@ -1,113 +1,104 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-
 const defaultJobs = [
-  {
-    id: 1,
-    title: 'Frontend Developer',
-    company: 'MMTI Jobs',
-    location: 'Remote',
-    experience: '2-4 years',
-    salary: '₹6-8 LPA',
-    tags: ['React', 'JavaScript', 'CSS'],
-  },
-  {
-    id: 2,
-    title: 'Backend Developer',
-    company: 'TechStack',
-    location: 'Bangalore',
-    experience: '3-5 years',
-    salary: '₹8-10 LPA',
-    tags: ['Node.js', 'Express', 'MongoDB'],
-  },
-  {
-    id: 3,
-    title: 'Fullstack Developer',
-    company: 'InnovateX',
-    location: 'Hyderabad',
-    experience: '4-6 years',
-    salary: '₹10-12 LPA',
-    tags: ['React', 'Node.js', 'AWS'],
-  },
-  {
-    id: 4,
-    title: 'Data Scientist',
-    company: 'DataPros',
-    location: 'Remote',
-    experience: '3-5 years',
-    salary: '₹12-15 LPA',
-    tags: ['Python', 'Machine Learning', 'SQL'],
-  },
-  {
-    id: 5,
-    title: 'UI/UX Designer',
-    company: 'Creative Minds',
-    location: 'Mumbai',
-    experience: '2-3 years',
-    salary: '₹5-7 LPA',
-    tags: ['Figma', 'Adobe XD', 'Prototyping'],
-  },
-  {
-    id: 6,
-    title: 'DevOps Engineer',
-    company: 'CloudWorks',
-    location: 'Pune',
-    experience: '3-5 years',
-    salary: '₹9-11 LPA',
-    tags: ['Docker', 'Kubernetes', 'CI/CD'],
-  },
-  {
-    id: 7,
-    title: 'Mobile App Developer',
-    company: 'AppVenture',
-    location: 'Chennai',
-    experience: '2-4 years',
-    salary: '₹6-9 LPA',
-    tags: ['React Native', 'Swift', 'Kotlin'],
-  },
-  {
-    id: 8,
-    title: 'QA Engineer',
-    company: 'Quality First',
-    location: 'Chennai',
-    experience: '1-3 years',
-    salary: '₹4-6 LPA',
-    tags: ['Selenium', 'Jest', 'Automation'],
-  },
-];
-
+    {
+      id: 1,
+      title: 'Frontend Developer',
+      company: 'MMTI Jobs',
+      location: 'Remote',
+      experience: '2-4 years',
+      salary: '₹6-8 LPA',
+      tags: ['React', 'JavaScript', 'CSS'],
+    },
+    {
+      id: 2,
+      title: 'Backend Developer',
+      company: 'TechStack',
+      location: 'Bangalore',
+      experience: '3-5 years',
+      salary: '₹8-10 LPA',
+      tags: ['Node.js', 'Express', 'MongoDB'],
+    },
+    {
+      id: 3,
+      title: 'Fullstack Developer',
+      company: 'InnovateX',
+      location: 'Hyderabad',
+      experience: '4-6 years',
+      salary: '₹10-12 LPA',
+      tags: ['React', 'Node.js', 'AWS'],
+    },
+    {
+      id: 4,
+      title: 'Data Scientist',
+      company: 'DataPros',
+      location: 'Remote',
+      experience: '3-5 years',
+      salary: '₹12-15 LPA',
+      tags: ['Python', 'Machine Learning', 'SQL'],
+    },
+    {
+      id: 5,
+      title: 'UI/UX Designer',
+      company: 'Creative Minds',
+      location: 'Mumbai',
+      experience: '2-3 years',
+      salary: '₹5-7 LPA',
+      tags: ['Figma', 'Adobe XD', 'Prototyping'],
+    },
+    {
+      id: 6,
+      title: 'DevOps Engineer',
+      company: 'CloudWorks',
+      location: 'Pune',
+      experience: '3-5 years',
+      salary: '₹9-11 LPA',
+      tags: ['Docker', 'Kubernetes', 'CI/CD'],
+    },
+    {
+      id: 7,
+      title: 'Mobile App Developer',
+      company: 'AppVenture',
+      location: 'Chennai',
+      experience: '2-4 years',
+      salary: '₹6-9 LPA',
+      tags: ['React Native', 'Swift', 'Kotlin'],
+    },
+    {
+      id: 8,
+      title: 'QA Engineer',
+      company: 'Quality First',
+      location: 'Chennai',
+      experience: '1-3 years',
+      salary: '₹4-6 LPA',
+      tags: ['Selenium', 'Jest', 'Automation'],
+    },
+  ];
+  
 export default function LandingPage() {
   const [year] = useState(new Date().getFullYear());
 
-  // Search state
   const [keyword, setKeyword] = useState('');
   const [location, setLocation] = useState('');
   const [experience, setExperience] = useState('');
-  const [remoteOnly, setRemoteOnly] = useState(false);
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   const [filteredJobs, setFilteredJobs] = useState(defaultJobs);
   const navigate = useNavigate();
 
-  const handlePostJobClick = () => {
-    navigate('/maintenance');
-  };
-
   useEffect(() => {
-    // Filter jobs based on all inputs
     let filtered = defaultJobs.filter((job) => {
       const keywordLower = keyword.toLowerCase();
-
       const matchesKeyword =
         job.title.toLowerCase().includes(keywordLower) ||
         job.company.toLowerCase().includes(keywordLower) ||
         job.tags.some((tag) => tag.toLowerCase().includes(keywordLower));
-
       const matchesLocation = location
         ? job.location.toLowerCase().includes(location.toLowerCase())
         : true;
 
-      // Experience filter - convert ranges into comparable numbers
       const experienceMap = {
         '0-1 years': [0, 1],
         '1-3 years': [1, 3],
@@ -121,7 +112,6 @@ export default function LandingPage() {
       let matchesExperience = true;
       if (experience && experienceMap[experience]) {
         const [minExp, maxExp] = experienceMap[experience];
-        // Extract job experience min and max years (assuming format "x-y years")
         const [jobMinExp, jobMaxExp] = job.experience
           .split(' ')[0]
           .split('-')
@@ -131,34 +121,27 @@ export default function LandingPage() {
           (jobMaxExp >= minExp && jobMaxExp <= maxExp);
       }
 
-      const matchesRemote = remoteOnly ? job.location.toLowerCase() === 'remote' : true;
-
-      return matchesKeyword && matchesLocation && matchesExperience && matchesRemote;
+      return matchesKeyword && matchesLocation && matchesExperience;
     });
 
     setFilteredJobs(filtered);
-  }, [keyword, location, experience, remoteOnly]);
+  }, [keyword, location, experience]);
+
+  const handlePostJobClick = () => navigate('/maintenance');
+  const handleApply = () => alert('Please login or sign up to apply.');
+  const handleView = (job) => {
+    setSelectedJob(job);
+    setShowModal(true);
+  };
 
   return (
     <>
-      {/* <header> */}
-        {/* <div className="container nav">
-          <div className="logo">JobHunt</div>
-          <nav>
-            <a href="/">Home</a>
-            <a href="/about">About</a>
-            <a href="/login">Login</a>
-            <a href="/register">Register</a>
-          </nav>
-        </div>
-      </header> */}
-
       <section className="hero">
         <h2>Find your dream job today</h2>
         <p>Thousands of jobs from top companies. Your next career move is just a click away.</p>
       </section>
 
-      <section className="search-bar-container">
+      <section className="search-bar-container" style={{ marginTop: '-20px' }}>
         <div className="search-bar">
           <input
             type="text"
@@ -188,15 +171,6 @@ export default function LandingPage() {
             <option value="4-6 years">4-6 years</option>
             <option value="5+ years">5+ years</option>
           </select>
-          <div className="remote-toggle">
-            <input
-              type="checkbox"
-              id="remote"
-              checked={remoteOnly}
-              onChange={() => setRemoteOnly(!remoteOnly)}
-            />
-            <label htmlFor="remote">Remote</label>
-          </div>
         </div>
       </section>
 
@@ -205,14 +179,17 @@ export default function LandingPage() {
         <div className="jobs">
           {filteredJobs.length > 0 ? (
             filteredJobs.map((job) => (
-              <div className="job-card" key={job.id}>
+              <div className="job-card" key={job.id} style={{ width: '100%' }}>
                 <div className="job-header">
                   <h4>{job.title}</h4>
                   <span className="badge">{job.salary}</span>
                 </div>
                 <div className="company">{job.company}</div>
                 <div className="tags">{job.tags.join(', ')}</div>
-                <button onClick={() => alert('Apply feature coming soon!')}>Apply Now</button>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                  <button onClick={() => handleView(job)}>View</button>
+                  <button onClick={handleApply}>Apply</button>
+                </div>
               </div>
             ))
           ) : (
@@ -221,62 +198,14 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="trusted-by">
-        <h3>Trusted by Top Companies</h3>
-        <div className="companies">
-          <div className="company-card">Google</div>
-          <div className="company-card">Microsoft</div>
-          <div className="company-card">Amazon</div>
-          <div className="company-card">Facebook</div>
-          <div className="company-card">Apple</div>
-          <div className="company-card">Netflix</div>
-        </div>
-      </section>
-
       <section className="hire-section">
         <h2>Are you a recruiter?</h2>
-        <p>Find the best candidates for your company with JobHunt.</p>
+        <p>
+          Want to post a job? register now !!
+        </p>
         <button className="hire-button" onClick={handlePostJobClick}>
           Post a Job
         </button>
-      </section>
-
-      <section className="top-recruiters">
-        <h2>Top Recruiters</h2>
-        <div className="recruiter-cards">
-          <div className="recruiter-card">
-            <img
-              src="https://via.placeholder.com/80"
-              alt="InnovateX"
-              className="recruiter-logo"
-            />
-            <h3>InnovateX</h3>
-            <div className="job-count">25 jobs posted</div>
-            <div className="recruiter-description">Leading tech innovation in Hyderabad.</div>
-          </div>
-
-          <div className="recruiter-card">
-            <img
-              src="https://via.placeholder.com/80"
-              alt="CloudWorks"
-              className="recruiter-logo"
-            />
-            <h3>CloudWorks</h3>
-            <div className="job-count">15 jobs posted</div>
-            <div className="recruiter-description">Experts in cloud infrastructure and services.</div>
-          </div>
-
-          <div className="recruiter-card">
-            <img
-              src="https://via.placeholder.com/80"
-              alt="AppVenture"
-              className="recruiter-logo"
-            />
-            <h3>AppVenture</h3>
-            <div className="job-count">10 jobs posted</div>
-            <div className="recruiter-description">Mobile app development specialists.</div>
-          </div>
-        </div>
       </section>
 
       <footer>
@@ -284,6 +213,21 @@ export default function LandingPage() {
           <p>© {year} MMtijobs — All rights reserved.</p>
         </div>
       </footer>
+
+      {showModal && selectedJob && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2>{selectedJob.title}</h2>
+            <p><strong>Company:</strong> {selectedJob.company}</p>
+            <p><strong>Location:</strong> {selectedJob.location}</p>
+            <p><strong>Experience:</strong> {selectedJob.experience}</p>
+            <p><strong>Salary:</strong> {selectedJob.salary}</p>
+            <p><strong>Skills:</strong> {selectedJob.tags.join(', ')}</p>
+            <button onClick={() => setShowModal(false)}>Close</button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
+
