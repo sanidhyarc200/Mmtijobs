@@ -88,6 +88,7 @@ import RegisterCompany from './pages/RegisterCompany';
 import AboutPage from './pages/AboutPage';
 import PostJob from './pages/PostJob';
 import UserOnboarding from './pages/UserOnboarding';
+import MapPage from './pages/Mappage';
 
 // Dummy PostJobPage placeholder for now
 function PostJobPage() {
@@ -185,6 +186,7 @@ export default function App() {
         <Route path="/register-company" element={<RegisterCompany />} />
         <Route path="/onboarding" element={<UserOnboarding />} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/mappage" element={<MapPage />} />
         <Route path="/post-job" element={<PostJob />} />
       </Routes>
 
