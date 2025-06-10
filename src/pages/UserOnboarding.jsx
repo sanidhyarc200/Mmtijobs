@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 export default function UserOnboarding() {
   const [currentStep, setCurrentStep] = useState(1);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [errors, setErrors] = useState({});
   
   const [formData, setFormData] = useState({
     // Step 1 - Personal Details
@@ -36,64 +37,109 @@ export default function UserOnboarding() {
       ...prev,
       [name]: type === 'file' ? files[0] : value
     }));
+    
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => {
+        const newErrors = {...prev};
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
   };
 
   const validateStep = (step) => {
+    const newErrors = {};
+    let isValid = true;
+
     switch (step) {
       case 1:
-        const { firstName, lastName, contact, email } = formData;
-        if (!firstName.trim() || !lastName.trim() || !contact.trim() || !email.trim()) {
-          alert('Please fill in all required fields on Step 1 before proceeding.');
-          return false;
+        if (!formData.firstName.trim()) {
+          newErrors.firstName = 'First name is required';
+          isValid = false;
         }
-        // Email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-          alert('Please enter a valid email address.');
-          return false;
+        if (!formData.lastName.trim()) {
+          newErrors.lastName = 'Last name is required';
+          isValid = false;
         }
-        // Phone validation
-        const phoneRegex = /^[0-9]{10}$/;
-        if (!phoneRegex.test(contact.replace(/\D/g, ''))) {
-          alert('Please enter a valid 10-digit contact number.');
-          return false;
+        if (!formData.contact.trim()) {
+          newErrors.contact = 'Contact number is required';
+          isValid = false;
+        } else if (!/^[0-9]{10}$/.test(formData.contact.replace(/\D/g, ''))) {
+          newErrors.contact = 'Please enter a valid 10-digit contact number';
+          isValid = false;
         }
-        return true;
+        if (!formData.email.trim()) {
+          newErrors.email = 'Email is required';
+          isValid = false;
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+          newErrors.email = 'Please enter a valid email address';
+          isValid = false;
+        }
+        break;
         
       case 2:
-        const { degree, passout, experience, techstack } = formData;
-        if (!degree.trim() || !passout.trim() || !experience.trim() || !techstack.trim()) {
-          alert('Please fill in all required fields on Step 2 before proceeding.');
-          return false;
+        if (!formData.degree.trim()) {
+          newErrors.degree = 'Degree is required';
+          isValid = false;
         }
-        // Passout year validation
-        const currentYear = new Date().getFullYear();
-        const passoutYear = parseInt(passout);
-        if (passoutYear < 1990 || passoutYear > currentYear) {
-          alert('Please enter a valid passout year.');
-          return false;
+        if (!formData.passout.trim()) {
+          newErrors.passout = 'Passout year is required';
+          isValid = false;
+        } else {
+          const currentYear = new Date().getFullYear();
+          const passoutYear = parseInt(formData.passout);
+          if (passoutYear < 1990 || passoutYear > currentYear) {
+            newErrors.passout = 'Please enter a valid passout year';
+            isValid = false;
+          }
         }
-        return true;
+        if (!formData.experience.trim()) {
+          newErrors.experience = 'Experience is required';
+          isValid = false;
+        }
+        if (!formData.techstack.trim()) {
+          newErrors.techstack = 'Tech stack is required';
+          isValid = false;
+        }
+        break;
         
       case 3:
-        const { lastSalary, currentSalary, location, noticePeriod } = formData;
-        if (!lastSalary.trim() || !currentSalary.trim() || !location.trim() || !noticePeriod.trim()) {
-          alert('Please fill in all required fields on Step 3 before proceeding.');
-          return false;
+        if (!formData.lastSalary.trim()) {
+          newErrors.lastSalary = 'Last salary is required';
+          isValid = false;
         }
-        return true;
+        if (!formData.currentSalary.trim()) {
+          newErrors.currentSalary = 'Current/expected salary is required';
+          isValid = false;
+        }
+        if (!formData.location.trim()) {
+          newErrors.location = 'Location is required';
+          isValid = false;
+        }
+        if (!formData.noticePeriod.trim()) {
+          newErrors.noticePeriod = 'Notice period is required';
+          isValid = false;
+        }
+        break;
         
       case 4:
-        const { description, skills } = formData;
-        if (!description.trim() || !skills.trim()) {
-          alert('Please fill in all required fields before submitting.');
-          return false;
+        if (!formData.description.trim()) {
+          newErrors.description = 'Description is required';
+          isValid = false;
         }
-        return true;
+        if (!formData.skills.trim()) {
+          newErrors.skills = 'Skills are required';
+          isValid = false;
+        }
+        break;
         
       default:
-        return true;
+        break;
     }
+
+    setErrors(newErrors);
+    return isValid;
   };
 
   const goToStep = (step) => {
@@ -221,6 +267,9 @@ export default function UserOnboarding() {
       border: '1px solid #e5e7eb',
       fontSize: '1em',
     },
+    inputError: {
+      borderColor: '#ef4444',
+    },
     textarea: {
       padding: '10px',
       borderRadius: '8px',
@@ -228,6 +277,14 @@ export default function UserOnboarding() {
       fontSize: '1em',
       minHeight: '100px',
       resize: 'vertical',
+    },
+    textareaError: {
+      borderColor: '#ef4444',
+    },
+    errorText: {
+      color: '#ef4444',
+      fontSize: '0.85em',
+      marginTop: '5px',
     },
     btnGroup: {
       marginTop: '30px',
@@ -284,19 +341,6 @@ export default function UserOnboarding() {
 
   return (
     <div style={styles.container}>
-      {/* Header
-      <header style={styles.header}>
-        <div style={styles.nav}>
-          <h1 style={styles.logo}>MMTIJobs</h1>
-          <nav style={styles.navLinks}>
-            <a href="/" style={styles.navLink}>Home</a>
-            <a href="#" style={styles.navLink}>Jobs</a>
-            <a href="#" style={styles.navLink}>Companies</a>
-            <a href="#" style={styles.navLink}>Login</a>
-          </nav>
-        </div>
-      </header> */}
-
       {/* Main Form */}
       <section>
         <div style={styles.modal}>
@@ -312,7 +356,7 @@ export default function UserOnboarding() {
             ))}
           </div>
 
-          <div onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit}>
             {/* Step 1 - Personal Details */}
             <div style={currentStep === 1 ? styles.formStepActive : styles.formStep}>
               <div style={styles.formGrid}>
@@ -323,9 +367,13 @@ export default function UserOnboarding() {
                     name="firstName"
                     value={formData.firstName}
                     onChange={handleInputChange}
-                    style={styles.input}
+                    style={{
+                      ...styles.input,
+                      ...(errors.firstName && styles.inputError)
+                    }}
                     required
                   />
+                  {errors.firstName && <span style={styles.errorText}>{errors.firstName}</span>}
                 </div>
                 <div style={styles.formGroup}>
                   <label style={styles.label}>Middle Name</label>
@@ -344,9 +392,13 @@ export default function UserOnboarding() {
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleInputChange}
-                    style={styles.input}
+                    style={{
+                      ...styles.input,
+                      ...(errors.lastName && styles.inputError)
+                    }}
                     required
                   />
+                  {errors.lastName && <span style={styles.errorText}>{errors.lastName}</span>}
                 </div>
                 <div style={styles.formGroup}>
                   <label style={styles.label}>Contact Number *</label>
@@ -355,9 +407,13 @@ export default function UserOnboarding() {
                     name="contact"
                     value={formData.contact}
                     onChange={handleInputChange}
-                    style={styles.input}
+                    style={{
+                      ...styles.input,
+                      ...(errors.contact && styles.inputError)
+                    }}
                     required
                   />
+                  {errors.contact && <span style={styles.errorText}>{errors.contact}</span>}
                 </div>
                 <div style={styles.formGroup}>
                   <label style={styles.label}>Email ID *</label>
@@ -366,9 +422,13 @@ export default function UserOnboarding() {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    style={styles.input}
+                    style={{
+                      ...styles.input,
+                      ...(errors.email && styles.inputError)
+                    }}
                     required
                   />
+                  {errors.email && <span style={styles.errorText}>{errors.email}</span>}
                 </div>
               </div>
               <div style={styles.btnGroup}>
@@ -391,9 +451,13 @@ export default function UserOnboarding() {
                     name="degree"
                     value={formData.degree}
                     onChange={handleInputChange}
-                    style={styles.input}
+                    style={{
+                      ...styles.input,
+                      ...(errors.degree && styles.inputError)
+                    }}
                     required
                   />
+                  {errors.degree && <span style={styles.errorText}>{errors.degree}</span>}
                 </div>
                 <div style={styles.formGroup}>
                   <label style={styles.label}>Passout Year *</label>
@@ -402,11 +466,15 @@ export default function UserOnboarding() {
                     name="passout"
                     value={formData.passout}
                     onChange={handleInputChange}
-                    style={styles.input}
+                    style={{
+                      ...styles.input,
+                      ...(errors.passout && styles.inputError)
+                    }}
                     min="1990"
                     max={new Date().getFullYear()}
                     required
                   />
+                  {errors.passout && <span style={styles.errorText}>{errors.passout}</span>}
                 </div>
                 <div style={styles.formGroup}>
                   <label style={styles.label}>Experience *</label>
@@ -415,10 +483,14 @@ export default function UserOnboarding() {
                     name="experience"
                     value={formData.experience}
                     onChange={handleInputChange}
-                    style={styles.input}
+                    style={{
+                      ...styles.input,
+                      ...(errors.experience && styles.inputError)
+                    }}
                     placeholder="e.g., 2 years"
                     required
                   />
+                  {errors.experience && <span style={styles.errorText}>{errors.experience}</span>}
                 </div>
                 <div style={styles.formGroup}>
                   <label style={styles.label}>Tech Stack *</label>
@@ -427,10 +499,14 @@ export default function UserOnboarding() {
                     name="techstack"
                     value={formData.techstack}
                     onChange={handleInputChange}
-                    style={styles.input}
+                    style={{
+                      ...styles.input,
+                      ...(errors.techstack && styles.inputError)
+                    }}
                     placeholder="e.g., React, Node.js, MongoDB"
                     required
                   />
+                  {errors.techstack && <span style={styles.errorText}>{errors.techstack}</span>}
                 </div>
               </div>
               <div style={styles.btnGroup}>
@@ -453,10 +529,14 @@ export default function UserOnboarding() {
                     name="lastSalary"
                     value={formData.lastSalary}
                     onChange={handleInputChange}
-                    style={styles.input}
+                    style={{
+                      ...styles.input,
+                      ...(errors.lastSalary && styles.inputError)
+                    }}
                     placeholder="e.g., ₹5 LPA"
                     required
                   />
+                  {errors.lastSalary && <span style={styles.errorText}>{errors.lastSalary}</span>}
                 </div>
                 <div style={styles.formGroup}>
                   <label style={styles.label}>Current/Expected Salary *</label>
@@ -465,10 +545,14 @@ export default function UserOnboarding() {
                     name="currentSalary"
                     value={formData.currentSalary}
                     onChange={handleInputChange}
-                    style={styles.input}
+                    style={{
+                      ...styles.input,
+                      ...(errors.currentSalary && styles.inputError)
+                    }}
                     placeholder="e.g., ₹8 LPA"
                     required
                   />
+                  {errors.currentSalary && <span style={styles.errorText}>{errors.currentSalary}</span>}
                 </div>
                 <div style={styles.formGroup}>
                   <label style={styles.label}>Location *</label>
@@ -477,10 +561,14 @@ export default function UserOnboarding() {
                     name="location"
                     value={formData.location}
                     onChange={handleInputChange}
-                    style={styles.input}
+                    style={{
+                      ...styles.input,
+                      ...(errors.location && styles.inputError)
+                    }}
                     placeholder="e.g., Bangalore, Mumbai"
                     required
                   />
+                  {errors.location && <span style={styles.errorText}>{errors.location}</span>}
                 </div>
                 <div style={styles.formGroup}>
                   <label style={styles.label}>Notice Period *</label>
@@ -489,10 +577,14 @@ export default function UserOnboarding() {
                     name="noticePeriod"
                     value={formData.noticePeriod}
                     onChange={handleInputChange}
-                    style={styles.input}
+                    style={{
+                      ...styles.input,
+                      ...(errors.noticePeriod && styles.inputError)
+                    }}
                     placeholder="e.g., 30 days, Immediate"
                     required
                   />
+                  {errors.noticePeriod && <span style={styles.errorText}>{errors.noticePeriod}</span>}
                 </div>
               </div>
               <div style={styles.btnGroup}>
@@ -525,10 +617,14 @@ export default function UserOnboarding() {
                     name="skills"
                     value={formData.skills}
                     onChange={handleInputChange}
-                    style={styles.input}
+                    style={{
+                      ...styles.input,
+                      ...(errors.skills && styles.inputError)
+                    }}
                     placeholder="e.g., JavaScript, Python, Communication"
                     required
                   />
+                  {errors.skills && <span style={styles.errorText}>{errors.skills}</span>}
                 </div>
                 <div style={styles.formGroupFull}>
                   <label style={styles.label}>Description *</label>
@@ -536,10 +632,14 @@ export default function UserOnboarding() {
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
-                    style={styles.textarea}
+                    style={{
+                      ...styles.textarea,
+                      ...(errors.description && styles.textareaError)
+                    }}
                     placeholder="Tell us about yourself, your experience, and career goals..."
                     required
                   />
+                  {errors.description && <span style={styles.errorText}>{errors.description}</span>}
                 </div>
               </div>
               <div style={styles.btnGroup}>
@@ -551,7 +651,7 @@ export default function UserOnboarding() {
                 </button>
               </div>
             </div>
-          </div>
+          </form>
         </div>
       </section>
 
