@@ -5,13 +5,12 @@ const jobData = {
   Indore: { IT: 10, Hardware: 8, BeautyWellness: 5, Agriculture: 7 },
 };
 
-const cityAreas = {
-  Bhopal: { x1: 578, y1: 494, x2: 636, y2: 575 },
-  Indore: { x1: 330, y1: 619, x2: 426, y2: 662 },
+const cityDots = {
+  Bhopal: { x: 610, y: 535 },
+  Indore: { x: 380, y: 640 },
 };
 
-const isInsideRect = (mouseX, mouseY, area) =>
-  mouseX >= area.x1 && mouseX <= area.x2 && mouseY >= area.y1 && mouseY <= area.y2;
+const DOT_RADIUS = 12;
 
 const styles = {
   jobCard: {
@@ -32,6 +31,7 @@ const styles = {
   jobCardVisible: {
     opacity: 1,
     transform: "translateY(0)",
+    pointerEvents: "auto",
   },
   jobTitle: {
     margin: "0 0 16px 0",
@@ -64,51 +64,41 @@ const styles = {
     fontWeight: "600",
     color: "#2e86c1",
   },
+  cityDot: {
+    position: "absolute",
+    width: `${DOT_RADIUS}px`,
+    height: `${DOT_RADIUS}px`,
+    borderRadius: "50%",
+    backgroundColor: "#ffffff",
+    border: "2px solid #2e86c1",
+    transform: "translate(-50%, -50%)",
+    cursor: "pointer",
+    zIndex: 5,
+  },
 };
 
 const MapPage = () => {
   const [hoveredCity, setHoveredCity] = useState(null);
 
-  const handleMouseMove = (event) => {
-    const img = document.getElementById("mp-map");
-    if (!img) return;
-
-    const imgRect = img.getBoundingClientRect();
-    const mouseX = event.clientX - imgRect.left;
-    const mouseY = event.clientY - imgRect.top;
-
-    let detectedCity = null;
-    Object.entries(cityAreas).forEach(([city, area]) => {
-      if (isInsideRect(mouseX, mouseY, area)) {
-        detectedCity = city;
-      }
-    });
-
-    setHoveredCity(detectedCity);
-  };
-
   const getCardPosition = (city) => {
     if (!city) return { top: 0, left: 0 };
 
+    const dot = cityDots[city];
     const img = document.getElementById("mp-map");
-    if (!img) return { top: cityAreas[city].y1, left: cityAreas[city].x1 };
+    if (!img) return { top: dot.y, left: dot.x };
 
     const imgRect = img.getBoundingClientRect();
-    const cardWidth = 280;
+
+    const cardWidth = 300;
     const cardHeight = 180;
 
-    let left = cityAreas[city].x1;
-    let top = cityAreas[city].y1;
+    let left = dot.x;
+    let top = dot.y;
 
-    if (left + cardWidth > imgRect.width) {
-      left = cityAreas[city].x1 - cardWidth;
-    }
+    if (left + cardWidth > imgRect.width) left -= cardWidth;
+    if (top + cardHeight > imgRect.height) top -= cardHeight;
 
-    if (top + cardHeight > imgRect.height) {
-      top = cityAreas[city].y1 - cardHeight;
-    }
-
-    return { top, left };
+    return { left, top };
   };
 
   return (
@@ -118,15 +108,29 @@ const MapPage = () => {
         src="/mp.png"
         alt="Madhya Pradesh Map"
         style={{ width: "100%", height: "auto" }}
-        onMouseMove={handleMouseMove}
         onMouseLeave={() => setHoveredCity(null)}
       />
 
+      {/* White dots for each city */}
+      {Object.entries(cityDots).map(([city, coords]) => (
+        <div
+          key={city}
+          style={{
+            ...styles.cityDot,
+            top: coords.y,
+            left: coords.x,
+          }}
+          onMouseEnter={() => setHoveredCity(city)}
+          onMouseLeave={() => setHoveredCity(null)}
+        />
+      ))}
+
+      {/* Floating Job Card */}
       {hoveredCity && (
         <div
           style={{
             ...styles.jobCard,
-            ...(hoveredCity && styles.jobCardVisible),
+            ...styles.jobCardVisible,
             ...getCardPosition(hoveredCity),
           }}
         >
