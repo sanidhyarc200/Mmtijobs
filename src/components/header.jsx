@@ -1,65 +1,164 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 export default function Header({ onPostJobClick }) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   return (
-    <header>
-      <div className="container nav" style={styles.nav}>
-        <Link to="/" style={{ ...styles.logo, textDecoration: 'none', color: 'inherit' }}>
+    <header className="header">
+      <div className="nav-container">
+        <Link to="/" className="logo">
           MMTijobs
         </Link>
-        <nav style={styles.navLinks}>
-          <Link to="/" style={styles.link}>Home</Link>
-          <Link to="/About" style={styles.link}>About</Link>
-          <Link to="/jobs" style={styles.link}>Jobs</Link>
-          <Link to="/mappage" style={styles.link}>Map</Link>
 
-          {/* Post a Job - separate button look */}
-          <span
-            onClick={onPostJobClick}
-            // style={styles.postJobButton}
+        {/* Desktop Navigation */}
+        <nav className="desktop-nav">
+          <Link to="/" className="nav-link">Home</Link>
+          <Link to="/about" className="nav-link">About</Link>
+          <Link to="/jobs" className="nav-link">Jobs</Link>
+          <Link to="/mappage" className="nav-link">Map</Link>
+          <button onClick={onPostJobClick} className="post-job-btn">
+            Post a Job
+          </button>
+        </nav>
+
+        {/* Mobile Menu Button */}
+        <button 
+          className="mobile-menu-btn"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          aria-label="Toggle menu"
+        >
+          {isMenuOpen ? '✕' : '☰'}
+        </button>
+      </div>
+
+      {/* Mobile Menu */}
+      {isMenuOpen && (
+        <div className="mobile-menu">
+          <Link to="/" className="mobile-link" onClick={() => setIsMenuOpen(false)}>Home</Link>
+          <Link to="/about" className="mobile-link" onClick={() => setIsMenuOpen(false)}>About</Link>
+          <Link to="/jobs" className="mobile-link" onClick={() => setIsMenuOpen(false)}>Jobs</Link>
+          <Link to="/mappage" className="mobile-link" onClick={() => setIsMenuOpen(false)}>Map</Link>
+          <button
+            onClick={() => {
+              onPostJobClick();
+              setIsMenuOpen(false);
+            }}
+            className="mobile-post-job-btn"
           >
             Post a Job
-          </span>
+          </button>
+        </div>
+      )}
 
-          {/* <Link to="/maintenance" style={styles.link}>Company</Link> */}
-        </nav>
-      </div>
+      <style jsx>{`
+        .header {
+          background-color: #f8f9fa;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+          position: sticky;
+          top: 0;
+          z-index: 100;
+          width: 100%;
+        }
+        
+        .nav-container {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 15px 5%;
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+        
+        .logo {
+          font-size: 22px;
+          font-weight: bold;
+          color: #0a66c2;
+          text-decoration: none;
+        }
+        
+        .desktop-nav {
+          display: flex;
+          align-items: center;
+          gap: 20px;
+        }
+        
+        .nav-link {
+          text-decoration: none;
+          color: #333;
+          font-weight: 500;
+          transition: color 0.3s ease;
+        }
+        
+        .nav-link:hover {
+          color: #0a66c2;
+        }
+        
+        .post-job-btn {
+          padding: 8px 16px;
+          background-color: #0a66c2;
+          color: white;
+          border-radius: 5px;
+          font-weight: bold;
+          border: none;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        
+        .post-job-btn:hover {
+          background-color: #004182;
+          transform: translateY(-1px);
+        }
+        
+        .mobile-menu-btn {
+          display: none;
+          background: none;
+          border: none;
+          cursor: pointer;
+          font-size: 24px;
+          color: #333;
+        }
+        
+        .mobile-menu {
+          display: none;
+          flex-direction: column;
+          gap: 15px;
+          padding: 0 5% 20px;
+          background-color: #f8f9fa;
+        }
+        
+        .mobile-link {
+          text-decoration: none;
+          color: #333;
+          font-weight: 500;
+          padding: 10px 0;
+          border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .mobile-post-job-btn {
+          padding: 10px;
+          background-color: #0a66c2;
+          color: white;
+          border-radius: 5px;
+          font-weight: bold;
+          border: none;
+          margin-top: 10px;
+        }
+        
+        @media (max-width: 768px) {
+          .desktop-nav {
+            display: none;
+          }
+          
+          .mobile-menu-btn {
+            display: block;
+          }
+          
+          .mobile-menu {
+            display: flex;
+          }
+        }
+      `}</style>
     </header>
   );
 }
-
-const styles = {
-  nav: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '15px 30px',
-    backgroundColor: '#f8f9fa',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-  },
-  logo: {
-    fontSize: '22px',
-    fontWeight: 'bold',
-    color: '#0a66c2',
-  },
-  navLinks: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '20px',
-  },
-  link: {
-    textDecoration: 'none',
-    color: '#333',
-    fontWeight: 500,
-  },
-  postJobButton: {
-    padding: '6px 14px',
-    backgroundColor: '#0a66c2',
-    color: 'white',
-    borderRadius: '5px',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    transition: 'all 0.3s ease',
-  }
-};
