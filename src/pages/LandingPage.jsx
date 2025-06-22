@@ -5,7 +5,6 @@ const defaultJobs = [
   {
     id: 1,
     title: 'Frontend Developer',
-    company: 'MMTI Jobs',
     location: 'Remote',
     experience: '2-4 years',
     salary: '₹6-8 LPA',
@@ -15,7 +14,6 @@ const defaultJobs = [
   {
     id: 2,
     title: 'Backend Developer',
-    company: 'TechStack',
     location: 'Bangalore',
     experience: '3-5 years',
     salary: '₹8-10 LPA',
@@ -25,7 +23,6 @@ const defaultJobs = [
   {
     id: 3,
     title: 'Fullstack Developer',
-    company: 'InnovateX',
     location: 'Hyderabad',
     experience: '4-6 years',
     salary: '₹10-12 LPA',
@@ -35,7 +32,6 @@ const defaultJobs = [
   {
     id: 4,
     title: 'Data Scientist',
-    company: 'DataPros',
     location: 'Remote',
     experience: '3-5 years',
     salary: '₹12-15 LPA',
@@ -45,7 +41,6 @@ const defaultJobs = [
   {
     id: 5,
     title: 'UI/UX Designer',
-    company: 'Creative Minds',
     location: 'Mumbai',
     experience: '2-3 years',
     salary: '₹5-7 LPA',
@@ -55,7 +50,6 @@ const defaultJobs = [
   {
     id: 6,
     title: 'DevOps Engineer',
-    company: 'CloudWorks',
     location: 'Pune',
     experience: '3-5 years',
     salary: '₹9-11 LPA',
@@ -65,7 +59,6 @@ const defaultJobs = [
   {
     id: 7,
     title: 'Mobile App Developer',
-    company: 'AppVenture',
     location: 'Chennai',
     experience: '2-4 years',
     salary: '₹6-9 LPA',
@@ -75,7 +68,6 @@ const defaultJobs = [
   {
     id: 8,
     title: 'QA Engineer',
-    company: 'Quality First',
     location: 'Chennai',
     experience: '1-3 years',
     salary: '₹4-6 LPA',
@@ -102,7 +94,6 @@ export default function LandingPage() {
       const keywordLower = keyword.toLowerCase();
       const matchesKeyword =
         job.title.toLowerCase().includes(keywordLower) ||
-        job.company.toLowerCase().includes(keywordLower) ||
         job.tags.some((tag) => tag.toLowerCase().includes(keywordLower));
       const matchesLocation = location
         ? job.location.toLowerCase().includes(location.toLowerCase())
@@ -165,206 +156,334 @@ export default function LandingPage() {
     <div className="landing-page">
       <style>
         {`
-          @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+          .landing-page {
+            font-family: 'Inter', sans-serif;
+            max-width: 100%;
+            overflow-x: hidden;
+          }
+          
+          .hero-section {
+            position: relative;
+            min-height: 350px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(10, 102, 194, 0.9), rgba(0, 65, 130, 0.8)), 
+                       url('https://images.unsplash.com/photo-1521737711867-e3b97375f902?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+          }
+          
+          .hero-title {
+            font-size: 2.2em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+            line-height: 1.2;
+          }
+          
+          .hero-subtitle {
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 5px rgba(0,0,0,0.3);
+            opacity: 0.95;
+            font-weight: 400;
+          }
+          
+          .search-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 15px 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 1200px;
+            border: 1px solid rgba(255,255,255,0.2);
+          }
+          
+          .search-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+          }
+          
+          .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 15px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            font-size: 1em;
+            background: white;
+            color: #1f2937;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            height: 42px;
           }
           
           .search-input:focus {
-            border-color: #0a66c2 !important;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(10, 102, 194, 0.3) !important;
+            border-color: #0a66c2;
+            box-shadow: 0 4px 15px rgba(10, 102, 194, 0.3);
             outline: none;
           }
-
+          
+          .search-button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(10, 102, 194, 0.4);
+            height: 42px;
+            white-space: nowrap;
+          }
+          
           .search-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(10, 102, 194, 0.5);
           }
-
+          
+          .job-listings {
+            background: #f8fafc;
+            padding: 30px 0;
+          }
+          
+          .job-listings h3 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #1f2937;
+            font-weight: 700;
+          }
+          
+          .job-listings-container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          
+          .job-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+            border: 1px solid #e5e7eb;
+            width: 100%;
+            max-width: 800px;
+          }
+          
           .job-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             border-color: #0a66c2;
           }
-
+          
+          .job-title {
+            color: #0a66c2;
+            font-size: 1.1em;
+            margin-bottom: 4px;
+            font-weight: 600;
+          }
+          
+          .job-meta {
+            color: #4b5563;
+            font-size: 0.85em;
+            margin-bottom: 6px;
+            display: flex;
+            gap: 10px;
+          }
+          
+          .job-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 8px;
+          }
+          
+          .job-tag {
+            background: #e5e7eb;
+            color: #374151;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+          }
+          
+          .job-description {
+            color: #4b5563;
+            font-size: 0.85em;
+            line-height: 1.4;
+            margin-bottom: 10px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          
+          .job-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+          }
+          
+          .view-btn {
+            background-color: #e5e7eb;
+            color: #374151;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.85em;
+            transition: all 0.2s ease;
+          }
+          
           .view-btn:hover {
-            background-color: #d1d5db !important;
-            transform: translateY(-1px);
+            background-color: #d1d5db;
           }
-
+          
+          .apply-btn {
+            background-color: #0a66c2;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.85em;
+            transition: all 0.2s ease;
+          }
+          
           .apply-btn:hover {
-            background-color: #004182 !important;
-            transform: translateY(-1px);
+            background-color: #004182;
           }
-
+          
+          .hire-section {
+            background: linear-gradient(135deg, #0a66c2, #004182);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+          }
+          
+          .hire-section h2 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            font-weight: 700;
+          }
+          
+          .hire-section p {
+            font-size: 1em;
+            margin-bottom: 0;
+            max-width: 700px;
+            margin: 0 auto 20px;
+          }
+          
+          footer {
+            background-color: #ffffff;
+            border-top: 1px solid #e5e7eb;
+            padding: 15px 0;
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.85em;
+          }
+          
+          /* Modal styles */
+          .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+          }
+          
+          .modal-box {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+          }
+          
           /* Responsive adjustments */
-          @media (max-width: 768px) {
+          @media (min-width: 768px) {
             .hero-section {
-              min-height: 450px;
-              padding: 40px 20px;
+              min-height: 380px;
             }
             
             .hero-title {
-              font-size: 2.2em;
-              margin-bottom: 15px;
+              font-size: 2.5em;
             }
             
             .hero-subtitle {
-              font-size: 1.1em;
-              margin-bottom: 30px;
-            }
-            
-            .search-container {
-              padding: 20px;
-              border-radius: 12px;
-            }
-            
-            .search-form {
-              flex-direction: column;
-              gap: 12px;
-            }
-            
-            .search-input {
-              width: 100%;
-              padding: 12px 15px;
-            }
-            
-            .job-listings-container {
-              width: 90%;
-              margin-left: auto;
-              margin-right: auto;
-              padding: 20px 0;
-            }
-            
-            .job-card {
-              padding: 16px;
-            }
-            
-            .job-title {
               font-size: 1.2em;
             }
             
-            .job-buttons {
-              flex-direction: column;
-              gap: 8px;
+            .search-row {
+              flex-wrap: nowrap;
             }
             
-            .modal-box {
-              width: 95%;
-              padding: 20px;
+            .job-card {
+              padding: 15px 20px;
+            }
+          }
+
+          @media (min-width: 1200px) {
+            .job-listings-container {
+              align-items: flex-start;
+              padding-right: 400px;
             }
           }
         `}
       </style>
 
       {/* Hero Section */}
-      <section className="hero-section" style={{
-        position: 'relative',
-        minHeight: '550px',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        background: `linear-gradient(135deg, rgba(10, 102, 194, 0.9), rgba(0, 65, 130, 0.8)), 
-                     url('https://images.unsplash.com/photo-1521737711867-e3b97375f902?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
-        color: 'white',
-        textAlign: 'center',
-        padding: '60px 20px',
-      }}>
-        <div style={{ maxWidth: '800px', marginBottom: '40px' }}>
-          <h1 className="hero-title" style={{
-            fontSize: '3.5em',
-            fontWeight: '700',
-            marginBottom: '20px',
-            textShadow: '2px 2px 10px rgba(0,0,0,0.3)',
-            lineHeight: '1.2',
-          }}>
-            Find Your Dream Job Today
-          </h1>
-          <p className="hero-subtitle" style={{
-            fontSize: '1.3em',
-            marginBottom: '40px',
-            textShadow: '1px 1px 5px rgba(0,0,0,0.3)',
-            opacity: '0.95',
-            fontWeight: '400',
-          }}>
+      <section className="hero-section">
+        <div>
+          <h1 className="hero-title">Find Your Dream Job Today</h1>
+          <p className="hero-subtitle">
             Thousands of jobs from top companies. Your next career move is just a click away.
           </p>
         </div>
 
-        <div className="search-container" style={{
-          background: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          padding: '30px',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
-          maxWidth: '900px',
-          width: '100%',
-          border: '1px solid rgba(255,255,255,0.2)',
-        }}>
-          <div className="search-form" style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '15px',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
+        <div className="search-container">
+          <div className="search-row">
             <input
               type="text"
               className="search-input"
-              style={{
-                flex: '1',
-                minWidth: '220px',
-                padding: '15px 20px',
-                border: '2px solid transparent',
-                borderRadius: '12px',
-                fontSize: '1em',
-                background: 'white',
-                color: '#1f2937',
-                transition: 'all 0.3s ease',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-              }}
-              placeholder="Job title, keywords, or company"
+              placeholder="Job title or keywords"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
             />
             <input
               type="text"
               className="search-input"
-              style={{
-                flex: '1',
-                minWidth: '220px',
-                padding: '15px 20px',
-                border: '2px solid transparent',
-                borderRadius: '12px',
-                fontSize: '1em',
-                background: 'white',
-                color: '#1f2937',
-                transition: 'all 0.3s ease',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-              }}
               placeholder="Location"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
             />
             <select
               className="search-input"
-              style={{
-                flex: '1',
-                minWidth: '220px',
-                padding: '15px 20px',
-                border: '2px solid transparent',
-                borderRadius: '12px',
-                fontSize: '1em',
-                background: 'white',
-                color: '#1f2937',
-                transition: 'all 0.3s ease',
-                boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-              }}
               value={experience}
               onChange={(e) => setExperience(e.target.value)}
             >
@@ -379,19 +498,6 @@ export default function LandingPage() {
             </select>
             <button
               className="search-button"
-              style={{
-                padding: '15px 30px',
-                background: 'linear-gradient(135deg, #0a66c2, #004182)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '12px',
-                fontSize: '1.1em',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                boxShadow: '0 4px 15px rgba(10, 102, 194, 0.4)',
-                minWidth: '120px',
-              }}
               onClick={() => console.log('Search triggered')}
             >
               Search Jobs
@@ -401,110 +507,50 @@ export default function LandingPage() {
       </section>
 
       {/* Job Listings */}
-      <section className="job-listings" style={{ background: '#f8fafc', padding: '60px 0' }}>
-        <h3 style={{
-          fontSize: '2.2em',
-          marginBottom: '40px',
-          textAlign: 'center',
-          color: '#1f2937',
-          fontWeight: '700'
-        }}>
-          Latest Job Opportunities
-        </h3>
-        <div className="job-listings-container" style={{
-          width: '70%',
-          maxWidth: '840px',
-          margin: '0 auto',
-          marginLeft: '5%',
-          padding: '40px 0',
-          fontFamily: "'Inter', sans-serif",
-        }}>
+      <section className="job-listings">
+        <h3>Latest Job Opportunities</h3>
+        <div className="job-listings-container">
           {filteredJobs.length > 0 ? (
             filteredJobs.map((job) => (
-              <div key={job.id} className="job-card" style={{
-                backgroundColor: '#ffffff',
-                borderRadius: '12px',
-                padding: '20px',
-                marginBottom: '20px',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                border: '1px solid transparent',
-              }}>
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '15px',
-                }}>
-                  <div>
-                    <h3 style={{
-                      color: '#0a66c2',
-                      fontSize: '1.4em',
-                      marginBottom: '8px',
-                      marginTop: 0,
-                    }}>
-                      {job.title}
-                    </h3>
-                    <p style={{ marginBottom: '8px', color: '#374151' }}>
-                      <strong>Company:</strong> {job.company} • {job.location} • {job.salary}
-                    </p>
-                    <p><strong>Experience:</strong> {job.experience}</p>
-                    <p style={{ marginTop: '8px', color: '#6b7280', fontSize: '0.95em' }}>
-                      <strong>Skills:</strong> {job.tags.join(', ')}
-                    </p>
-                  </div>
-                  <div className="job-buttons" style={{
-                    display: 'flex',
-                    gap: '10px',
-                    marginTop: '10px',
-                  }}>
-                    <button
-                      className="view-btn"
-                      style={{
-                        backgroundColor: '#e5e7eb',
-                        color: '#374151',
-                        padding: '10px 20px',
-                        borderRadius: '8px',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontWeight: 600,
-                        transition: 'all 0.3s ease',
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleView(job);
-                      }}
-                    >
-                      View Details
-                    </button>
-                    <button
-                      className="apply-btn"
-                      style={{
-                        backgroundColor: '#0a66c2',
-                        color: 'white',
-                        padding: '10px 20px',
-                        borderRadius: '8px',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontWeight: 600,
-                        transition: 'all 0.3s ease',
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleApply(job);
-                      }}
-                    >
-                      Apply Now
-                    </button>
-                  </div>
+              <div key={job.id} className="job-card">
+                <h3 className="job-title">{job.title}</h3>
+                <div className="job-meta">
+                  <span>{job.location}</span>
+                  <span>•</span>
+                  <span>{job.experience}</span>
+                  <span>•</span>
+                  <span>{job.salary}</span>
                 </div>
-                <div style={{ paddingTop: '15px', color: '#4b5563' }}>
-                  {job.description}
+                <div className="job-tags">
+                  {job.tags.map((tag, index) => (
+                    <span key={index} className="job-tag">{tag}</span>
+                  ))}
+                </div>
+                <p className="job-description">{job.description}</p>
+                <div className="job-buttons">
+                  <button
+                    className="view-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleView(job);
+                    }}
+                  >
+                    View Details
+                  </button>
+                  <button
+                    className="apply-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleApply(job);
+                    }}
+                  >
+                    Apply Now
+                  </button>
                 </div>
               </div>
             ))
           ) : (
-            <div style={{ textAlign: 'center', padding: '40px', color: '#6b7280', fontSize: '1.2em' }}>
+            <div style={{ textAlign: 'center', padding: '30px', color: '#6b7280' }}>
               <p>No jobs found matching your criteria. Try adjusting your search filters.</p>
             </div>
           )}
@@ -512,79 +558,35 @@ export default function LandingPage() {
       </section>
 
       {/* Recruiter Section */}
-      <section className="hire-section" style={{
-        background: 'linear-gradient(135deg, #0a66c2, #004182)',
-        color: 'white',
-        padding: '80px 20px',
-        textAlign: 'center'
-      }}>
-        <h2 style={{ fontSize: '2.5em', marginBottom: '20px', fontWeight: '700' }}>Are you a recruiter?</h2>
-        <p style={{ fontSize: '1.2em', marginBottom: '40px', maxWidth: '800px', margin: '0 auto 40px' }}>
+      <section className="hire-section">
+        <h2>Are you a recruiter?</h2>
+        <p>
           Want to post a job? Register now and use the post a job feature in the header to continue!
         </p>
       </section>
 
       {/* Footer */}
-      <footer style={{
-        backgroundColor: '#ffffff',
-        borderTop: '1px solid #e5e7eb',
-        padding: '30px 0',
-        textAlign: 'center',
-        color: '#6b7280',
-        fontSize: '0.9em'
-      }}>
-        <div className="container footer">
+      <footer>
+        <div>
           <p>© {year} MMtijobs — All rights reserved.</p>
         </div>
       </footer>
 
-      {/* Modals remain the same as before */}
+      {/* Modals */}
       {showApplyModal && selectedJob && (
-        <div style={{
-          position: 'fixed',
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.6)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 1000,
-        }}>
-          <div style={{
-            background: '#fff',
-            padding: '30px',
-            borderRadius: '12px',
-            width: '90%',
-            maxWidth: '500px',
-            textAlign: 'center',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-          }}>
+        <div className="modal-overlay">
+          <div className="modal-box">
             {!showLoginForm ? (
               <>
-                <h2 style={{
-                  marginBottom: '15px',
-                  color: '#0a66c2',
-                  fontSize: '1.5em',
-                }}>
-                  Apply for {selectedJob.title}
-                </h2>
-                <p style={{
-                  color: '#374151',
-                  marginBottom: '25px',
-                }}>
-                  Please login or sign up to apply for this job.
-                </p>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  gap: '15px',
-                  flexWrap: 'wrap',
-                }}>
+                <h2 style={{ color: '#0a66c2', marginBottom: '15px' }}>Apply for {selectedJob.title}</h2>
+                <p style={{ marginBottom: '25px' }}>Please login or sign up to apply for this job.</p>
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
                   <button 
                     style={{
-                      padding: '10px 20px',
+                      padding: '8px 16px',
                       background: '#e5e7eb',
                       border: 'none',
-                      borderRadius: '8px',
+                      borderRadius: '6px',
                       fontWeight: 600,
                       cursor: 'pointer',
                     }}
@@ -594,11 +596,11 @@ export default function LandingPage() {
                   </button>
                   <button
                     style={{
-                      padding: '10px 20px',
+                      padding: '8px 16px',
                       background: '#0a66c2',
                       color: 'white',
                       border: 'none',
-                      borderRadius: '8px',
+                      borderRadius: '6px',
                       fontWeight: 600,
                       cursor: 'pointer',
                     }}
@@ -608,11 +610,11 @@ export default function LandingPage() {
                   </button>
                   <button
                     style={{
-                      padding: '10px 20px',
+                      padding: '8px 16px',
                       background: '#059669',
                       color: 'white',
                       border: 'none',
-                      borderRadius: '8px',
+                      borderRadius: '6px',
                       fontWeight: 600,
                       cursor: 'pointer',
                     }}
@@ -624,34 +626,17 @@ export default function LandingPage() {
               </>
             ) : (
               <>
-                <h2 style={{
-                  marginBottom: '15px',
-                  color: '#0a66c2',
-                  fontSize: '1.5em',
-                }}>
-                  Login
-                </h2>
-                <form style={{
-                  textAlign: 'left',
-                  marginTop: '20px',
-                }} onSubmit={handleLoginSubmit}>
+                <h2 style={{ color: '#0a66c2', marginBottom: '15px' }}>Login</h2>
+                <form onSubmit={handleLoginSubmit}>
                   <div style={{ marginBottom: '15px' }}>
-                    <label style={{
-                      display: 'block',
-                      marginBottom: '5px',
-                      fontWeight: 600,
-                      color: '#374151',
-                    }}>
-                      Email:
-                    </label>
+                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 600 }}>Email:</label>
                     <input
                       type="email"
                       style={{
                         width: '100%',
                         padding: '10px',
                         border: '1px solid #e5e7eb',
-                        borderRadius: '8px',
-                        fontSize: '1em',
+                        borderRadius: '6px',
                       }}
                       value={loginData.email}
                       onChange={(e) => setLoginData({...loginData, email: e.target.value})}
@@ -659,41 +644,28 @@ export default function LandingPage() {
                     />
                   </div>
                   <div style={{ marginBottom: '15px' }}>
-                    <label style={{
-                      display: 'block',
-                      marginBottom: '5px',
-                      fontWeight: 600,
-                      color: '#374151',
-                    }}>
-                      Password:
-                    </label>
+                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 600 }}>Password:</label>
                     <input
                       type="password"
                       style={{
                         width: '100%',
                         padding: '10px',
                         border: '1px solid #e5e7eb',
-                        borderRadius: '8px',
-                        fontSize: '1em',
+                        borderRadius: '6px',
                       }}
                       value={loginData.password}
                       onChange={(e) => setLoginData({...loginData, password: e.target.value})}
                       required
                     />
                   </div>
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    gap: '15px',
-                    flexWrap: 'wrap',
-                  }}>
+                  <div style={{ display: 'flex', gap: '10px' }}>
                     <button 
                       type="button"
                       style={{
-                        padding: '10px 20px',
+                        padding: '8px 16px',
                         background: '#e5e7eb',
                         border: 'none',
-                        borderRadius: '8px',
+                        borderRadius: '6px',
                         fontWeight: 600,
                         cursor: 'pointer',
                       }}
@@ -706,11 +678,11 @@ export default function LandingPage() {
                       Cancel
                     </button>
                     <button type="submit" style={{
-                      padding: '10px 20px',
+                      padding: '8px 16px',
                       background: '#0a66c2',
                       color: 'white',
                       border: 'none',
-                      borderRadius: '8px',
+                      borderRadius: '6px',
                       fontWeight: 600,
                       cursor: 'pointer',
                     }}>
@@ -726,67 +698,32 @@ export default function LandingPage() {
 
       {/* View Job Modal */}
       {showViewModal && selectedJob && (
-        <div style={{
-          position: 'fixed',
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.6)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 1000,
-        }} onClick={() => setShowViewModal(false)}>
-          <div style={{
-            background: '#fff',
-            padding: '30px',
-            borderRadius: '12px',
-            width: '90%',
-            maxWidth: '500px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-          }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ textAlign: 'left' }}>
-              <h2 style={{
-                color: '#0a66c2',
-                fontSize: '1.8em',
-                marginBottom: '20px',
-                textAlign: 'center',
-              }}>
-                {selectedJob.title}
-              </h2>
-              <div style={{ marginBottom: '12px', fontSize: '1.1em' }}>
-                <strong>Company:</strong> {selectedJob.company}
-              </div>
-              <div style={{ marginBottom: '12px', fontSize: '1.1em' }}>
-                <strong>Location:</strong> {selectedJob.location}
-              </div>
-              <div style={{ marginBottom: '12px', fontSize: '1.1em' }}>
-                <strong>Experience:</strong> {selectedJob.experience}
-              </div>
-              <div style={{ marginBottom: '12px', fontSize: '1.1em' }}>
-                <strong>Salary:</strong> {selectedJob.salary}
-              </div>
-              <div style={{ marginBottom: '12px', fontSize: '1.1em' }}>
-                <strong>Skills:</strong> {selectedJob.tags.join(', ')}
-              </div>
-              <div style={{ marginBottom: '12px', fontSize: '1.1em' }}>
-                <strong>Description:</strong>
-              </div>
-              <p style={{ color: '#4b5563', lineHeight: '1.6', marginTop: '8px' }}>
-                {selectedJob.description}
-              </p>
-              <button style={{
+        <div className="modal-overlay" onClick={() => setShowViewModal(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <h2 style={{ color: '#0a66c2', marginBottom: '15px', textAlign: 'center' }}>{selectedJob.title}</h2>
+            <div style={{ marginBottom: '10px' }}><strong>Location:</strong> {selectedJob.location}</div>
+            <div style={{ marginBottom: '10px' }}><strong>Experience:</strong> {selectedJob.experience}</div>
+            <div style={{ marginBottom: '10px' }}><strong>Salary:</strong> {selectedJob.salary}</div>
+            <div style={{ marginBottom: '10px' }}><strong>Skills:</strong> {selectedJob.tags.join(', ')}</div>
+            <div style={{ marginBottom: '15px' }}><strong>Description:</strong></div>
+            <p style={{ color: '#4b5563', lineHeight: '1.5', marginBottom: '20px' }}>
+              {selectedJob.description}
+            </p>
+            <button 
+              style={{
                 width: '100%',
-                padding: '12px',
+                padding: '10px',
                 background: '#0a66c2',
                 color: 'white',
                 border: 'none',
-                borderRadius: '8px',
+                borderRadius: '6px',
                 fontWeight: 600,
                 cursor: 'pointer',
-                marginTop: '20px',
-              }} onClick={() => setShowViewModal(false)}>
-                Close
-              </button>
-            </div>
+              }}
+              onClick={() => setShowViewModal(false)}
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
