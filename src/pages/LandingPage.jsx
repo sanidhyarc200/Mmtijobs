@@ -165,6 +165,101 @@ export default function LandingPage() {
     setShowApplyModal(false);  // Close the apply modal
     navigate('/onboarding');   // Navigate to the onboarding page
   };
+
+  const heroStyles = {
+    heroSection: {
+      position: 'relative',
+      minHeight: '550px',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      background: `linear-gradient(135deg, rgba(10, 102, 194, 0.9), rgba(0, 65, 130, 0.8)), 
+                   url('https://images.unsplash.com/photo-1521737711867-e3b97375f902?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundAttachment: 'fixed',
+      color: 'white',
+      textAlign: 'center',
+      padding: '60px 20px',
+    },
+    heroContent: {
+      maxWidth: '800px',
+      marginBottom: '40px',
+    },
+    heroTitle: {
+      fontSize: '3.5em',
+      fontWeight: '700',
+      marginBottom: '20px',
+      textShadow: '2px 2px 10px rgba(0,0,0,0.3)',
+      lineHeight: '1.2',
+    },
+    heroSubtitle: {
+      fontSize: '1.3em',
+      marginBottom: '40px',
+      textShadow: '1px 1px 5px rgba(0,0,0,0.3)',
+      opacity: '0.95',
+      fontWeight: '400',
+    },
+    searchContainer: {
+      background: 'rgba(255, 255, 255, 0.95)',
+      backdropFilter: 'blur(10px)',
+      borderRadius: '20px',
+      padding: '30px',
+      boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+      maxWidth: '900px',
+      width: '100%',
+      border: '1px solid rgba(255,255,255,0.2)',
+    },
+    searchForm: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: '15px',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    searchInput: {
+      flex: '1',
+      minWidth: '220px',
+      padding: '15px 20px',
+      border: '2px solid transparent',
+      borderRadius: '12px',
+      fontSize: '1em',
+      background: 'white',
+      color: '#1f2937',
+      transition: 'all 0.3s ease',
+      boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+    },
+    searchInputFocus: {
+      borderColor: '#0a66c2',
+      transform: 'translateY(-2px)',
+      boxShadow: '0 4px 20px rgba(10, 102, 194, 0.3)',
+    },
+    searchButton: {
+      padding: '15px 30px',
+      background: 'linear-gradient(135deg, #0a66c2, #004182)',
+      color: 'white',
+      border: 'none',
+      borderRadius: '12px',
+      fontSize: '1.1em',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      boxShadow: '0 4px 15px rgba(10, 102, 194, 0.4)',
+      minWidth: '120px',
+    },
+    floatingElements: {
+      position: 'absolute',
+      top: '20%',
+      left: '10%',
+      width: '60px',
+      height: '60px',
+      background: 'rgba(255,255,255,0.1)',
+      borderRadius: '50%',
+      animation: 'float 6s ease-in-out infinite',
+    },
+  };
+
   const jobCardStyles = {
     container: {
       width: '70%',
@@ -181,7 +276,13 @@ export default function LandingPage() {
       marginBottom: '20px',
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
       cursor: 'pointer',
-      transition: 'transform 0.2s ease',
+      transition: 'all 0.3s ease',
+      border: '1px solid transparent',
+    },
+    cardHover: {
+      transform: 'translateY(-5px)',
+      boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)',
+      borderColor: '#0a66c2',
     },
     cardHeader: {
       display: 'flex',
@@ -219,6 +320,7 @@ export default function LandingPage() {
       border: 'none',
       cursor: 'pointer',
       fontWeight: 600,
+      transition: 'all 0.3s ease',
     },
     applyBtn: {
       backgroundColor: '#0a66c2',
@@ -228,6 +330,7 @@ export default function LandingPage() {
       border: 'none',
       cursor: 'pointer',
       fontWeight: 600,
+      transition: 'all 0.3s ease',
     },
     details: {
       paddingTop: '15px',
@@ -340,50 +443,116 @@ export default function LandingPage() {
 
   return (
     <>
-      <section className="hero">
-        <h2>Find your dream job today</h2>
-        <p>Thousands of jobs from top companies. Your next career move is just a click away.</p>
-      </section>
+      <style>
+        {`
+          @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+          }
+          
+          @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
 
-      <section className="search-bar-container" style={{ marginTop: '-20px' }}>
-        <div className="search-bar">
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Job title, keywords, or company"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-          />
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Location"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-          />
-          <select
-            className="search-input"
-            value={experience}
-            onChange={(e) => setExperience(e.target.value)}
-          >
-            <option value="">Experience</option>
-            <option value="0-1 years">0-1 years</option>
-            <option value="1-3 years">1-3 years</option>
-            <option value="2-3 years">2-3 years</option>
-            <option value="2-4 years">2-4 years</option>
-            <option value="3-5 years">3-5 years</option>
-            <option value="4-6 years">4-6 years</option>
-            <option value="5+ years">5+ years</option>
-          </select>
+          .search-input:focus {
+            border-color: #0a66c2 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(10, 102, 194, 0.3) !important;
+            outline: none;
+          }
+
+          .search-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(10, 102, 194, 0.5);
+          }
+
+          .job-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border-color: #0a66c2;
+          }
+
+          .view-btn:hover {
+            background-color: #d1d5db !important;
+            transform: translateY(-1px);
+          }
+
+          .apply-btn:hover {
+            background-color: #004182 !important;
+            transform: translateY(-1px);
+          }
+        `}
+      </style>
+
+      {/* Enhanced Hero Section with Search */}
+      <section style={heroStyles.heroSection}>
+        {/* Floating Elements for Visual Appeal */}
+        <div style={{...heroStyles.floatingElements, top: '15%', left: '8%', animationDelay: '0s'}}></div>
+        <div style={{...heroStyles.floatingElements, top: '25%', right: '12%', animationDelay: '2s'}}></div>
+        <div style={{...heroStyles.floatingElements, bottom: '20%', left: '15%', animationDelay: '4s'}}></div>
+        
+        <div style={heroStyles.heroContent}>
+          <h1 style={heroStyles.heroTitle}>Find Your Dream Job Today</h1>
+          <p style={heroStyles.heroSubtitle}>
+            Thousands of jobs from top companies. Your next career move is just a click away.
+          </p>
+        </div>
+
+        <div style={heroStyles.searchContainer}>
+          <div style={heroStyles.searchForm}>
+            <input
+              type="text"
+              className="search-input"
+              style={heroStyles.searchInput}
+              placeholder="Job title, keywords, or company"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+            />
+            <input
+              type="text"
+              className="search-input"
+              style={heroStyles.searchInput}
+              placeholder="Location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            />
+            <select
+              className="search-input"
+              style={heroStyles.searchInput}
+              value={experience}
+              onChange={(e) => setExperience(e.target.value)}
+            >
+              <option value="">Experience</option>
+              <option value="0-1 years">0-1 years</option>
+              <option value="1-3 years">1-3 years</option>
+              <option value="2-3 years">2-3 years</option>
+              <option value="2-4 years">2-4 years</option>
+              <option value="3-5 years">3-5 years</option>
+              <option value="4-6 years">4-6 years</option>
+              <option value="5+ years">5+ years</option>
+            </select>
+            <button
+              className="search-button"
+              style={heroStyles.searchButton}
+              onClick={() => {
+                // Search functionality can be added here
+                console.log('Search triggered');
+              }}
+            >
+              Search Jobs
+            </button>
+          </div>
         </div>
       </section>
 
-      <section className="job-listings">
-        <h3>Latest Jobs</h3>
+      <section className="job-listings" style={{background: '#f8fafc', padding: '60px 0'}}>
+        <h3 style={{fontSize: '2.2em', marginBottom: '40px', textAlign: 'center', color: '#1f2937', fontWeight: '700'}}>Latest Job Opportunities</h3>
         <div style={jobCardStyles.container}>
           {filteredJobs.length > 0 ? (
             filteredJobs.map((job) => (
-              <div key={job.id} style={jobCardStyles.card}>
+              <div key={job.id} className="job-card" style={jobCardStyles.card}>
                 <div style={jobCardStyles.cardHeader}>
                   <div style={jobCardStyles.jobInfo}>
                     <h3 style={jobCardStyles.jobTitle}>{job.title}</h3>
@@ -391,26 +560,28 @@ export default function LandingPage() {
                       <strong>Company:</strong> {job.company} • {job.location} • {job.salary}
                     </p>
                     <p><strong>Experience:</strong> {job.experience}</p>
-                    <p style={jobCardStyles.tags}><strong>Tags:</strong> {job.tags.join(', ')}</p>
+                    <p style={jobCardStyles.tags}><strong>Skills:</strong> {job.tags.join(', ')}</p>
                   </div>
                   <div style={jobCardStyles.buttonContainer}>
                     <button
+                      className="view-btn"
                       style={jobCardStyles.viewBtn}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleView(job);
                       }}
                     >
-                      View
+                      View Details
                     </button>
                     <button
+                      className="apply-btn"
                       style={jobCardStyles.applyBtn}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleApply(job);
                       }}
                     >
-                      Apply
+                      Apply Now
                     </button>
                   </div>
                 </div>
@@ -418,19 +589,33 @@ export default function LandingPage() {
               </div>
             ))
           ) : (
-            <p>No jobs found matching your criteria.</p>
+            <div style={{textAlign: 'center', padding: '40px', color: '#6b7280', fontSize: '1.2em'}}>
+              <p>No jobs found matching your criteria. Try adjusting your search filters.</p>
+            </div>
           )}
         </div>
       </section>
 
-      <section className="hire-section">
-        <h2>Are you a recruiter?</h2>
-        <p>
-          Want to post a job? register now !! use the post a job feature in the header to continue !!!
+      <section className="hire-section" style={{
+        background: 'linear-gradient(135deg, #0a66c2, #004182)',
+        color: 'white',
+        padding: '80px 20px',
+        textAlign: 'center'
+      }}>
+        <h2 style={{fontSize: '2.5em', marginBottom: '20px', fontWeight: '700'}}>Are you a recruiter?</h2>
+        <p style={{fontSize: '1.2em', marginBottom: '40px', maxWidth: '800px', margin: '0 auto 40px'}}>
+          Want to post a job? Register now and use the post a job feature in the header to continue!
         </p>
       </section>
 
-      <footer>
+      <footer style={{
+        backgroundColor: '#ffffff',
+        borderTop: '1px solid #e5e7eb',
+        padding: '30px 0',
+        textAlign: 'center',
+        color: '#6b7280',
+        fontSize: '0.9em'
+      }}>
         <div className="container footer">
           <p>© {year} MMtijobs — All rights reserved.</p>
         </div>
