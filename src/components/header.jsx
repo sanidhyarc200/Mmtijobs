@@ -65,13 +65,13 @@ export default function Header({ onPostJobClick }) {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 15px 5%;
+          padding: 1px 5%;  /* Reduced vertical padding */
           max-width: 1200px;
           margin: 0 auto;
         }
         
         .logo {
-          font-size: 22px;
+          font-size: 22px;  /* Kept original size */
           font-weight: bold;
           color: #0a66c2;
           text-decoration: none;
@@ -95,7 +95,7 @@ export default function Header({ onPostJobClick }) {
         }
         
         .post-job-btn {
-          padding: 8px 16px;
+          padding: 6px 16px;  /* Slightly reduced vertical padding */
           background-color: #0a66c2;
           color: white;
           border-radius: 5px;
@@ -117,13 +117,14 @@ export default function Header({ onPostJobClick }) {
           cursor: pointer;
           font-size: 24px;
           color: #333;
+          padding: 4px;  /* Added padding for better touch target */
         }
         
         .mobile-menu {
           display: none;
           flex-direction: column;
-          gap: 15px;
-          padding: 0 5% 20px;
+          gap: 12px;  /* Slightly reduced gap */
+          padding: 0 5% 12px;  /* Reduced bottom padding */
           background-color: #f8f9fa;
         }
         
@@ -131,18 +132,18 @@ export default function Header({ onPostJobClick }) {
           text-decoration: none;
           color: #333;
           font-weight: 500;
-          padding: 10px 0;
+          padding: 8px 0;  /* Reduced padding */
           border-bottom: 1px solid #e5e7eb;
         }
         
         .mobile-post-job-btn {
-          padding: 10px;
+          padding: 8px;  /* Reduced padding */
           background-color: #0a66c2;
           color: white;
           border-radius: 5px;
           font-weight: bold;
           border: none;
-          margin-top: 10px;
+          margin-top: 8px;  /* Reduced margin */
         }
         
         @media (max-width: 768px) {

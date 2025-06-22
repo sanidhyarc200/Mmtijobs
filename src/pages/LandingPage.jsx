@@ -268,7 +268,7 @@ export default function LandingPage() {
           
           .job-listings-container {
             width: 90%;
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
