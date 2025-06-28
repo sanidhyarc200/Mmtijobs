@@ -35,14 +35,21 @@ const JobsPage = () => {
 
   const filteredJobs = jobs.filter((job) => {
     const { title, location, experience, salary } = filters;
+    const extractSalary = (s) => {
+      const match = s.match(/\d+/);
+      return match ? parseInt(match[0], 10) : 0;
+    };
+  
+    const salaryNum = extractSalary(job.salary);
+  
     return (
       (!title || job.title.toLowerCase().includes(title.toLowerCase())) &&
       (!location || job.location.toLowerCase().includes(location.toLowerCase())) &&
       (!experience || job.experience.includes(experience)) &&
       (!salary ||
-        (salary === '0-10' && parseInt(job.salary) <= 10) ||
-        (salary === '10-20' && parseInt(job.salary) > 10 && parseInt(job.salary) <= 20) ||
-        (salary === '20+' && parseInt(job.salary) > 20))
+        (salary === '0-10' && salaryNum <= 10) ||
+        (salary === '10-20' && salaryNum > 10 && salaryNum <= 20) ||
+        (salary === '20+' && salaryNum > 20))
     );
   });
 
