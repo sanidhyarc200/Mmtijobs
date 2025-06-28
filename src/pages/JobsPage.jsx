@@ -49,7 +49,7 @@ const JobsPage = () => {
     const { name, value } = e.target;
     setFilters({ ...filters, [name]: value });
 
-    if (name === 'title' && value.trim()) {
+    if (name === 'title' && value.trim().length >= 3) {
       const stored = JSON.parse(sessionStorage.getItem('searchedTitles')) || [];
       if (!stored.includes(value) && !defaultTitles.includes(value)) {
         const updated = [...stored, value];
@@ -102,24 +102,24 @@ const JobsPage = () => {
 
   return (
     <div style={styles.container}>
-      <h2 style={{ marginTop: 40, textAlign: 'center', color: '#0a66c2' }}>
-        Explore 20+ Opportunities
-      </h2>
+      <h2 style={styles.heading}>Explore 20+ Opportunities</h2>
 
       <div style={styles.filters}>
-        <input
-          list="titleSuggestions"
-          name="title"
-          value={filters.title}
-          onChange={handleFilterChange}
-          placeholder="Search by title"
-          style={styles.input}
-        />
-        <datalist id="titleSuggestions">
-          {titleSuggestions.map((title, index) => (
-            <option key={index} value={title} />
-          ))}
-        </datalist>
+        <div style={{ position: 'relative', flex: 1 }}>
+          <input
+            list="titleSuggestions"
+            name="title"
+            value={filters.title}
+            onChange={handleFilterChange}
+            placeholder="Search by job title"
+            style={styles.input}
+          />
+          <datalist id="titleSuggestions">
+            {titleSuggestions.map((title, index) => (
+              <option key={index} value={title} />
+            ))}
+          </datalist>
+        </div>
         <input
           name="location"
           value={filters.location}
@@ -165,24 +165,8 @@ const JobsPage = () => {
                   <p style={styles.tags}><strong>Tags:</strong> {job.tags.join(', ')}</p>
                 </div>
                 <div style={styles.buttonContainer}>
-                  <button
-                    style={styles.viewBtn}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleView(job);
-                    }}
-                  >
-                    View
-                  </button>
-                  <button
-                    style={styles.applyBtn}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleApply(job);
-                    }}
-                  >
-                    Apply
-                  </button>
+                  <button style={styles.viewBtn} onClick={() => handleView(job)}>View</button>
+                  <button style={styles.applyBtn} onClick={() => handleApply(job)}>Apply</button>
                 </div>
               </div>
               <div style={styles.details}>{job.description}</div>
@@ -193,6 +177,7 @@ const JobsPage = () => {
         )}
       </div>
 
+      {/* MODALS */}
       {showApplyModal && selectedJob && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalBox}>
@@ -201,24 +186,9 @@ const JobsPage = () => {
                 <h2 style={styles.modalTitle}>Apply for {selectedJob.title}</h2>
                 <p style={styles.modalText}>Please login or sign up to apply for this job.</p>
                 <div style={styles.buttonGroup}>
-                  <button 
-                    style={styles.cancelBtn} 
-                    onClick={() => setShowApplyModal(false)}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    style={styles.loginBtn}
-                    onClick={() => setShowLoginForm(true)}
-                  >
-                    Login
-                  </button>
-                  <button
-                    style={styles.signUpBtn}
-                    onClick={handleSignUpClick}
-                  >
-                    Sign Up
-                  </button>
+                  <button style={styles.cancelBtn} onClick={() => setShowApplyModal(false)}>Cancel</button>
+                  <button style={styles.loginBtn} onClick={() => setShowLoginForm(true)}>Login</button>
+                  <button style={styles.signUpBtn} onClick={handleSignUpClick}>Sign Up</button>
                 </div>
               </>
             ) : (
@@ -244,43 +214,16 @@ const JobsPage = () => {
                     />
                   </div>
                   <div style={styles.buttonGroup}>
-                    <button
-                      style={styles.cancelBtn}
-                      onClick={() => {
-                        setShowLoginForm(false);
-                        setShowApplyModal(false);
-                        setLoginData({ email: '', password: '' });
-                      }}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      style={styles.loginBtn}
-                      onClick={handleLoginSubmit}
-                    >
-                      Login
-                    </button>
+                    <button style={styles.cancelBtn} onClick={() => {
+                      setShowLoginForm(false);
+                      setShowApplyModal(false);
+                      setLoginData({ email: '', password: '' });
+                    }}>Cancel</button>
+                    <button style={styles.loginBtn} onClick={handleLoginSubmit}>Login</button>
                   </div>
                 </div>
               </>
             )}
-          </div>
-        </div>
-      )}
-
-      {showMaintenanceModal && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalBox}>
-            <h2 style={styles.modalTitle}>🚧 Under Maintenance</h2>
-            <p style={styles.modalText}>
-              Sign up feature is currently under maintenance. Please check back later!
-            </p>
-            <button 
-              style={styles.loginBtn}
-              onClick={() => setShowMaintenanceModal(false)}
-            >
-              OK
-            </button>
           </div>
         </div>
       )}
@@ -297,9 +240,7 @@ const JobsPage = () => {
               <div style={styles.jobDetail}><strong>Skills:</strong> {selectedJob.tags.join(', ')}</div>
               <div style={styles.jobDetail}><strong>Description:</strong></div>
               <p style={{ color: '#4b5563', lineHeight: '1.6', marginTop: '8px' }}>{selectedJob.description}</p>
-              <button style={styles.closeBtn} onClick={() => setShowViewModal(false)}>
-                Close
-              </button>
+              <button style={styles.closeBtn} onClick={() => setShowViewModal(false)}>Close</button>
             </div>
           </div>
         </div>
@@ -316,11 +257,16 @@ const styles = {
     padding: '40px 20px',
     fontFamily: "'Inter', sans-serif",
   },
+  heading: {
+    marginTop: 40,
+    textAlign: 'center',
+    color: '#0a66c2',
+  },
   filters: {
     display: 'flex',
     flexWrap: 'wrap',
     gap: '15px',
-    marginBottom: '40px',
+    marginBottom: '30px',
     padding: '20px',
     backgroundColor: '#f9fafb',
     border: '1px solid #e5e7eb',
@@ -417,6 +363,8 @@ const styles = {
     maxWidth: '500px',
     textAlign: 'center',
     boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+    maxHeight: '90vh',
+    overflowY: 'auto',
   },
   modalTitle: {
     marginBottom: '15px',

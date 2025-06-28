@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const defaultTitles = [
+  'Frontend Developer', 'Backend Developer', 'Fullstack Developer', 'Data Scientist',
+  'UI/UX Designer', 'DevOps Engineer', 'Mobile App Developer', 'QA Engineer',
+  'Cloud Architect', 'Machine Learning Engineer', 'Security Analyst', 'React Developer',
+  'Node.js Developer', 'Product Designer', 'SRE Engineer', 'Technical Writer'
+];
+
 const defaultJobs = [
   {
     id: 1,
@@ -87,9 +94,14 @@ export default function LandingPage() {
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [filteredJobs, setFilteredJobs] = useState(defaultJobs);
+  const [titleSuggestions, setTitleSuggestions] = useState(defaultTitles);
   const navigate = useNavigate();
 
+  // Load previously searched titles from sessionStorage
   useEffect(() => {
+    const storedTitles = JSON.parse(sessionStorage.getItem('searchedTitles')) || [];
+    setTitleSuggestions([...new Set([...defaultTitles, ...storedTitles])]);
+  
     let filtered = defaultJobs.filter((job) => {
       const keywordLower = keyword.toLowerCase();
       const matchesKeyword =
@@ -98,7 +110,7 @@ export default function LandingPage() {
       const matchesLocation = location
         ? job.location.toLowerCase().includes(location.toLowerCase())
         : true;
-
+  
       const experienceMap = {
         '0-1 years': [0, 1],
         '1-3 years': [1, 3],
@@ -108,7 +120,7 @@ export default function LandingPage() {
         '4-6 years': [4, 6],
         '5+ years': [5, Infinity],
       };
-
+  
       let matchesExperience = true;
       if (experience && experienceMap[experience]) {
         const [minExp, maxExp] = experienceMap[experience];
@@ -120,12 +132,13 @@ export default function LandingPage() {
           (jobMinExp >= minExp && jobMinExp <= maxExp) ||
           (jobMaxExp >= minExp && jobMaxExp <= maxExp);
       }
-
+  
       return matchesKeyword && matchesLocation && matchesExperience;
     });
-
+  
     setFilteredJobs(filtered);
   }, [keyword, location, experience]);
+  
 
   const handlePostJobClick = () => navigate('/post-job');
   
@@ -401,7 +414,11 @@ export default function LandingPage() {
             color: #6b7280;
             font-size: 0.85em;
           }
-          
+          datalist {
+              max-height: 150px;
+              overflow-y: auto;
+            }
+                      
           /* Modal styles */
           .modal-overlay {
             position: fixed;
@@ -468,13 +485,31 @@ export default function LandingPage() {
 
         <div className="search-container">
           <div className="search-row">
-            <input
-              type="text"
-              className="search-input"
-              placeholder="Job title or keywords"
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-            />
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Job title or keywords"
+            value={keyword}
+            onChange={(e) => {
+              const val = e.target.value;
+              setKeyword(val);
+              if (val.length >= 3 && !defaultTitles.includes(val)) {
+                const stored = JSON.parse(sessionStorage.getItem('searchedTitles')) || [];
+                if (!stored.includes(val)) {
+                  const updated = [...stored, val];
+                  sessionStorage.setItem('searchedTitles', JSON.stringify(updated));
+                  setTitleSuggestions([...new Set([...defaultTitles, ...updated])]);
+                }
+              }
+            }}
+            list="title-suggestions"
+          />
+          <datalist id="title-suggestions">
+            {titleSuggestions.map((title, idx) => (
+              <option key={idx} value={title} />
+            ))}
+          </datalist>
+
             <input
               type="text"
               className="search-input"
