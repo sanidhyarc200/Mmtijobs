@@ -1,6 +1,18 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const defaultTitles = [
+  'Front-End Engineer', 'Back-End Engineer', 'Full Stack Engineer', 'DevOps Engineer',
+  'Data Scientist', 'Mobile Engineer', 'Security Engineer', 'Cloud Architect',
+  'Game Developer', 'Machine Learning Engineer', 'Human Resources Manager',
+  'HR Assistant', 'Payroll Specialist', 'Training Coordinator',
+  'Benefits Administrator', 'Employee Relations Manager', 'HRIS Specialist',
+  'Recruitment Manager', 'Account Manager', 'Client Accountant', 'Sales Representative',
+  'Customer Service/Sales Representative', 'Sales Use Tax Accountant'
+];
 
 const JobsPage = () => {
+  const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
   const [filters, setFilters] = useState({
     title: '',
@@ -14,6 +26,7 @@ const JobsPage = () => {
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [showMaintenanceModal, setShowMaintenanceModal] = useState(false);
   const [loginData, setLoginData] = useState({ email: '', password: '' });
+  const [titleSuggestions, setTitleSuggestions] = useState(defaultTitles);
 
   useEffect(() => {
     const data = Array.from({ length: 20 }, (_, i) => ({
@@ -27,10 +40,23 @@ const JobsPage = () => {
       description: `This is a detailed description for job role #${i + 1}. It's a great opportunity to work with cutting-edge technologies and grow your career in a dynamic environment.`,
     }));
     setJobs(data);
+
+    const storedTitles = JSON.parse(sessionStorage.getItem('searchedTitles')) || [];
+    setTitleSuggestions([...new Set([...defaultTitles, ...storedTitles])]);
   }, []);
 
   const handleFilterChange = (e) => {
-    setFilters({ ...filters, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFilters({ ...filters, [name]: value });
+
+    if (name === 'title' && value.trim()) {
+      const stored = JSON.parse(sessionStorage.getItem('searchedTitles')) || [];
+      if (!stored.includes(value) && !defaultTitles.includes(value)) {
+        const updated = [...stored, value];
+        sessionStorage.setItem('searchedTitles', JSON.stringify(updated));
+        setTitleSuggestions([...new Set([...defaultTitles, ...updated])]);
+      }
+    }
   };
 
   const filteredJobs = jobs.filter((job) => {
@@ -39,9 +65,8 @@ const JobsPage = () => {
       const match = s.match(/\d+/);
       return match ? parseInt(match[0], 10) : 0;
     };
-  
     const salaryNum = extractSalary(job.salary);
-  
+
     return (
       (!title || job.title.toLowerCase().includes(title.toLowerCase())) &&
       (!location || job.location.toLowerCase().includes(location.toLowerCase())) &&
@@ -71,22 +96,30 @@ const JobsPage = () => {
   };
 
   const handleSignUpClick = () => {
-    setShowApplyModal(false);  // Close the apply modal
-    navigate('/onboarding');   // Navigate to the onboarding page
+    setShowApplyModal(false);
+    navigate('/onboarding');
   };
 
   return (
     <div style={styles.container}>
-      <h2 style={{ marginTop: 40, textAlign: 'center', color: '#0a66c2' }}>Explore 20+ Opportunities</h2>
+      <h2 style={{ marginTop: 40, textAlign: 'center', color: '#0a66c2' }}>
+        Explore 20+ Opportunities
+      </h2>
 
       <div style={styles.filters}>
         <input
+          list="titleSuggestions"
           name="title"
           value={filters.title}
           onChange={handleFilterChange}
           placeholder="Search by title"
           style={styles.input}
         />
+        <datalist id="titleSuggestions">
+          {titleSuggestions.map((title, index) => (
+            <option key={index} value={title} />
+          ))}
+        </datalist>
         <input
           name="location"
           value={filters.location}
@@ -160,7 +193,6 @@ const JobsPage = () => {
         )}
       </div>
 
-      {/* Apply Modal */}
       {showApplyModal && selectedJob && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalBox}>
@@ -199,7 +231,7 @@ const JobsPage = () => {
                       type="email"
                       style={styles.formInput}
                       value={loginData.email}
-                      onChange={(e) => setLoginData({...loginData, email: e.target.value})}
+                      onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                     />
                   </div>
                   <div style={styles.formGroup}>
@@ -208,12 +240,12 @@ const JobsPage = () => {
                       type="password"
                       style={styles.formInput}
                       value={loginData.password}
-                      onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+                      onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                     />
                   </div>
                   <div style={styles.buttonGroup}>
-                    <button 
-                      style={styles.cancelBtn} 
+                    <button
+                      style={styles.cancelBtn}
                       onClick={() => {
                         setShowLoginForm(false);
                         setShowApplyModal(false);
@@ -222,7 +254,7 @@ const JobsPage = () => {
                     >
                       Cancel
                     </button>
-                    <button 
+                    <button
                       style={styles.loginBtn}
                       onClick={handleLoginSubmit}
                     >
@@ -236,7 +268,6 @@ const JobsPage = () => {
         </div>
       )}
 
-      {/* Maintenance Modal */}
       {showMaintenanceModal && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalBox}>
@@ -254,7 +285,6 @@ const JobsPage = () => {
         </div>
       )}
 
-      {/* View Job Modal */}
       {showViewModal && selectedJob && (
         <div style={styles.modalOverlay} onClick={() => setShowViewModal(false)}>
           <div style={styles.modalBox} onClick={(e) => e.stopPropagation()}>
@@ -321,9 +351,7 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'flex-start',
   },
-  jobInfo: {
-    flex: 1,
-  },
+  jobInfo: { flex: 1 },
   jobTitle: {
     color: '#0a66c2',
     fontSize: '1.4em',
