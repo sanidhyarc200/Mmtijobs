@@ -89,7 +89,7 @@ import AboutPage from './pages/AboutPage';
 import PostJob from './pages/PostJob';
 import UserOnboarding from './pages/UserOnboarding';
 import MapPage from './pages/Mappage';
-
+import Dashboard from './pages/Dasboard';
 // Dummy PostJobPage placeholder for now
 function PostJobPage() {
   return <h1 style={{ padding: 30 }}>This is Post a Job page (UI coming soon)</h1>;
@@ -188,6 +188,7 @@ export default function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/mappage" element={<MapPage />} />
         <Route path="/post-job" element={<PostJob />} />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
 
       {showPostJobModal && (

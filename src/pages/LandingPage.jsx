@@ -12,6 +12,7 @@ const defaultJobs = [
   {
     id: 1,
     title: 'Frontend Developer',
+    company: 'TechCorp Inc.',
     location: 'Remote',
     experience: '2-4 years',
     salary: '₹6-8 LPA',
@@ -21,6 +22,7 @@ const defaultJobs = [
   {
     id: 2,
     title: 'Backend Developer',
+    company: 'DataSystems Ltd.',
     location: 'Bangalore',
     experience: '3-5 years',
     salary: '₹8-10 LPA',
@@ -30,6 +32,7 @@ const defaultJobs = [
   {
     id: 3,
     title: 'Fullstack Developer',
+    company: 'WebSolutions Co.',
     location: 'Hyderabad',
     experience: '4-6 years',
     salary: '₹10-12 LPA',
@@ -39,6 +42,7 @@ const defaultJobs = [
   {
     id: 4,
     title: 'Data Scientist',
+    company: 'AI Innovations',
     location: 'Remote',
     experience: '3-5 years',
     salary: '₹12-15 LPA',
@@ -48,6 +52,7 @@ const defaultJobs = [
   {
     id: 5,
     title: 'UI/UX Designer',
+    company: 'Creative Minds',
     location: 'Mumbai',
     experience: '2-3 years',
     salary: '₹5-7 LPA',
@@ -57,6 +62,7 @@ const defaultJobs = [
   {
     id: 6,
     title: 'DevOps Engineer',
+    company: 'CloudTech Solutions',
     location: 'Pune',
     experience: '3-5 years',
     salary: '₹9-11 LPA',
@@ -66,6 +72,7 @@ const defaultJobs = [
   {
     id: 7,
     title: 'Mobile App Developer',
+    company: 'AppWorks',
     location: 'Chennai',
     experience: '2-4 years',
     salary: '₹6-9 LPA',
@@ -75,6 +82,7 @@ const defaultJobs = [
   {
     id: 8,
     title: 'QA Engineer',
+    company: 'Quality Assurance Labs',
     location: 'Chennai',
     experience: '1-3 years',
     salary: '₹4-6 LPA',
@@ -90,14 +98,11 @@ export default function LandingPage() {
   const [experience, setExperience] = useState('');
   const [selectedJob, setSelectedJob] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
-  const [showApplyModal, setShowApplyModal] = useState(false);
-  const [showLoginForm, setShowLoginForm] = useState(false);
-  const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [filteredJobs, setFilteredJobs] = useState(defaultJobs);
   const [titleSuggestions, setTitleSuggestions] = useState(defaultTitles);
   const navigate = useNavigate();
 
-  // Load previously searched titles from sessionStorage
+  // Filter jobs based on search criteria
   useEffect(() => {
     const storedTitles = JSON.parse(sessionStorage.getItem('searchedTitles')) || [];
     setTitleSuggestions([...new Set([...defaultTitles, ...storedTitles])]);
@@ -110,7 +115,7 @@ export default function LandingPage() {
       const matchesLocation = location
         ? job.location.toLowerCase().includes(location.toLowerCase())
         : true;
-  
+
       const experienceMap = {
         '0-1 years': [0, 1],
         '1-3 years': [1, 3],
@@ -120,7 +125,7 @@ export default function LandingPage() {
         '4-6 years': [4, 6],
         '5+ years': [5, Infinity],
       };
-  
+
       let matchesExperience = true;
       if (experience && experienceMap[experience]) {
         const [minExp, maxExp] = experienceMap[experience];
@@ -132,37 +137,46 @@ export default function LandingPage() {
           (jobMinExp >= minExp && jobMinExp <= maxExp) ||
           (jobMaxExp >= minExp && jobMaxExp <= maxExp);
       }
-  
+
       return matchesKeyword && matchesLocation && matchesExperience;
     });
-  
+
     setFilteredJobs(filtered);
   }, [keyword, location, experience]);
-  
 
-  const handlePostJobClick = () => navigate('/post-job');
-  
   const handleApply = (job) => {
-    setSelectedJob(job);
-    setShowApplyModal(true);
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    if (user) {
+      // Save application to localStorage
+      const applications = JSON.parse(localStorage.getItem('jobApplications')) || [];
+      const existingApplication = applications.find(app => 
+        app.jobId === job.id && app.userId === user.id
+      );
+      
+      if (existingApplication) {
+        alert(`You've already applied for ${job.title}`);
+        return;
+      }
+
+      const newApplication = {
+        jobId: job.id,
+        userId: user.id,
+        jobTitle: job.title,
+        company: job.company || 'Unknown Company',
+        appliedDate: new Date().toISOString(),
+        status: 'Applied'
+      };
+      
+      localStorage.setItem('jobApplications', JSON.stringify([...applications, newApplication]));
+      alert(`Successfully applied for ${job.title}`);
+    } else {
+      navigate('/onboarding');
+    }
   };
   
   const handleView = (job) => {
     setSelectedJob(job);
     setShowViewModal(true);
-  };
-
-  const handleLoginSubmit = (e) => {
-    e.preventDefault();
-    alert('Login functionality will be implemented with backend');
-    setShowLoginForm(false);
-    setShowApplyModal(false);
-    setLoginData({ email: '', password: '' });
-  };
-
-  const handleSignUpClick = () => {
-    setShowApplyModal(false);
-    navigate('/onboarding');
   };
 
   return (
@@ -313,6 +327,12 @@ export default function LandingPage() {
             font-weight: 600;
           }
           
+          .job-company {
+            color: #4b5563;
+            font-size: 0.9em;
+            margin-bottom: 4px;
+          }
+          
           .job-meta {
             color: #4b5563;
             font-size: 0.85em;
@@ -414,10 +434,11 @@ export default function LandingPage() {
             color: #6b7280;
             font-size: 0.85em;
           }
+          
           datalist {
-              max-height: 150px;
-              overflow-y: auto;
-            }
+            max-height: 150px;
+            overflow-y: auto;
+          }
                       
           /* Modal styles */
           .modal-overlay {
@@ -485,30 +506,30 @@ export default function LandingPage() {
 
         <div className="search-container">
           <div className="search-row">
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Job title or keywords"
-            value={keyword}
-            onChange={(e) => {
-              const val = e.target.value;
-              setKeyword(val);
-              if (val.length >= 3 && !defaultTitles.includes(val)) {
-                const stored = JSON.parse(sessionStorage.getItem('searchedTitles')) || [];
-                if (!stored.includes(val)) {
-                  const updated = [...stored, val];
-                  sessionStorage.setItem('searchedTitles', JSON.stringify(updated));
-                  setTitleSuggestions([...new Set([...defaultTitles, ...updated])]);
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Job title or keywords"
+              value={keyword}
+              onChange={(e) => {
+                const val = e.target.value;
+                setKeyword(val);
+                if (val.length >= 3 && !defaultTitles.includes(val)) {
+                  const stored = JSON.parse(sessionStorage.getItem('searchedTitles')) || [];
+                  if (!stored.includes(val)) {
+                    const updated = [...stored, val];
+                    sessionStorage.setItem('searchedTitles', JSON.stringify(updated));
+                    setTitleSuggestions([...new Set([...defaultTitles, ...updated])]);
+                  }
                 }
-              }
-            }}
-            list="title-suggestions"
-          />
-          <datalist id="title-suggestions">
-            {titleSuggestions.map((title, idx) => (
-              <option key={idx} value={title} />
-            ))}
-          </datalist>
+              }}
+              list="title-suggestions"
+            />
+            <datalist id="title-suggestions">
+              {titleSuggestions.map((title, idx) => (
+                <option key={idx} value={title} />
+              ))}
+            </datalist>
 
             <input
               type="text"
@@ -549,6 +570,7 @@ export default function LandingPage() {
             filteredJobs.map((job) => (
               <div key={job.id} className="job-card">
                 <h3 className="job-title">{job.title}</h3>
+                {job.company && <div className="job-company">{job.company}</div>}
                 <div className="job-meta">
                   <span>{job.location}</span>
                   <span>•</span>
@@ -607,135 +629,12 @@ export default function LandingPage() {
         </div>
       </footer>
 
-      {/* Modals */}
-      {showApplyModal && selectedJob && (
-        <div className="modal-overlay">
-          <div className="modal-box">
-            {!showLoginForm ? (
-              <>
-                <h2 style={{ color: '#0a66c2', marginBottom: '15px' }}>Apply for {selectedJob.title}</h2>
-                <p style={{ marginBottom: '25px' }}>Please login or sign up to apply for this job.</p>
-                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                  <button 
-                    style={{
-                      padding: '8px 16px',
-                      background: '#e5e7eb',
-                      border: 'none',
-                      borderRadius: '6px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
-                    onClick={() => setShowApplyModal(false)}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    style={{
-                      padding: '8px 16px',
-                      background: '#0a66c2',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '6px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
-                    onClick={() => setShowLoginForm(true)}
-                  >
-                    Login
-                  </button>
-                  <button
-                    style={{
-                      padding: '8px 16px',
-                      background: '#059669',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '6px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
-                    onClick={handleSignUpClick}
-                  >
-                    Sign Up
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <h2 style={{ color: '#0a66c2', marginBottom: '15px' }}>Login</h2>
-                <form onSubmit={handleLoginSubmit}>
-                  <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 600 }}>Email:</label>
-                    <input
-                      type="email"
-                      style={{
-                        width: '100%',
-                        padding: '10px',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '6px',
-                      }}
-                      value={loginData.email}
-                      onChange={(e) => setLoginData({...loginData, email: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 600 }}>Password:</label>
-                    <input
-                      type="password"
-                      style={{
-                        width: '100%',
-                        padding: '10px',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '6px',
-                      }}
-                      value={loginData.password}
-                      onChange={(e) => setLoginData({...loginData, password: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <button 
-                      type="button"
-                      style={{
-                        padding: '8px 16px',
-                        background: '#e5e7eb',
-                        border: 'none',
-                        borderRadius: '6px',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                      }}
-                      onClick={() => {
-                        setShowLoginForm(false);
-                        setShowApplyModal(false);
-                        setLoginData({ email: '', password: '' });
-                      }}
-                    >
-                      Cancel
-                    </button>
-                    <button type="submit" style={{
-                      padding: '8px 16px',
-                      background: '#0a66c2',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '6px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}>
-                      Login
-                    </button>
-                  </div>
-                </form>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* View Job Modal */}
       {showViewModal && selectedJob && (
         <div className="modal-overlay" onClick={() => setShowViewModal(false)}>
           <div className="modal-box" onClick={(e) => e.stopPropagation()}>
             <h2 style={{ color: '#0a66c2', marginBottom: '15px', textAlign: 'center' }}>{selectedJob.title}</h2>
+            {selectedJob.company && <div style={{ marginBottom: '10px', textAlign: 'center' }}><strong>{selectedJob.company}</strong></div>}
             <div style={{ marginBottom: '10px' }}><strong>Location:</strong> {selectedJob.location}</div>
             <div style={{ marginBottom: '10px' }}><strong>Experience:</strong> {selectedJob.experience}</div>
             <div style={{ marginBottom: '10px' }}><strong>Salary:</strong> {selectedJob.salary}</div>
@@ -758,6 +657,25 @@ export default function LandingPage() {
               onClick={() => setShowViewModal(false)}
             >
               Close
+            </button>
+            <button
+              style={{
+                width: '100%',
+                padding: '10px',
+                background: '#059669',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                marginTop: '10px'
+              }}
+              onClick={() => {
+                setShowViewModal(false);
+                handleApply(selectedJob);
+              }}
+            >
+              Apply Now
             </button>
           </div>
         </div>
