@@ -100,13 +100,21 @@ export default function LandingPage() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [filteredJobs, setFilteredJobs] = useState(defaultJobs);
   const [titleSuggestions, setTitleSuggestions] = useState(defaultTitles);
+
+  // NEW: auth prompt + login modal states
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [pendingJob, setPendingJob] = useState(null);
+  const [loginData, setLoginData] = useState({ email: '', password: '' });
+  const [loginError, setLoginError] = useState('');
+
   const navigate = useNavigate();
 
   // Filter jobs based on search criteria
   useEffect(() => {
     const storedTitles = JSON.parse(sessionStorage.getItem('searchedTitles')) || [];
     setTitleSuggestions([...new Set([...defaultTitles, ...storedTitles])]);
-  
+
     let filtered = defaultJobs.filter((job) => {
       const keywordLower = keyword.toLowerCase();
       const matchesKeyword =
@@ -144,39 +152,66 @@ export default function LandingPage() {
     setFilteredJobs(filtered);
   }, [keyword, location, experience]);
 
+  const applyToJob = (job, user) => {
+    const applications = JSON.parse(localStorage.getItem('jobApplications')) || [];
+    const existingApplication = applications.find(
+      (app) => app.jobId === job.id && app.userId === user.id
+    );
+
+    if (existingApplication) {
+      alert(`You've already applied for ${job.title}`);
+      return;
+    }
+
+    const newApplication = {
+      jobId: job.id,
+      userId: user.id,
+      jobTitle: job.title,
+      company: job.company || 'Unknown Company',
+      appliedDate: new Date().toISOString(),
+      status: 'Applied',
+    };
+
+    localStorage.setItem('jobApplications', JSON.stringify([...applications, newApplication]));
+    alert(`Successfully applied for ${job.title}`);
+  };
+
   const handleApply = (job) => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if (user) {
-      // Save application to localStorage
-      const applications = JSON.parse(localStorage.getItem('jobApplications')) || [];
-      const existingApplication = applications.find(app => 
-        app.jobId === job.id && app.userId === user.id
-      );
-      
-      if (existingApplication) {
-        alert(`You've already applied for ${job.title}`);
-        return;
-      }
-
-      const newApplication = {
-        jobId: job.id,
-        userId: user.id,
-        jobTitle: job.title,
-        company: job.company || 'Unknown Company',
-        appliedDate: new Date().toISOString(),
-        status: 'Applied'
-      };
-      
-      localStorage.setItem('jobApplications', JSON.stringify([...applications, newApplication]));
-      alert(`Successfully applied for ${job.title}`);
+      applyToJob(job, user);
     } else {
-      navigate('/onboarding');
+      // Not logged in -> show auth prompt
+      setPendingJob(job);
+      setShowAuthPrompt(true);
     }
   };
-  
+
   const handleView = (job) => {
     setSelectedJob(job);
     setShowViewModal(true);
+  };
+
+  const handleLoginSubmit = (e) => {
+    e.preventDefault();
+    setLoginError('');
+    const users = JSON.parse(localStorage.getItem('users')) || [];
+    const user = users.find(
+      (u) => u.email === loginData.email && u.password === loginData.password
+    );
+
+    if (user) {
+      localStorage.setItem('currentUser', JSON.stringify(user));
+      setShowLoginModal(false);
+      // auto-apply to the pending job if present
+      if (pendingJob) {
+        applyToJob(pendingJob, user);
+        setPendingJob(null);
+      }
+      setLoginData({ email: '', password: '' });
+    } else {
+      setLoginError('Invalid email or password.');
+    }
   };
 
   return (
@@ -452,45 +487,84 @@ export default function LandingPage() {
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            padding: 16px;
           }
           
           .modal-box {
             background: #fff;
             padding: 20px;
-            border-radius: 8px;
+            border-radius: 12px;
             width: 90%;
             max-width: 500px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+            position: relative;
+            animation: pop 0.15s ease-out;
           }
-          
+          @keyframes pop { from { transform: scale(0.98); opacity: 0.9; } to { transform: scale(1); opacity: 1; } }
+
+          /* Header-like modal detail styles (match Header theme) */
+          .modal-header {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+          }
+          .brand-circle {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: #0a66c2; color: #fff; display: grid; place-items: center;
+            font-weight: 800;
+          }
+          .modal-title { margin: 0; font-size: 20px; color: #111827; }
+          .modal-subtitle { margin: 2px 0 0; color: #6b7280; font-size: 14px; }
+          .modal-close {
+            margin-left: auto; background: #f3f4f6; border: none; border-radius: 8px;
+            width: 32px; height: 32px; cursor: pointer; color: #374151;
+          }
+          .modal-close:hover { background: #e5e7eb; }
+
+          .form { margin-top: 8px; }
+          .form-field { margin-bottom: 12px; }
+          .form-field label { display: block; margin-bottom: 6px; font-weight: 600; color: #374151; }
+          .form-field input {
+            width: 100%; padding: 10px 12px;
+            border: 1px solid #e5e7eb; border-radius: 8px;
+            outline: none; transition: border-color 0.2s ease, box-shadow 0.2s ease;
+          }
+          .form-field input:focus {
+            border-color: #0a66c2;
+            box-shadow: 0 0 0 3px rgba(10,102,194,0.12);
+          }
+          .error-banner {
+            background: #fee2e2; color: #991b1b;
+            border: 1px solid #fecaca; border-radius: 8px;
+            padding: 8px 12px; font-size: 14px; margin-bottom: 8px;
+          }
+          .form-actions {
+            display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px;
+          }
+          .btn-secondary {
+            padding: 10px 16px; background: #e5e7eb; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;
+          }
+          .btn-secondary:hover { background: #d1d5db; }
+          .btn-primary {
+            padding: 10px 16px; background: #0a66c2; color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;
+          }
+          .btn-primary:hover { background: #004182; }
+          .link-button {
+            background: none; border: none; color: #0a66c2; font-weight: 700; cursor: pointer; padding: 0;
+          }
+          .modal-footer {
+            display: flex; gap: 6px; justify-content: center; align-items: center; margin-top: 12px; color: #6b7280;
+          }
+
           /* Responsive adjustments */
           @media (min-width: 768px) {
-            .hero-section {
-              min-height: 380px;
-            }
-            
-            .hero-title {
-              font-size: 2.5em;
-            }
-            
-            .hero-subtitle {
-              font-size: 1.2em;
-            }
-            
-            .search-row {
-              flex-wrap: nowrap;
-            }
-            
-            .job-card {
-              padding: 15px 20px;
-            }
+            .hero-section { min-height: 380px; }
+            .hero-title { font-size: 2.5em; }
+            .hero-subtitle { font-size: 1.2em; }
+            .search-row { flex-wrap: nowrap; }
+            .job-card { padding: 15px 20px; }
           }
 
           @media (min-width: 1200px) {
-            .job-listings-container {
-              align-items: flex-start;
-              padding-right: 400px;
-            }
+            .job-listings-container { align-items: flex-start; padding-right: 400px; }
           }
         `}
       </style>
@@ -677,6 +751,118 @@ export default function LandingPage() {
             >
               Apply Now
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* AUTH PROMPT MODAL */}
+      {showAuthPrompt && (
+        <div
+          className="modal-overlay"
+          onClick={(e) => {
+            if (e.target.classList.contains('modal-overlay')) setShowAuthPrompt(false);
+          }}
+        >
+          <div className="modal-box">
+            <div className="modal-header">
+              <div className="brand-circle">M</div>
+              <div>
+                <h2 className="modal-title">Login required</h2>
+                <p className="modal-subtitle">Please login or sign up to apply for this job.</p>
+              </div>
+              <button className="modal-close" onClick={() => setShowAuthPrompt(false)}>✕</button>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button className="btn-secondary" onClick={() => setShowAuthPrompt(false)}>
+                Cancel
+              </button>
+              <button
+                className="btn-primary"
+                onClick={() => {
+                  setShowAuthPrompt(false);
+                  setShowLoginModal(true);
+                }}
+              >
+                Login
+              </button>
+              <button
+                className="btn-primary"
+                style={{ background: '#0a66c2' }}
+                onClick={() => {
+                  setShowAuthPrompt(false);
+                  navigate('/onboarding?from=apply');
+                }}
+              >
+                Sign Up
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* LOGIN MODAL (same look as Header) */}
+      {showLoginModal && (
+        <div
+          className="modal-overlay"
+          onClick={(e) => {
+            if (e.target.classList.contains('modal-overlay')) setShowLoginModal(false);
+          }}
+        >
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="brand-circle">M</div>
+              <div>
+                <h2 className="modal-title">Welcome back</h2>
+                <p className="modal-subtitle">Sign in to continue</p>
+              </div>
+              <button className="modal-close" onClick={() => setShowLoginModal(false)}>✕</button>
+            </div>
+
+            <form onSubmit={handleLoginSubmit} className="form">
+              <div className="form-field">
+                <label>Email</label>
+                <input
+                  type="email"
+                  value={loginData.email}
+                  onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                  required
+                  placeholder="you@company.com"
+                />
+              </div>
+              <div className="form-field">
+                <label>Password</label>
+                <input
+                  type="password"
+                  value={loginData.password}
+                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                  required
+                  placeholder="••••••••"
+                />
+              </div>
+
+              {loginError && <div className="error-banner">{loginError}</div>}
+
+              <div className="form-actions">
+                <button type="button" className="btn-secondary" onClick={() => setShowLoginModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary">Login</button>
+              </div>
+            </form>
+
+            <div className="modal-footer">
+              <span>Don’t have an account?</span>
+              <button
+                className="link-button"
+                onClick={() => {
+                  setShowLoginModal(false);
+                  navigate('/onboarding?from=apply');
+                }}
+              >
+                Sign up
+              </button>
+            </div>
           </div>
         </div>
       )}
