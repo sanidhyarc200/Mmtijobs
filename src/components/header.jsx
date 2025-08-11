@@ -5,8 +5,13 @@ export default function Header({ onPostJobClick }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRoleModal, setShowRoleModal] = useState(false);
+
   const [loginData, setLoginData] = useState({ email: '', password: '' });
+  const [loginError, setLoginError] = useState('');
+
   const navigate = useNavigate();
 
   // Check login status on component mount
@@ -20,9 +25,12 @@ export default function Header({ onPostJobClick }) {
 
   const handleLoginSubmit = (e) => {
     e.preventDefault();
+    setLoginError('');
     const users = JSON.parse(localStorage.getItem('users')) || [];
-    const user = users.find(u => u.email === loginData.email && u.password === loginData.password);
-    
+    const user = users.find(
+      (u) => u.email === loginData.email && u.password === loginData.password
+    );
+
     if (user) {
       localStorage.setItem('currentUser', JSON.stringify(user));
       setIsLoggedIn(true);
@@ -30,7 +38,7 @@ export default function Header({ onPostJobClick }) {
       setShowLoginModal(false);
       alert('Login successful!');
     } else {
-      alert('Invalid credentials!');
+      setLoginError('Invalid email or password.');
     }
   };
 
@@ -39,6 +47,30 @@ export default function Header({ onPostJobClick }) {
     setIsLoggedIn(false);
     setCurrentUser(null);
   };
+
+  const handleOpenSignupRoleModal = () => {
+    setShowRoleModal(true);
+  };
+
+  const handleChooseRole = (role) => {
+    // Persist selected role so onboarding can pre-select it
+    localStorage.setItem('pendingSignupType', role);
+    // Also pass as query param
+    navigate(`/onboarding?userType=${encodeURIComponent(role)}`);
+    setShowRoleModal(false);
+  };
+
+  // Close modals on ESC
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        setShowLoginModal(false);
+        setShowRoleModal(false);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   return (
     <header className="header">
@@ -53,7 +85,7 @@ export default function Header({ onPostJobClick }) {
           <Link to="/about" className="nav-link">About</Link>
           <Link to="/jobs" className="nav-link">Jobs</Link>
           <Link to="/mappage" className="nav-link">Map</Link>
-          
+
           {isLoggedIn ? (
             <>
               <Link to="/dashboard" className="nav-link">Dashboard</Link>
@@ -71,15 +103,16 @@ export default function Header({ onPostJobClick }) {
               <button onClick={() => setShowLoginModal(true)} className="login-btn">
                 Login
               </button>
-              <Link to="/onboarding" className="signup-btn">
+              {/* Instead of Link -> open Role modal first */}
+              <button onClick={handleOpenSignupRoleModal} className="signup-btn as-button">
                 Sign Up
-              </Link>
+              </button>
             </>
           )}
         </nav>
 
         {/* Mobile Menu Button */}
-        <button 
+        <button
           className="mobile-menu-btn"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           aria-label="Toggle menu"
@@ -95,7 +128,7 @@ export default function Header({ onPostJobClick }) {
           <Link to="/about" className="mobile-link" onClick={() => setIsMenuOpen(false)}>About</Link>
           <Link to="/jobs" className="mobile-link" onClick={() => setIsMenuOpen(false)}>Jobs</Link>
           <Link to="/mappage" className="mobile-link" onClick={() => setIsMenuOpen(false)}>Map</Link>
-          
+
           {isLoggedIn ? (
             <>
               <Link to="/dashboard" className="mobile-link" onClick={() => setIsMenuOpen(false)}>Dashboard</Link>
@@ -116,15 +149,24 @@ export default function Header({ onPostJobClick }) {
             </>
           ) : (
             <>
-              <button onClick={() => {
-                setShowLoginModal(true);
-                setIsMenuOpen(false);
-              }} className="mobile-login-btn">
+              <button
+                onClick={() => {
+                  setShowLoginModal(true);
+                  setIsMenuOpen(false);
+                }}
+                className="mobile-login-btn"
+              >
                 Login
               </button>
-              <Link to="/onboarding" className="mobile-signup-btn" onClick={() => setIsMenuOpen(false)}>
+              <button
+                onClick={() => {
+                  handleOpenSignupRoleModal();
+                  setIsMenuOpen(false);
+                }}
+                className="mobile-signup-btn as-button"
+              >
                 Sign Up
-              </Link>
+              </button>
             </>
           )}
         </div>
@@ -132,83 +174,116 @@ export default function Header({ onPostJobClick }) {
 
       {/* Login Modal */}
       {showLoginModal && (
-        <div className="modal-overlay">
+        <div
+          className="modal-overlay"
+          onClick={(e) => {
+            if (e.target.classList.contains('modal-overlay')) setShowLoginModal(false);
+          }}
+        >
           <div className="modal-box">
-            <h2 style={{ color: '#0a66c2', marginBottom: '15px' }}>Login</h2>
-            <form onSubmit={handleLoginSubmit}>
-              <div style={{ marginBottom: '15px' }}>
-                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 600 }}>Email:</label>
+            <div className="modal-header">
+              <div className="brand-circle">M</div>
+              <div>
+                <h2 className="modal-title">Welcome back</h2>
+                <p className="modal-subtitle">Sign in to continue</p>
+              </div>
+              <button className="modal-close" onClick={() => setShowLoginModal(false)}>✕</button>
+            </div>
+
+            <form onSubmit={handleLoginSubmit} className="form">
+              <div className="form-field">
+                <label>Email</label>
                 <input
                   type="email"
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '6px',
-                  }}
                   value={loginData.email}
-                  onChange={(e) => setLoginData({...loginData, email: e.target.value})}
+                  onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                   required
+                  placeholder="you@company.com"
                 />
               </div>
-              <div style={{ marginBottom: '15px' }}>
-                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 600 }}>Password:</label>
+              <div className="form-field">
+                <label>Password</label>
                 <input
                   type="password"
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '6px',
-                  }}
                   value={loginData.password}
-                  onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                   required
+                  placeholder="••••••••"
                 />
               </div>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button 
+
+              {loginError && <div className="error-banner">{loginError}</div>}
+
+              <div className="form-actions">
+                <button
                   type="button"
-                  style={{
-                    padding: '8px 16px',
-                    background: '#e5e7eb',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
+                  className="btn-secondary"
                   onClick={() => setShowLoginModal(false)}
                 >
                   Cancel
                 </button>
-                <button type="submit" style={{
-                  padding: '8px 16px',
-                  background: '#0a66c2',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}>
-                  Login
-                </button>
+                <button type="submit" className="btn-primary">Login</button>
               </div>
             </form>
-            <div style={{ marginTop: '15px', textAlign: 'center' }}>
-              <p style={{ color: '#6b7280' }}>Don't have an account? <Link 
-                to="/onboarding"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#0a66c2',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  textDecoration: 'none'
+
+            <div className="modal-footer">
+              <span>Don’t have an account?</span>
+              <button
+                className="link-button"
+                onClick={() => {
+                  setShowLoginModal(false);
+                  setShowRoleModal(true);
                 }}
-                onClick={() => setShowLoginModal(false)}
               >
                 Sign up
-              </Link></p>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Role Select (Sign Up) Modal */}
+      {showRoleModal && (
+        <div
+          className="modal-overlay"
+          onClick={(e) => {
+            if (e.target.classList.contains('modal-overlay')) setShowRoleModal(false);
+          }}
+        >
+          <div className="modal-box">
+            <div className="modal-header">
+              <div className="brand-circle">M</div>
+              <div>
+                <h2 className="modal-title">Create your account</h2>
+                <p className="modal-subtitle">Who are you signing up as?</p>
+              </div>
+              <button className="modal-close" onClick={() => setShowRoleModal(false)}>✕</button>
+            </div>
+
+            <div className="role-grid">
+              <button
+                className="role-card"
+                onClick={() => handleChooseRole('recruiter')}
+              >
+                <div className="role-icon" aria-hidden>🏢</div>
+                <h3>Recruiter</h3>
+                <p>Post jobs, manage applicants, and hire faster.</p>
+                <span className="choose-cta">Continue as Recruiter →</span>
+              </button>
+
+              <button
+                className="role-card"
+                onClick={() => handleChooseRole('candidate')}
+              >
+                <div className="role-icon" aria-hidden>👩🏻‍💻</div>
+                <h3>Candidate</h3>
+                <p>Discover roles, apply in clicks, track progress.</p>
+                <span className="choose-cta">Continue as Candidate →</span>
+              </button>
+            </div>
+
+            <div className="hint">
+              You can switch later in settings. No pressure, only offers.
             </div>
           </div>
         </div>
@@ -223,100 +298,91 @@ export default function Header({ onPostJobClick }) {
           z-index: 100;
           width: 100%;
         }
-        
+
         .nav-container {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 1px 5%;
+          padding: 10px 5%;
           max-width: 1200px;
           margin: 0 auto;
         }
-        
+
         .logo {
           font-size: 22px;
-          font-weight: bold;
+          font-weight: 800;
           color: #0a66c2;
           text-decoration: none;
+          letter-spacing: 0.3px;
         }
-        
+
         .desktop-nav {
           display: flex;
           align-items: center;
           gap: 15px;
         }
-        
+
         .nav-link {
           text-decoration: none;
           color: #333;
           font-weight: 500;
-          transition: color 0.3s ease;
+          transition: color 0.2s ease;
         }
-        
-        .nav-link:hover {
-          color: #0a66c2;
-        }
-        
+        .nav-link:hover { color: #0a66c2; }
+
         .post-job-btn {
-          padding: 6px 16px;
+          padding: 8px 16px;
           background-color: #0a66c2;
           color: white;
-          border-radius: 5px;
-          font-weight: bold;
+          border-radius: 6px;
+          font-weight: 700;
           border: none;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: transform 0.1s ease, background 0.2s ease;
         }
-        
         .post-job-btn:hover {
           background-color: #004182;
           transform: translateY(-1px);
         }
-        
+
         .login-btn {
-          padding: 6px 16px;
+          padding: 8px 16px;
           background: transparent;
           color: #0a66c2;
           border: 1px solid #0a66c2;
-          border-radius: 5px;
-          font-weight: bold;
+          border-radius: 6px;
+          font-weight: 700;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: background 0.2s ease;
         }
-        
-        .login-btn:hover {
-          background-color: #f0f7ff;
-        }
-        
+        .login-btn:hover { background-color: #f0f7ff; }
+
         .signup-btn {
-          padding: 6px 16px;
+          padding: 8px 16px;
           background-color: #0a66c2;
           color: white;
-          border-radius: 5px;
-          font-weight: bold;
+          border-radius: 6px;
+          font-weight: 700;
           text-decoration: none;
-          transition: all 0.3s ease;
-        }
-        
-        .signup-btn:hover {
-          background-color: #004182;
-        }
-        
-        .logout-btn {
-          padding: 6px 16px;
-          background-color: #e5e7eb;
-          color: #333;
-          border-radius: 5px;
-          font-weight: bold;
+          transition: background 0.2s ease;
           border: none;
           cursor: pointer;
-          transition: all 0.3s ease;
         }
-        
-        .logout-btn:hover {
-          background-color: #d1d5db;
+        .signup-btn:hover { background-color: #004182; }
+        .as-button { display: inline-block; }
+
+        .logout-btn {
+          padding: 8px 16px;
+          background-color: #e5e7eb;
+          color: #333;
+          border-radius: 6px;
+          font-weight: 700;
+          border: none;
+          cursor: pointer;
+          transition: background 0.2s ease;
         }
-        
+        .logout-btn:hover { background-color: #d1d5db; }
+
         .mobile-menu-btn {
           display: none;
           background: none;
@@ -326,7 +392,7 @@ export default function Header({ onPostJobClick }) {
           color: #333;
           padding: 4px;
         }
-        
+
         .mobile-menu {
           display: none;
           flex-direction: column;
@@ -334,7 +400,7 @@ export default function Header({ onPostJobClick }) {
           padding: 0 5% 12px;
           background-color: #f8f9fa;
         }
-        
+
         .mobile-link {
           text-decoration: none;
           color: #333;
@@ -342,85 +408,133 @@ export default function Header({ onPostJobClick }) {
           padding: 8px 0;
           border-bottom: 1px solid #e5e7eb;
         }
-        
-        .mobile-post-job-btn {
-          padding: 8px;
-          background-color: #0a66c2;
-          color: white;
-          border-radius: 5px;
-          font-weight: bold;
-          border: none;
-          margin-top: 8px;
-        }
-        
-        .mobile-login-btn {
-          padding: 8px;
-          background: transparent;
-          color: #0a66c2;
-          border: 1px solid #0a66c2;
-          border-radius: 5px;
-          font-weight: bold;
-          cursor: pointer;
-          margin-top: 8px;
-          text-align: center;
-        }
-        
+
+        .mobile-post-job-btn,
+        .mobile-logout-btn,
+        .mobile-login-btn,
         .mobile-signup-btn {
-          padding: 8px;
-          background-color: #0a66c2;
-          color: white;
-          border-radius: 5px;
-          font-weight: bold;
-          text-decoration: none;
-          text-align: center;
-          margin-top: 8px;
-        }
-        
-        .mobile-logout-btn {
-          padding: 8px;
-          background-color: #e5e7eb;
-          color: #333;
-          border-radius: 5px;
-          font-weight: bold;
+          padding: 10px;
+          border-radius: 6px;
+          font-weight: 700;
           border: none;
           cursor: pointer;
-          margin-top: 8px;
+          text-align: center;
         }
-        
+
+        .mobile-post-job-btn {
+          background-color: #0a66c2; color: white; margin-top: 8px;
+        }
+        .mobile-logout-btn {
+          background-color: #e5e7eb; color: #333; margin-top: 8px;
+        }
+        .mobile-login-btn {
+          background: transparent; color: #0a66c2; border: 1px solid #0a66c2; margin-top: 8px;
+        }
+        .mobile-signup-btn {
+          background-color: #0a66c2; color: white; margin-top: 8px;
+        }
+
+        /* Modals */
         .modal-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-color: rgba(0,0,0,0.6);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          z-index: 1000;
+          position: fixed; inset: 0;
+          background-color: rgba(0,0,0,0.55);
+          display: flex; justify-content: center; align-items: center;
+          z-index: 1000; padding: 16px;
         }
-        
+
         .modal-box {
           background: #fff;
           padding: 20px;
-          border-radius: 8px;
-          width: 90%;
-          max-width: 400px;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+          border-radius: 12px;
+          width: 100%;
+          max-width: 460px;
+          box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+          position: relative;
+          animation: pop 0.15s ease-out;
         }
-        
+
+        @keyframes pop { from { transform: scale(0.98); opacity: 0.9; } to { transform: scale(1); opacity: 1; } }
+
+        .modal-header {
+          display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+        }
+        .brand-circle {
+          width: 36px; height: 36px; border-radius: 50%;
+          background: #0a66c2; color: #fff; display: grid; place-items: center;
+          font-weight: 800;
+        }
+        .modal-title { margin: 0; font-size: 20px; color: #111827; }
+        .modal-subtitle { margin: 2px 0 0; color: #6b7280; font-size: 14px; }
+        .modal-close {
+          margin-left: auto; background: #f3f4f6; border: none; border-radius: 8px;
+          width: 32px; height: 32px; cursor: pointer; color: #374151;
+        }
+        .modal-close:hover { background: #e5e7eb; }
+
+        .form { margin-top: 8px; }
+        .form-field { margin-bottom: 12px; }
+        .form-field label { display: block; margin-bottom: 6px; font-weight: 600; color: #374151; }
+        .form-field input {
+          width: 100%; padding: 10px 12px;
+          border: 1px solid #e5e7eb; border-radius: 8px;
+          outline: none; transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .form-field input:focus {
+          border-color: #0a66c2;
+          box-shadow: 0 0 0 3px rgba(10,102,194,0.12);
+        }
+
+        .error-banner {
+          background: #fee2e2; color: #991b1b;
+          border: 1px solid #fecaca; border-radius: 8px;
+          padding: 8px 12px; font-size: 14px; margin-bottom: 8px;
+        }
+
+        .form-actions {
+          display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px;
+        }
+        .btn-secondary {
+          padding: 10px 16px; background: #e5e7eb; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;
+        }
+        .btn-secondary:hover { background: #d1d5db; }
+        .btn-primary {
+          padding: 10px 16px; background: #0a66c2; color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;
+        }
+        .btn-primary:hover { background: #004182; }
+
+        .modal-footer {
+          display: flex; gap: 6px; justify-content: center; align-items: center; margin-top: 12px; color: #6b7280;
+        }
+        .link-button {
+          background: none; border: none; color: #0a66c2; font-weight: 700; cursor: pointer; padding: 0;
+        }
+
+        /* Role Selection */
+        .role-grid {
+          display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 6px;
+        }
+        .role-card {
+          text-align: left; border: 1px solid #e5e7eb; border-radius: 12px;
+          padding: 14px; background: #fff; cursor: pointer;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.06s ease;
+        }
+        .role-card:hover {
+          border-color: #0a66c2;
+          box-shadow: 0 8px 24px rgba(10,102,194,0.12);
+          transform: translateY(-1px);
+        }
+        .role-icon { font-size: 28px; }
+        .role-card h3 { margin: 6px 0 4px; color: #111827; }
+        .role-card p { margin: 0; color: #6b7280; font-size: 14px; }
+        .choose-cta { display: inline-block; margin-top: 10px; color: #0a66c2; font-weight: 700; }
+
+        .hint { margin-top: 10px; text-align: center; color: #6b7280; font-size: 13px; }
+
         @media (max-width: 768px) {
-          .desktop-nav {
-            display: none;
-          }
-          
-          .mobile-menu-btn {
-            display: block;
-          }
-          
-          .mobile-menu {
-            display: flex;
-          }
+          .desktop-nav { display: none; }
+          .mobile-menu-btn { display: block; }
+          .mobile-menu { display: flex; }
+          .role-grid { grid-template-columns: 1fr; }
         }
       `}</style>
     </header>
