@@ -101,10 +101,17 @@ export default function LandingPage() {
   const [filteredJobs, setFilteredJobs] = useState(defaultJobs);
   const [titleSuggestions, setTitleSuggestions] = useState(defaultTitles);
 
-  // NEW: auth prompt + login modal states
+  // Auth prompt for Apply flow + login modal (apply auto-apply)
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const [pendingJob, setPendingJob] = useState(null);
+
+  // Recruiter CTA prompt (requires recruiter)
+  const [showRecruiterPrompt, setShowRecruiterPrompt] = useState(false);
+  const [currentRole, setCurrentRole] = useState(null); // 'recruiter' | 'candidate' | null
+
+  // Shared login modal
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [requireRecruiter, setRequireRecruiter] = useState(false);
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
 
@@ -152,6 +159,7 @@ export default function LandingPage() {
     setFilteredJobs(filtered);
   }, [keyword, location, experience]);
 
+  // --- Application flow ---
   const applyToJob = (job, user) => {
     const applications = JSON.parse(localStorage.getItem('jobApplications')) || [];
     const existingApplication = applications.find(
@@ -183,6 +191,7 @@ export default function LandingPage() {
     } else {
       // Not logged in -> show auth prompt
       setPendingJob(job);
+      setRequireRecruiter(false); // apply flow does not need recruiter
       setShowAuthPrompt(true);
     }
   };
@@ -192,26 +201,54 @@ export default function LandingPage() {
     setShowViewModal(true);
   };
 
+  // --- Recruiter CTA flow ---
+  const handleRecruiterCTA = () => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    if (user?.userType === 'recruiter') {
+      navigate('/post-job');
+      return;
+    }
+    setCurrentRole(user?.userType || null);
+    setRequireRecruiter(true);
+    setShowRecruiterPrompt(true);
+  };
+
+  // --- Shared login submit ---
   const handleLoginSubmit = (e) => {
     e.preventDefault();
     setLoginError('');
+
     const users = JSON.parse(localStorage.getItem('users')) || [];
     const user = users.find(
       (u) => u.email === loginData.email && u.password === loginData.password
     );
 
-    if (user) {
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      setShowLoginModal(false);
-      // auto-apply to the pending job if present
-      if (pendingJob) {
-        applyToJob(pendingJob, user);
-        setPendingJob(null);
-      }
-      setLoginData({ email: '', password: '' });
-    } else {
+    if (!user) {
       setLoginError('Invalid email or password.');
+      return;
     }
+
+    if (requireRecruiter && user.userType !== 'recruiter') {
+      setLoginError('Please login with a recruiter account to post a job.');
+      return;
+    }
+
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    setShowLoginModal(false);
+
+    // Recruiter-only flow: go to post-job
+    if (requireRecruiter) {
+      setRequireRecruiter(false);
+      navigate('/post-job');
+      return;
+    }
+
+    // Apply flow: auto-apply if a pending job exists
+    if (pendingJob) {
+      applyToJob(pendingJob, user);
+      setPendingJob(null);
+    }
+    setLoginData({ email: '', password: '' });
   };
 
   return (
@@ -450,15 +487,31 @@ export default function LandingPage() {
           
           .hire-section h2 {
             font-size: 1.8em;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             font-weight: 700;
           }
           
           .hire-section p {
             font-size: 1em;
-            margin-bottom: 0;
+            margin: 0 auto 18px;
             max-width: 700px;
-            margin: 0 auto 20px;
+          }
+
+          .post-cta-btn {
+            display: inline-block;
+            padding: 10px 18px;
+            background: #fff;
+            color: #0a66c2;
+            border: none;
+            border-radius: 8px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.1s ease, box-shadow 0.2s ease, background 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          }
+          .post-cta-btn:hover {
+            background: #f0f7ff;
+            transform: translateY(-1px);
           }
           
           footer {
@@ -500,7 +553,10 @@ export default function LandingPage() {
             position: relative;
             animation: pop 0.15s ease-out;
           }
-          @keyframes pop { from { transform: scale(0.98); opacity: 0.9; } to { transform: scale(1); opacity: 1; } }
+          @keyframes pop { 
+            from { transform: scale(0.98); opacity: 0.9; } 
+            to { transform: scale(1); opacity: 1; } 
+          }
 
           /* Header-like modal detail styles (match Header theme) */
           .modal-header {
@@ -692,8 +748,11 @@ export default function LandingPage() {
       <section className="hire-section">
         <h2>Are you a recruiter?</h2>
         <p>
-          Want to post a job? Register now and use the post a job feature in the header to continue!
+          Want to post a job? Use the button below. We’ll ask you to log in or sign up as a recruiter if you aren’t already.
         </p>
+        <button className="post-cta-btn" onClick={handleRecruiterCTA}>
+          Post a Job
+        </button>
       </section>
 
       {/* Footer */}
@@ -755,7 +814,7 @@ export default function LandingPage() {
         </div>
       )}
 
-      {/* AUTH PROMPT MODAL */}
+      {/* AUTH PROMPT (Apply flow) */}
       {showAuthPrompt && (
         <div
           className="modal-overlay"
@@ -781,6 +840,7 @@ export default function LandingPage() {
                 className="btn-primary"
                 onClick={() => {
                   setShowAuthPrompt(false);
+                  setRequireRecruiter(false);
                   setShowLoginModal(true);
                 }}
               >
@@ -801,7 +861,59 @@ export default function LandingPage() {
         </div>
       )}
 
-      {/* LOGIN MODAL (same look as Header) */}
+      {/* RECRUITER PROMPT (Post a Job flow) */}
+      {showRecruiterPrompt && (
+        <div
+          className="modal-overlay"
+          onClick={(e) => {
+            if (e.target.classList.contains('modal-overlay')) setShowRecruiterPrompt(false);
+          }}
+        >
+          <div className="modal-box">
+            <div className="modal-header">
+              <div className="brand-circle">M</div>
+              <div>
+                <h2 className="modal-title">Recruiter account required</h2>
+                <p className="modal-subtitle">
+                  {currentRole === 'candidate'
+                    ? "You're logged in as a candidate. To post jobs, please use a recruiter account."
+                    : "Please login or sign up as a recruiter to post jobs."}
+                </p>
+              </div>
+              <button className="modal-close" onClick={() => setShowRecruiterPrompt(false)}>✕</button>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button className="btn-secondary" onClick={() => setShowRecruiterPrompt(false)}>
+                Cancel
+              </button>
+              <button
+                className="btn-primary"
+                onClick={() => {
+                  setShowRecruiterPrompt(false);
+                  setRequireRecruiter(true);
+                  setShowLoginModal(true);
+                }}
+              >
+                Login
+              </button>
+              <button
+                className="btn-primary"
+                style={{ background: '#0a66c2' }}
+                onClick={() => {
+                  localStorage.setItem('pendingSignupType', 'recruiter');
+                  setShowRecruiterPrompt(false);
+                  navigate('/register-company?from=recruiter-cta');
+                }}
+              >
+                Sign Up as Recruiter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* LOGIN MODAL (shared for both flows) */}
       {showLoginModal && (
         <div
           className="modal-overlay"
@@ -857,10 +969,15 @@ export default function LandingPage() {
                 className="link-button"
                 onClick={() => {
                   setShowLoginModal(false);
-                  navigate('/onboarding?from=apply');
+                  if (requireRecruiter) {
+                    localStorage.setItem('pendingSignupType', 'recruiter');
+                    navigate('/register-company?from=recruiter-cta');
+                  } else {
+                    navigate('/onboarding?from=apply');
+                  }
                 }}
               >
-                Sign up
+                {requireRecruiter ? 'Sign up as Recruiter' : 'Sign up'}
               </button>
             </div>
           </div>

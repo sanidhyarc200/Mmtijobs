@@ -89,6 +89,7 @@ import AboutPage from './pages/AboutPage';
 import PostJob from './pages/PostJob';
 import UserOnboarding from './pages/UserOnboarding';
 import MapPage from './pages/Mappage';
+import CompanyProfile from './pages/CompanyProfile';
 import Dashboard from './pages/Dasboard';
 // Dummy PostJobPage placeholder for now
 function PostJobPage() {
@@ -189,6 +190,7 @@ export default function App() {
         <Route path="/mappage" element={<MapPage />} />
         <Route path="/post-job" element={<PostJob />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/company-profile" element={<CompanyProfile />} />
       </Routes>
 
       {showPostJobModal && (
