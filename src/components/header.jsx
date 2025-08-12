@@ -53,10 +53,12 @@ export default function Header({ onPostJobClick }) {
   };
 
   const handleChooseRole = (role) => {
-    // Persist selected role so onboarding can pre-select it
     localStorage.setItem('pendingSignupType', role);
-    // Also pass as query param
-    navigate(`/onboarding?userType=${encodeURIComponent(role)}`);
+    if (role === 'recruiter') {
+      navigate('/register-company?from=signup');
+    } else {
+      navigate(`/onboarding?userType=${encodeURIComponent(role)}`);
+    }
     setShowRoleModal(false);
   };
 
