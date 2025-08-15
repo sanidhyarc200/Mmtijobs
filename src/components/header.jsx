@@ -337,9 +337,9 @@ export default function Header({ onPostJobClick }) {
     }
     .nav-container {
       display: flex;
+      padding: 6px 5% !important; 
       justify-content: space-between;
       align-items: center;
-      padding: 10px 5%;
       max-width: 1200px;
       margin: 0 auto;
     }
