@@ -313,66 +313,323 @@ export default function Header({ onPostJobClick }) {
 
       {/* keep your existing CSS below */}
       <style jsx>{`
-        .header { background-color: #f8f9fa; box-shadow: 0 2px 8px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; width: 100%; }
-        .nav-container { display: flex; justify-content: space-between; align-items: center; padding: 10px 5%; max-width: 1200px; margin: 0 auto; }
-        .logo { font-size: 22px; font-weight: 800; color: #0a66c2; text-decoration: none; letter-spacing: 0.3px; }
-        .desktop-nav { display: flex; align-items: center; gap: 15px; }
-        .nav-link { text-decoration: none; color: #333; font-weight: 500; transition: color 0.2s ease; }
-        .nav-link:hover { color: #0a66c2; }
-        .post-job-btn { padding: 8px 16px; background-color: #0a66c2; color: white; border-radius: 6px; font-weight: 700; border: none; cursor: pointer; transition: transform 0.1s ease, background 0.2s ease; }
-        .post-job-btn:hover { background-color: #004182; transform: translateY(-1px); }
-        .login-btn { padding: 8px 16px; background: transparent; color: #0a66c2; border: 1px solid #0a66c2; border-radius: 6px; font-weight: 700; cursor: pointer; transition: background 0.2s ease; }
-        .login-btn:hover { background-color: #f0f7ff; }
-        .signup-btn { padding: 8px 16px; background-color: #0a66c2; color: white; border-radius: 6px; font-weight: 700; text-decoration: none; transition: background 0.2s ease; border: none; cursor: pointer; }
-        .signup-btn:hover { background-color: #004182; }
-        .as-button { display: inline-block; }
-        .logout-btn { padding: 8px 16px; background-color: #e5e7eb; color: #333; border-radius: 6px; font-weight: 700; border: none; cursor: pointer; transition: background 0.2s ease; }
-        .logout-btn:hover { background-color: #d1d5db; }
-        .mobile-menu-btn { display: none; background: none; border: none; cursor: pointer; font-size: 24px; color: #333; padding: 4px; }
-        .mobile-menu { display: none; flex-direction: column; gap: 12px; padding: 0 5% 12px; background-color: #f8f9fa; }
-        .mobile-link { text-decoration: none; color: #333; font-weight: 500; padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
-        .mobile-post-job-btn, .mobile-logout-btn, .mobile-login-btn, .mobile-signup-btn { padding: 10px; border-radius: 6px; font-weight: 700; border: none; cursor: pointer; text-align: center; }
-        .mobile-post-job-btn { background-color: #0a66c2; color: white; margin-top: 8px; }
-        .mobile-logout-btn { background-color: #e5e7eb; color: #333; margin-top: 8px; }
-        .mobile-login-btn { background: transparent; color: #0a66c2; border: 1px solid #0a66c2; margin-top: 8px; }
-        .mobile-signup-btn { background-color: #0a66c2; color: white; margin-top: 8px; }
-        .modal-overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.55); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 16px; }
-        .modal-box { background: #fff; padding: 20px; border-radius: 12px; width: 100%; max-width: 460px; box-shadow: 0 12px 40px rgba(0,0,0,0.25); position: relative; animation: pop 0.15s ease-out; }
-        @keyframes pop { from { transform: scale(0.98); opacity: 0.9; } to { transform: scale(1); opacity: 1; } }
-        .modal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-        .brand-circle { width: 36px; height: 36px; border-radius: 50%; background: #0a66c2; color: #fff; display: grid; place-items: center; font-weight: 800; }
-        .modal-title { margin: 0; font-size: 20px; color: #111827; }
-        .modal-subtitle { margin: 2px 0 0; color: #6b7280; font-size: 14px; }
-        .modal-close { margin-left: auto; background: #f3f4f6; border: none; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; color: #374151; }
-        .modal-close:hover { background: #e5e7eb; }
-        .form { margin-top: 8px; }
-        .form-field { margin-bottom: 12px; }
-        .form-field label { display: block; margin-bottom: 6px; font-weight: 600; color: #374151; }
-        .form-field input { width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; outline: none; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
-        .form-field input:focus { border-color: #0a66c2; box-shadow: 0 0 0 3px rgba(10,102,194,0.12); }
-        .error-banner { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; border-radius: 8px; padding: 8px 12px; font-size: 14px; margin-bottom: 8px; }
-        .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px; }
-        .btn-secondary { padding: 10px 16px; background: #e5e7eb; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
-        .btn-secondary:hover { background: #d1d5db; }
-        .btn-primary { padding: 10px 16px; background: #0a66c2; color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
-        .btn-primary:hover { background: #004182; }
-        .modal-footer { display: flex; gap: 6px; justify-content: center; align-items: center; margin-top: 12px; color: #6b7280; }
-        .link-button { background: none; border: none; color: #0a66c2; font-weight: 700; cursor: pointer; padding: 0; }
-        .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 6px; }
-        .role-card { text-align: left; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; background: #fff; cursor: pointer; transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.06s ease; }
-        .role-card:hover { border-color: #0a66c2; box-shadow: 0 8px 24px rgba(10,102,194,0.12); transform: translateY(-1px); }
-        .role-icon { font-size: 28px; }
-        .role-card h3 { margin: 6px 0 4px; color: #111827; }
-        .role-card p { margin: 0; color: #6b7280; font-size: 14px; }
-        .choose-cta { display: inline-block; margin-top: 10px; color: #0a66c2; font-weight: 700; }
-        .hint { margin-top: 10px; text-align: center; color: #6b7280; font-size: 13px; }
-        @media (max-width: 768px) {
-          .desktop-nav { display: none; }
-          .mobile-menu-btn { display: block; }
-          .mobile-menu { display: flex; }
-          .role-grid { grid-template-columns: 1fr; }
-        }
-      `}</style>
+    /* ======= Brand palette ======= */
+    :root {
+      --brand: #0a66c2;
+      --brand-dark: #004182;
+      --ink: #111827;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --bg: #f8f9fa;
+    }
+
+    /* ======= Header bar ======= */
+    .header {
+      background-color: var(--bg);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      width: 100%;
+      border-bottom: 1px solid rgba(0,0,0,0.04);
+      backdrop-filter: saturate(130%) blur(6px);
+      transition: box-shadow 0.2s ease, background 0.2s ease;
+    }
+    .nav-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 5%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* ======= Brand ======= */
+    .logo {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--brand);
+      text-decoration: none;
+      letter-spacing: 0.3px;
+      transition: transform 0.1s ease;
+    }
+    .logo:hover { transform: translateY(-1px); }
+
+    /* ======= Desktop nav ======= */
+    .desktop-nav { display: flex; align-items: center; gap: 16px; }
+    .nav-link {
+      position: relative;
+      text-decoration: none;
+      color: #333;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 8px;
+      transition: color 0.2s ease, background-color 0.2s ease, transform 0.06s ease;
+    }
+    .nav-link:hover {
+      color: var(--brand);
+      background-color: rgba(10,102,194,0.08);
+      transform: translateY(-1px);
+    }
+    /* subtle brand underline on hover */
+    .nav-link::after {
+      content: "";
+      position: absolute;
+      left: 8px; right: 8px; bottom: 4px;
+      height: 2px; border-radius: 2px;
+      background: linear-gradient(90deg, var(--brand), var(--brand-dark));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.2s ease;
+    }
+    .nav-link:hover::after { transform: scaleX(1); }
+
+    /* ======= Buttons (desktop + mobile) ======= */
+    .post-job-btn, .login-btn, .signup-btn, .logout-btn,
+    .mobile-post-job-btn, .mobile-logout-btn, .mobile-login-btn, .mobile-signup-btn,
+    .btn-primary, .btn-secondary {
+      border: none;
+      cursor: pointer;
+      border-radius: 10px;
+      font-weight: 800;
+      transition: transform .06s ease, box-shadow .15s ease, background-color .15s ease, color .15s ease, border-color .15s ease;
+    }
+
+    /* Primary CTAs */
+    .post-job-btn,
+    .signup-btn,
+    .btn-primary,
+    .mobile-post-job-btn,
+    .mobile-signup-btn {
+      background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+      color: #fff;
+      padding: 10px 16px;
+      box-shadow: 0 8px 18px rgba(10,102,194,0.25);
+    }
+    .post-job-btn:hover,
+    .signup-btn:hover,
+    .btn-primary:hover,
+    .mobile-post-job-btn:hover,
+    .mobile-signup-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(10,102,194,0.35);
+    }
+    .post-job-btn:active,
+    .signup-btn:active,
+    .btn-primary:active,
+    .mobile-post-job-btn:active,
+    .mobile-signup-btn:active {
+      transform: translateY(1px);
+    }
+
+    /* Outline / secondary */
+    .login-btn, .mobile-login-btn {
+      background: transparent;
+      color: var(--brand);
+      border: 1px solid var(--brand);
+      padding: 8px 16px;
+    }
+    .login-btn:hover, .mobile-login-btn:hover { background-color: rgba(10,102,194,0.06); }
+
+    .logout-btn, .btn-secondary {
+      padding: 8px 16px;
+      background-color: #e5e7eb;
+      color: #333;
+    }
+    .logout-btn:hover, .btn-secondary:hover { background-color: #d1d5db; }
+
+    .as-button { display: inline-block; }
+    .wfull { width: 100%; }
+
+    /* ======= Mobile menu ======= */
+    .mobile-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 24px;
+      color: #333;
+      padding: 4px;
+      border-radius: 8px;
+      transition: background .15s ease;
+    }
+    .mobile-menu-btn:hover { background: rgba(10,102,194,0.08); }
+
+    .mobile-menu {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      padding: 0 5% 12px;
+      background-color: var(--bg);
+    }
+    .mobile-link {
+      text-decoration: none; color: #333; font-weight: 500;
+      padding: 8px 0; border-bottom: 1px solid #e5e7eb;
+    }
+
+    /* ======= Modals (global) ======= */
+      .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0,0,0,0.55);
+      display: flex;
+      justify-content: center;
+      align-items: center; /* absolute vertical centering */
+      z-index: 9999;
+    }
+
+    .modal-box {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+      animation: pop .15s ease-out;
+    }
+
+    @keyframes pop {
+      from { transform: scale(0.98); opacity: 0.9; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .brand-circle {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+      color: #fff; display: grid; place-items: center; font-weight: 900;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.35);
+    }
+    .modal-title { margin: 0; font-size: 20px; color: var(--ink); font-weight: 900; }
+    .modal-subtitle { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+    .modal-close {
+      margin-left: auto; background: #f3f4f6; border: none; border-radius: 10px;
+      width: 34px; height: 34px; cursor: pointer; color: #374151;
+      transition: background .15s ease, transform .06s ease;
+    }
+    .modal-close:hover { background: #e5e7eb; }
+    .modal-close:active { transform: translateY(1px); }
+
+    /* ======= Forms in modals ======= */
+    .form { margin-top: 8px; }
+    .form-field { margin-bottom: 12px; }
+    .form-field label { display: block; margin-bottom: 6px; font-weight: 600; color: #374151; }
+    .form-field input {
+      width: 100%; padding: 10px 12px;
+      border: 1px solid #e5e7eb; border-radius: 8px; outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .form-field input:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(10,102,194,0.12);
+    }
+    .error-banner {
+      background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;
+      border-radius: 8px; padding: 8px 12px; font-size: 14px; margin-bottom: 8px;
+    }
+    .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px; }
+    .btn-secondary { padding: 10px 16px; background: #e5e7eb; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+    .btn-secondary:hover { background: #d1d5db; }
+    .btn-primary   { padding: 10px 16px; background: var(--brand); color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+    .btn-primary:hover { background: var(--brand-dark); }
+    .modal-footer { display: flex; gap: 6px; justify-content: center; align-items: center; margin-top: 12px; color: var(--muted); }
+    .link-button { background: none; border: none; color: var(--brand); font-weight: 700; cursor: pointer; padding: 0; }
+
+    /* ======= Role selection modal (Recruiter / Candidate) ======= */
+    .role-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 8px;
+    }
+    .role-card {
+      position: relative;
+      text-align: left;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 16px 14px;
+      cursor: pointer;
+      outline: none;
+      transition:
+        border-color .15s ease,
+        box-shadow .18s ease,
+        transform .08s ease,
+        background-color .18s ease;
+    }
+    /* soft brand ring/glow on hover */
+    .role-card::after {
+      content: "";
+      position: absolute; inset: 0;
+      border-radius: 14px; pointer-events: none;
+      box-shadow: 0 0 0 0 rgba(10,102,194,0);
+      transition: box-shadow .18s ease;
+    }
+    .role-card:hover {
+      border-color: #cfe2f6;
+      box-shadow: 0 12px 28px rgba(10,102,194,0.12);
+      transform: translateY(-2px);
+      background-color: #fbfdff;
+    }
+    .role-card:hover::after { box-shadow: 0 0 0 4px rgba(10,102,194,0.10); }
+    .role-card:focus-visible {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 4px rgba(10,102,194,0.22);
+    }
+
+    .role-icon {
+      display: inline-grid; place-items: center;
+      width: 40px; height: 40px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+      color: #fff; font-size: 22px;
+      box-shadow: 0 8px 20px rgba(10,102,194,0.25);
+    }
+    .role-card h3 {
+      margin: 10px 0 4px;
+      color: var(--ink);
+      font-weight: 900;
+      font-size: 16px;
+      letter-spacing: .2px;
+    }
+    .role-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+    .choose-cta {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 12px;
+      color: var(--brand);
+      font-weight: 900;
+      font-size: 14px;
+      letter-spacing: .2px;
+      transition: transform .08s ease, color .15s ease;
+    }
+    .role-card:hover .choose-cta { transform: translateX(2px); color: var(--brand-dark); }
+
+    .hint { margin-top: 12px; text-align: center; color: var(--muted); font-size: 13px; }
+
+    /* ======= Responsive ======= */
+    @media (max-width: 768px) {
+      .desktop-nav { display: none; }
+      .mobile-menu-btn { display: block; }
+      .mobile-menu { display: flex; }
+      .role-grid { grid-template-columns: 1fr; gap: 12px; }
+    }
+
+    /* ======= Reduced motion ======= */
+    @media (prefers-reduced-motion: reduce) {
+      .nav-link, .post-job-btn, .signup-btn, .login-btn, .logout-btn,
+      .mobile-post-job-btn, .mobile-login-btn, .mobile-logout-btn, .mobile-signup-btn,
+      .role-card, .modal-box { transition: none !important; }
+    }
+`}</style>
+
+
     </header>
   );
 }
