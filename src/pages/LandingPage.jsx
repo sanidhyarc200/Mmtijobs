@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const defaultTitles = [
@@ -92,6 +92,9 @@ const defaultJobs = [
 ];
 
 export default function LandingPage() {
+  const navigate = useNavigate();
+
+  // UI state
   const [year] = useState(new Date().getFullYear());
   const [keyword, setKeyword] = useState('');
   const [location, setLocation] = useState('');
@@ -101,13 +104,23 @@ export default function LandingPage() {
   const [filteredJobs, setFilteredJobs] = useState(defaultJobs);
   const [titleSuggestions, setTitleSuggestions] = useState(defaultTitles);
 
-  // Auth prompt for Apply flow + login modal (apply auto-apply)
+  // auth/user state
+  const [currentUser, setCurrentUser] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('currentUser')) || null; } catch { return null; }
+  });
+
+  // application state
+  const [appliedJobIds, setAppliedJobIds] = useState(new Set()); // Set<number>
+  const [showAppliedModal, setShowAppliedModal] = useState(false);
+  const [appliedModalTitle, setAppliedModalTitle] = useState('');
+
+  // Auth prompt (apply flow)
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [pendingJob, setPendingJob] = useState(null);
 
-  // Recruiter CTA prompt (requires recruiter)
+  // Recruiter CTA prompt (post job)
   const [showRecruiterPrompt, setShowRecruiterPrompt] = useState(false);
-  const [currentRole, setCurrentRole] = useState(null); // 'recruiter' | 'candidate' | null
+  const [currentRoleAtPrompt, setCurrentRoleAtPrompt] = useState(null); // 'recruiter' | 'candidate' | null
 
   // Shared login modal
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -115,42 +128,62 @@ export default function LandingPage() {
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
 
-  const navigate = useNavigate();
+  // compute "isRecruiter" fast
+  const isRecruiter = useMemo(() => currentUser?.userType === 'recruiter', [currentUser]);
 
-  // Filter jobs based on search criteria
+  // ---------- listen for auth changes & preload applied set ----------
+  const refreshAuthAndApplied = () => {
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('currentUser')) || null; } catch {}
+    setCurrentUser(user);
+
+    // build user’s applied set
+    const apps = JSON.parse(localStorage.getItem('jobApplications')) || [];
+    const mine = new Set(
+      user ? apps.filter(a => a.userId === user.id).map(a => a.jobId) : []
+    );
+    setAppliedJobIds(mine);
+  };
+
+  useEffect(() => {
+    refreshAuthAndApplied();
+    const onAuth = () => refreshAuthAndApplied();
+    window.addEventListener('authChanged', onAuth);
+    window.addEventListener('storage', onAuth);
+    return () => {
+      window.removeEventListener('authChanged', onAuth);
+      window.removeEventListener('storage', onAuth);
+    };
+  }, []);
+
+  // ---------- filtering ----------
   useEffect(() => {
     const storedTitles = JSON.parse(sessionStorage.getItem('searchedTitles')) || [];
     setTitleSuggestions([...new Set([...defaultTitles, ...storedTitles])]);
 
-    let filtered = defaultJobs.filter((job) => {
-      const keywordLower = keyword.toLowerCase();
-      const matchesKeyword =
-        job.title.toLowerCase().includes(keywordLower) ||
-        job.tags.some((tag) => tag.toLowerCase().includes(keywordLower));
-      const matchesLocation = location
-        ? job.location.toLowerCase().includes(location.toLowerCase())
-        : true;
+    const experienceMap = {
+      '0-1 years': [0, 1],
+      '1-3 years': [1, 3],
+      '2-3 years': [2, 3],
+      '2-4 years': [2, 4],
+      '3-5 years': [3, 5],
+      '4-6 years': [4, 6],
+      '5+ years': [5, Infinity],
+    };
 
-      const experienceMap = {
-        '0-1 years': [0, 1],
-        '1-3 years': [1, 3],
-        '2-3 years': [2, 3],
-        '2-4 years': [2, 4],
-        '3-5 years': [3, 5],
-        '4-6 years': [4, 6],
-        '5+ years': [5, Infinity],
-      };
+    const filtered = defaultJobs.filter((job) => {
+      const kw = keyword.toLowerCase();
+      const matchesKeyword =
+        job.title.toLowerCase().includes(kw) ||
+        job.tags.some((tag) => tag.toLowerCase().includes(kw));
+      const matchesLocation = location ? job.location.toLowerCase().includes(location.toLowerCase()) : true;
 
       let matchesExperience = true;
       if (experience && experienceMap[experience]) {
         const [minExp, maxExp] = experienceMap[experience];
-        const [jobMinExp, jobMaxExp] = job.experience
-          .split(' ')[0]
-          .split('-')
-          .map(Number);
+        const [jobMinExp, jobMaxExp] = job.experience.split(' ')[0].split('-').map(Number);
         matchesExperience =
-          (jobMinExp >= minExp && jobMinExp <= maxExp) ||
-          (jobMaxExp >= minExp && jobMaxExp <= maxExp);
+          (jobMinExp >= minExp && jobMinExp <= maxExp) || (jobMaxExp >= minExp && jobMaxExp <= maxExp);
       }
 
       return matchesKeyword && matchesLocation && matchesExperience;
@@ -159,15 +192,19 @@ export default function LandingPage() {
     setFilteredJobs(filtered);
   }, [keyword, location, experience]);
 
-  // --- Application flow ---
+  // ---------- application helpers ----------
   const applyToJob = (job, user) => {
-    const applications = JSON.parse(localStorage.getItem('jobApplications')) || [];
-    const existingApplication = applications.find(
-      (app) => app.jobId === job.id && app.userId === user.id
-    );
+    const apps = JSON.parse(localStorage.getItem('jobApplications')) || [];
 
-    if (existingApplication) {
-      alert(`You've already applied for ${job.title}`);
+    // already applied?
+    if (apps.some((a) => a.jobId === job.id && a.userId === user.id)) {
+      setAppliedJobIds(prev => {
+        const next = new Set(prev);
+        next.add(job.id);
+        return next;
+      });
+      setAppliedModalTitle(`You already applied for “${job.title}”`);
+      setShowAppliedModal(true);
       return;
     }
 
@@ -180,48 +217,56 @@ export default function LandingPage() {
       status: 'Applied',
     };
 
-    localStorage.setItem('jobApplications', JSON.stringify([...applications, newApplication]));
-    alert(`Successfully applied for ${job.title}`);
+    localStorage.setItem('jobApplications', JSON.stringify([...apps, newApplication]));
+    setAppliedJobIds(prev => {
+      const next = new Set(prev);
+      next.add(job.id);
+      return next;
+    });
+
+    // pretty success modal (no alerts)
+    setAppliedModalTitle(`Applied successfully for “${job.title}”`);
+    setShowAppliedModal(true);
   };
 
   const handleApply = (job) => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
-  
+
     if (user) {
-      // recruiters can't apply (nice try, boss)
       if (user.userType === 'recruiter') {
-        alert('Recruiters cannot apply to jobs. Switch to a candidate account to apply.');
+        // hard stop: recruiters cannot apply
         return;
       }
-  
-      // candidate (or any non-recruiter) → proceed
       applyToJob(job, user);
       return;
     }
-  
-    // not logged in → open auth prompt in candidate mode
+
+    // not logged in → prompt (candidate flow)
     setPendingJob(job);
-    setRequireRecruiter(false); // applying is a candidate flow
+    setRequireRecruiter(false);
     setShowAuthPrompt(true);
   };
+
   const handleView = (job) => {
     setSelectedJob(job);
     setShowViewModal(true);
   };
 
-  // --- Recruiter CTA flow ---
+  // ---------- recruiter CTA ----------
   const handleRecruiterCTA = () => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     if (user?.userType === 'recruiter') {
+      // per your instruction, we won’t show a button here anymore,
+      // but just in case someone calls this:
       navigate('/post-job');
       return;
     }
-    setCurrentRole(user?.userType || null);
+    setCurrentRoleAtPrompt(user?.userType || null);
     setRequireRecruiter(true);
     setShowRecruiterPrompt(true);
   };
 
-  // --- Shared login submit ---
+  // ---------- login from this page ----------
   const handleLoginSubmit = (e) => {
     e.preventDefault();
     setLoginError('');
@@ -242,16 +287,16 @@ export default function LandingPage() {
     }
 
     localStorage.setItem('currentUser', JSON.stringify(user));
+    try { window.dispatchEvent(new Event('authChanged')); } catch {}
     setShowLoginModal(false);
 
-    // Recruiter-only flow: go to post-job
     if (requireRecruiter) {
       setRequireRecruiter(false);
       navigate('/post-job');
       return;
     }
 
-    // Apply flow: auto-apply if a pending job exists
+    // auto-apply after login if needed
     if (pendingJob) {
       applyToJob(pendingJob, user);
       setPendingJob(null);
@@ -261,385 +306,88 @@ export default function LandingPage() {
 
   return (
     <div className="landing-page">
-      <style>
-        {`
-          .landing-page {
-            font-family: 'Inter', sans-serif;
-            max-width: 100%;
-            overflow-x: hidden;
-          }
-          
-          .hero-section {
-            position: relative;
-            min-height: 350px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(135deg, rgba(10, 102, 194, 0.9), rgba(0, 65, 130, 0.8)), 
-                       url('https://images.unsplash.com/photo-1521737711867-e3b97375f902?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            color: white;
-            text-align: center;
-            padding: 30px 20px;
-          }
-          
-          .hero-title {
-            font-size: 2.2em;
-            font-weight: 700;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
-            line-height: 1.2;
-          }
-          
-          .hero-subtitle {
-            font-size: 1.1em;
-            margin-bottom: 20px;
-            text-shadow: 1px 1px 5px rgba(0,0,0,0.3);
-            opacity: 0.95;
-            font-weight: 400;
-          }
-          
-          .search-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 15px 20px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            width: 90%;
-            max-width: 1200px;
-            border: 1px solid rgba(255,255,255,0.2);
-          }
-          
-          .search-row {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
-          }
-          
-          .search-input {
-            flex: 1;
-            min-width: 200px;
-            padding: 10px 15px;
-            border: 2px solid transparent;
-            border-radius: 8px;
-            font-size: 1em;
-            background: white;
-            color: #1f2937;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            height: 42px;
-          }
-          
-          .search-input:focus {
-            border-color: #0a66c2;
-            box-shadow: 0 4px 15px rgba(10, 102, 194, 0.3);
-            outline: none;
-          }
-          
-          .search-button {
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #0a66c2, #004182);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(10, 102, 194, 0.4);
-            height: 42px;
-            white-space: nowrap;
-          }
-          
-          .search-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(10, 102, 194, 0.5);
-          }
-          
-          .job-listings {
-            background: #f8fafc;
-            padding: 30px 0;
-          }
-          
-          .job-listings h3 {
-            font-size: 1.8em;
-            margin-bottom: 20px;
-            text-align: center;
-            color: #1f2937;
-            font-weight: 700;
-          }
-          
-          .job-listings-container {
-            width: 90%;
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-          }
-          
-          .job-card {
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 12px 15px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-            transition: all 0.2s ease;
-            border: 1px solid #e5e7eb;
-            width: 100%;
-            max-width: 800px;
-          }
-          
-          .job-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            border-color: #0a66c2;
-          }
-          
-          .job-title {
-            color: #0a66c2;
-            font-size: 1.1em;
-            margin-bottom: 4px;
-            font-weight: 600;
-          }
-          
-          .job-company {
-            color: #4b5563;
-            font-size: 0.9em;
-            margin-bottom: 4px;
-          }
-          
-          .job-meta {
-            color: #4b5563;
-            font-size: 0.85em;
-            margin-bottom: 6px;
-            display: flex;
-            gap: 10px;
-          }
-          
-          .job-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 8px;
-          }
-          
-          .job-tag {
-            background: #e5e7eb;
-            color: #374151;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 0.75em;
-          }
-          
-          .job-description {
-            color: #4b5563;
-            font-size: 0.85em;
-            line-height: 1.4;
-            margin-bottom: 10px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-overflow: ellipsis;
-          }
-          
-          .job-buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-          }
-          
-          .view-btn {
-            background-color: #e5e7eb;
-            color: #374151;
-            padding: 6px 12px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 0.85em;
-            transition: all 0.2s ease;
-          }
-          
-          .view-btn:hover {
-            background-color: #d1d5db;
-          }
-          
-          .apply-btn {
-            background-color: #0a66c2;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 0.85em;
-            transition: all 0.2s ease;
-          }
-          
-          .apply-btn:hover {
-            background-color: #004182;
-          }
-          
-          .hire-section {
-            background: linear-gradient(135deg, #0a66c2, #004182);
-            color: white;
-            padding: 30px 20px;
-            text-align: center;
-          }
-          
-          .hire-section h2 {
-            font-size: 1.8em;
-            margin-bottom: 10px;
-            font-weight: 700;
-          }
-          
-          .hire-section p {
-            font-size: 1em;
-            margin: 0 auto 18px;
-            max-width: 700px;
-          }
+      <style>{`
+        .landing-page { font-family: 'Inter', sans-serif; max-width: 100%; overflow-x: hidden; }
+        .hero-section { position: relative; min-height: 350px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+          background: linear-gradient(135deg, rgba(10, 102, 194, 0.9), rgba(0, 65, 130, 0.8)), url('https://images.unsplash.com/photo-1521737711867-e3b97375f902?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80'); background-size: cover; background-position: center; background-attachment: fixed; color: white; text-align: center; padding: 30px 20px; }
+        .hero-title { font-size: 2.2em; font-weight: 700; margin-bottom: 10px; text-shadow: 2px 2px 10px rgba(0,0,0,0.3); line-height: 1.2; }
+        .hero-subtitle { font-size: 1.1em; margin-bottom: 20px; text-shadow: 1px 1px 5px rgba(0,0,0,0.3); opacity: 0.95; font-weight: 400; }
+        .search-container { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 12px; padding: 15px 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); width: 90%; max-width: 1200px; border: 1px solid rgba(255,255,255,0.2); }
+        .search-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .search-input { flex: 1; min-width: 200px; padding: 10px 15px; border: 2px solid transparent; border-radius: 8px; font-size: 1em; background: white; color: #1f2937; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.1); height: 42px; }
+        .search-input:focus { border-color: #0a66c2; box-shadow: 0 4px 15px rgba(10, 102, 194, 0.3); outline: none; }
+        .search-button { padding: 10px 20px; background: linear-gradient(135deg, #0a66c2, #004182); color: white; border: none; border-radius: 8px; font-size: 1em; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(10, 102, 194, 0.4); height: 42px; white-space: nowrap; }
+        .search-button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(10, 102, 194, 0.5); }
 
-          .post-cta-btn {
-            display: inline-block;
-            padding: 10px 18px;
-            background: #fff;
-            color: #0a66c2;
-            border: none;
-            border-radius: 8px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: transform 0.1s ease, box-shadow 0.2s ease, background 0.2s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-          }
-          .post-cta-btn:hover {
-            background: #f0f7ff;
-            transform: translateY(-1px);
-          }
-          
-          footer {
-            background-color: #ffffff;
-            border-top: 1px solid #e5e7eb;
-            padding: 15px 0;
-            text-align: center;
-            color: #6b7280;
-            font-size: 0.85em;
-          }
-          
-          datalist {
-            max-height: 150px;
-            overflow-y: auto;
-          }
-                      
-          /* Modal styles */
-          .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0,0,0,0.6);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            padding: 16px;
-          }
-          
-          .modal-box {
-            background: #fff;
-            padding: 20px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 12px 40px rgba(0,0,0,0.25);
-            position: relative;
-            animation: pop 0.15s ease-out;
-          }
-          @keyframes pop { 
-            from { transform: scale(0.98); opacity: 0.9; } 
-            to { transform: scale(1); opacity: 1; } 
-          }
+        .job-listings { background: #f8fafc; padding: 30px 0; }
+        .job-listings h3 { font-size: 1.8em; margin-bottom: 20px; text-align: center; color: #1f2937; font-weight: 700; }
+        .job-listings-container { width: 90%; max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; align-items: flex-start; }
+        .job-card { background-color: #ffffff; border-radius: 8px; padding: 12px 15px; margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); transition: all 0.2s ease; border: 1px solid #e5e7eb; width: 100%; max-width: 800px; }
+        .job-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); border-color: #0a66c2; }
+        .job-title { color: #0a66c2; font-size: 1.1em; margin-bottom: 4px; font-weight: 600; }
+        .job-company { color: #4b5563; font-size: 0.9em; margin-bottom: 4px; }
+        .job-meta { color: #4b5563; font-size: 0.85em; margin-bottom: 6px; display: flex; gap: 10px; }
+        .job-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+        .job-tag { background: #e5e7eb; color: #374151; padding: 3px 8px; border-radius: 12px; font-size: 0.75em; }
+        .job-description { color: #4b5563; font-size: 0.85em; line-height: 1.4; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; }
 
-          /* Header-like modal detail styles (match Header theme) */
-          .modal-header {
-            display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
-          }
-          .brand-circle {
-            width: 36px; height: 36px; border-radius: 50%;
-            background: #0a66c2; color: #fff; display: grid; place-items: center;
-            font-weight: 800;
-          }
-          .modal-title { margin: 0; font-size: 20px; color: #111827; }
-          .modal-subtitle { margin: 2px 0 0; color: #6b7280; font-size: 14px; }
-          .modal-close {
-            margin-left: auto; background: #f3f4f6; border: none; border-radius: 8px;
-            width: 32px; height: 32px; cursor: pointer; color: #374151;
-          }
-          .modal-close:hover { background: #e5e7eb; }
+        .job-buttons { display: flex; justify-content: flex-end; gap: 8px; }
+        .view-btn { background-color: #e5e7eb; color: #374151; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: 500; font-size: 0.85em; transition: all 0.2s ease; }
+        .view-btn:hover { background-color: #d1d5db; }
+        .apply-btn { background-color: #0a66c2; color: white; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: 500; font-size: 0.85em; transition: all 0.2s ease; }
+        .apply-btn:hover { background-color: #004182; }
+        .apply-btn:disabled, .apply-btn.disabled { background-color: #93c5fd; cursor: not-allowed; opacity: 0.7; }
 
-          .form { margin-top: 8px; }
-          .form-field { margin-bottom: 12px; }
-          .form-field label { display: block; margin-bottom: 6px; font-weight: 600; color: #374151; }
-          .form-field input {
-            width: 100%; padding: 10px 12px;
-            border: 1px solid #e5e7eb; border-radius: 8px;
-            outline: none; transition: border-color 0.2s ease, box-shadow 0.2s ease;
-          }
-          .form-field input:focus {
-            border-color: #0a66c2;
-            box-shadow: 0 0 0 3px rgba(10,102,194,0.12);
-          }
-          .error-banner {
-            background: #fee2e2; color: #991b1b;
-            border: 1px solid #fecaca; border-radius: 8px;
-            padding: 8px 12px; font-size: 14px; margin-bottom: 8px;
-          }
-          .form-actions {
-            display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px;
-          }
-          .btn-secondary {
-            padding: 10px 16px; background: #e5e7eb; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;
-          }
-          .btn-secondary:hover { background: #d1d5db; }
-          .btn-primary {
-            padding: 10px 16px; background: #0a66c2; color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;
-          }
-          .btn-primary:hover { background: #004182; }
-          .link-button {
-            background: none; border: none; color: #0a66c2; font-weight: 700; cursor: pointer; padding: 0;
-          }
-          .modal-footer {
-            display: flex; gap: 6px; justify-content: center; align-items: center; margin-top: 12px; color: #6b7280;
-          }
+        .hire-section { background: linear-gradient(135deg, #0a66c2, #004182); color: white; padding: 30px 20px; text-align: center; }
+        .hire-section h2 { font-size: 1.8em; margin-bottom: 10px; font-weight: 700; }
+        .hire-section p { font-size: 1em; margin: 0 auto 18px; max-width: 700px; }
+        .post-cta-btn { display: inline-block; padding: 10px 18px; background: #fff; color: #0a66c2; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; transition: transform 0.1s ease, box-shadow 0.2s ease, background 0.2s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .post-cta-btn:hover { background: #f0f7ff; transform: translateY(-1px); }
 
-          /* Responsive adjustments */
-          @media (min-width: 768px) {
-            .hero-section { min-height: 380px; }
-            .hero-title { font-size: 2.5em; }
-            .hero-subtitle { font-size: 1.2em; }
-            .search-row { flex-wrap: nowrap; }
-            .job-card { padding: 15px 20px; }
-          }
+        footer { background-color: #ffffff; border-top: 1px solid #e5e7eb; padding: 15px 0; text-align: center; color: #6b7280; font-size: 0.85em; }
+        datalist { max-height: 150px; overflow-y: auto; }
 
-          @media (min-width: 1200px) {
-            .job-listings-container { align-items: flex-start; padding-right: 400px; }
-          }
-        `}
-      </style>
+        /* Modal styles (shared) */
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 16px; }
+        .modal-box { background: #fff; padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; box-shadow: 0 12px 40px rgba(0,0,0,0.25); position: relative; animation: pop 0.15s ease-out; }
+        @keyframes pop { from { transform: scale(0.98); opacity: 0.9; } to { transform: scale(1); opacity: 1; } }
+        .modal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+        .brand-circle { width: 36px; height: 36px; border-radius: 50%; background: #0a66c2; color: #fff; display: grid; place-items: center; font-weight: 800; }
+        .modal-title { margin: 0; font-size: 20px; color: #111827; }
+        .modal-subtitle { margin: 2px 0 0; color: #6b7280; font-size: 14px; }
+        .modal-close { margin-left: auto; background: #f3f4f6; border: none; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; color: #374151; }
+        .modal-close:hover { background: #e5e7eb; }
+        .form { margin-top: 8px; }
+        .form-field { margin-bottom: 12px; }
+        .form-field label { display: block; margin-bottom: 6px; font-weight: 600; color: #374151; }
+        .form-field input { width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; outline: none; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+        .form-field input:focus { border-color: #0a66c2; box-shadow: 0 0 0 3px rgba(10,102,194,0.12); }
+        .error-banner { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; border-radius: 8px; padding: 8px 12px; font-size: 14px; margin-bottom: 8px; }
+        .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px; }
+        .btn-secondary { padding: 10px 16px; background: #e5e7eb; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+        .btn-secondary:hover { background: #d1d5db; }
+        .btn-primary { padding: 10px 16px; background: #0a66c2; color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+        .btn-primary:hover { background: #004182; }
+        .link-button { background: none; border: none; color: #0a66c2; font-weight: 700; cursor: pointer; padding: 0; }
+        .modal-footer { display: flex; gap: 6px; justify-content: center; align-items: center; margin-top: 12px; color: #6b7280; }
 
-      {/* Hero Section */}
+        @media (min-width: 768px) {
+          .hero-section { min-height: 380px; }
+          .hero-title { font-size: 2.5em; }
+          .hero-subtitle { font-size: 1.2em; }
+          .search-row { flex-wrap: nowrap; }
+          .job-card { padding: 15px 20px; }
+        }
+        @media (min-width: 1200px) {
+          .job-listings-container { align-items: flex-start; padding-right: 400px; }
+        }
+      `}</style>
+
+      {/* Hero */}
       <section className="hero-section">
         <div>
           <h1 className="hero-title">Find Your Dream Job Today</h1>
-          <p className="hero-subtitle">
-            Thousands of jobs from top companies. Your next career move is just a click away.
-          </p>
+          <p className="hero-subtitle">Thousands of jobs from top companies. Your next career move is just a click away.</p>
         </div>
 
         <div className="search-container">
@@ -664,9 +412,7 @@ export default function LandingPage() {
               list="title-suggestions"
             />
             <datalist id="title-suggestions">
-              {titleSuggestions.map((title, idx) => (
-                <option key={idx} value={title} />
-              ))}
+              {titleSuggestions.map((title, idx) => <option key={idx} value={title} />)}
             </datalist>
 
             <input
@@ -676,11 +422,7 @@ export default function LandingPage() {
               value={location}
               onChange={(e) => setLocation(e.target.value)}
             />
-            <select
-              className="search-input"
-              value={experience}
-              onChange={(e) => setExperience(e.target.value)}
-            >
+            <select className="search-input" value={experience} onChange={(e) => setExperience(e.target.value)}>
               <option value="">Experience</option>
               <option value="0-1 years">0-1 years</option>
               <option value="1-3 years">1-3 years</option>
@@ -690,60 +432,49 @@ export default function LandingPage() {
               <option value="4-6 years">4-6 years</option>
               <option value="5+ years">5+ years</option>
             </select>
-            <button
-              className="search-button"
-              onClick={() => console.log('Search triggered')}
-            >
+            <button className="search-button" onClick={() => { /* hook real search later */ }}>
               Search Jobs
             </button>
           </div>
         </div>
       </section>
 
-      {/* Job Listings */}
+      {/* Jobs */}
       <section className="job-listings">
         <h3>Latest Job Opportunities</h3>
         <div className="job-listings-container">
           {filteredJobs.length > 0 ? (
-            filteredJobs.map((job) => (
-              <div key={job.id} className="job-card">
-                <h3 className="job-title">{job.title}</h3>
-                {job.company && <div className="job-company">{job.company}</div>}
-                <div className="job-meta">
-                  <span>{job.location}</span>
-                  <span>•</span>
-                  <span>{job.experience}</span>
-                  <span>•</span>
-                  <span>{job.salary}</span>
+            filteredJobs.map((job) => {
+              const isApplied = appliedJobIds.has(job.id);
+              return (
+                <div key={job.id} className="job-card">
+                  <h3 className="job-title">{job.title}</h3>
+                  {job.company && <div className="job-company">{job.company}</div>}
+                  <div className="job-meta">
+                    <span>{job.location}</span><span>•</span>
+                    <span>{job.experience}</span><span>•</span>
+                    <span>{job.salary}</span>
+                  </div>
+                  <div className="job-tags">
+                    {job.tags.map((tag, idx) => <span key={idx} className="job-tag">{tag}</span>)}
+                  </div>
+                  <p className="job-description">{job.description}</p>
+                  <div className="job-buttons">
+                    <button className="view-btn" onClick={() => handleView(job)}>View Details</button>
+
+                    {/* Apply button rules */}
+                    <button
+                      className={`apply-btn ${isRecruiter || isApplied ? 'disabled' : ''}`}
+                      disabled={isRecruiter || isApplied}
+                      title={isRecruiter ? 'Recruiters cannot apply' : isApplied ? 'You have already applied' : ''}
+                      onClick={() => handleApply(job)}
+                    >
+                      {isRecruiter ? 'Apply (disabled)' : isApplied ? 'Applied' : 'Apply Now'}
+                    </button>
+                  </div>
                 </div>
-                <div className="job-tags">
-                  {job.tags.map((tag, index) => (
-                    <span key={index} className="job-tag">{tag}</span>
-                  ))}
-                </div>
-                <p className="job-description">{job.description}</p>
-                <div className="job-buttons">
-                  <button
-                    className="view-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleView(job);
-                    }}
-                  >
-                    View Details
-                  </button>
-                  <button
-                    className="apply-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleApply(job);
-                    }}
-                  >
-                    Apply Now
-                  </button>
-                </div>
-              </div>
-            ))
+              );
+            })
           ) : (
             <div style={{ textAlign: 'center', padding: '30px', color: '#6b7280' }}>
               <p>No jobs found matching your criteria. Try adjusting your search filters.</p>
@@ -755,81 +486,67 @@ export default function LandingPage() {
       {/* Recruiter Section */}
       <section className="hire-section">
         <h2>Are you a recruiter?</h2>
-        <p>
-          Want to post a job? Use the button below. We’ll ask you to log in or sign up as a recruiter if you aren’t already.
-        </p>
-        <button className="post-cta-btn" onClick={handleRecruiterCTA}>
-          Post a Job
-        </button>
+        {isRecruiter ? (
+          <p><strong>You’re already logged in as a recruiter.</strong></p>
+        ) : (
+          <>
+            <p>Want to post a job? Use the button below. We’ll ask you to log in or sign up as a recruiter if you aren’t already.</p>
+            <button className="post-cta-btn" onClick={handleRecruiterCTA}>Post a Job</button>
+          </>
+        )}
       </section>
 
       {/* Footer */}
       <footer>
-        <div>
-          <p>© {year} MMtijobs — All rights reserved.</p>
-        </div>
+        <div><p>© {year} MMtijobs — All rights reserved.</p></div>
       </footer>
 
       {/* View Job Modal */}
       {showViewModal && selectedJob && (
         <div className="modal-overlay" onClick={() => setShowViewModal(false)}>
           <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-            <h2 style={{ color: '#0a66c2', marginBottom: '15px', textAlign: 'center' }}>{selectedJob.title}</h2>
-            {selectedJob.company && <div style={{ marginBottom: '10px', textAlign: 'center' }}><strong>{selectedJob.company}</strong></div>}
-            <div style={{ marginBottom: '10px' }}><strong>Location:</strong> {selectedJob.location}</div>
-            <div style={{ marginBottom: '10px' }}><strong>Experience:</strong> {selectedJob.experience}</div>
-            <div style={{ marginBottom: '10px' }}><strong>Salary:</strong> {selectedJob.salary}</div>
-            <div style={{ marginBottom: '10px' }}><strong>Skills:</strong> {selectedJob.tags.join(', ')}</div>
-            <div style={{ marginBottom: '15px' }}><strong>Description:</strong></div>
-            <p style={{ color: '#4b5563', lineHeight: '1.5', marginBottom: '20px' }}>
-              {selectedJob.description}
-            </p>
-            <button 
-              style={{
-                width: '100%',
-                padding: '10px',
-                background: '#0a66c2',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-              onClick={() => setShowViewModal(false)}
-            >
-              Close
-            </button>
-            <button
-              style={{
-                width: '100%',
-                padding: '10px',
-                background: '#059669',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                marginTop: '10px'
-              }}
-              onClick={() => {
-                setShowViewModal(false);
-                handleApply(selectedJob);
-              }}
-            >
-              Apply Now
-            </button>
+            <div className="modal-header">
+              <div className="brand-circle">M</div>
+              <div>
+                <h2 className="modal-title">{selectedJob.title}</h2>
+                {selectedJob.company && <p className="modal-subtitle">{selectedJob.company}</p>}
+              </div>
+              <button className="modal-close" onClick={() => setShowViewModal(false)}>✕</button>
+            </div>
+
+            <div style={{ marginBottom: 10 }}><strong>Location:</strong> {selectedJob.location}</div>
+            <div style={{ marginBottom: 10 }}><strong>Experience:</strong> {selectedJob.experience}</div>
+            <div style={{ marginBottom: 10 }}><strong>Salary:</strong> {selectedJob.salary}</div>
+            <div style={{ marginBottom: 10 }}><strong>Skills:</strong> {selectedJob.tags.join(', ')}</div>
+            <div style={{ marginBottom: 12 }}><strong>Description:</strong></div>
+            <p style={{ color: '#4b5563', lineHeight: 1.5, marginBottom: 16 }}>{selectedJob.description}</p>
+
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button className="btn-secondary" onClick={() => setShowViewModal(false)}>Close</button>
+              {(() => {
+                const isApplied = appliedJobIds.has(selectedJob.id);
+                return (
+                  <button
+                    className="btn-primary"
+                    disabled={isRecruiter || isApplied}
+                    title={isRecruiter ? 'Recruiters cannot apply' : isApplied ? 'You have already applied' : ''}
+                    onClick={() => {
+                      setShowViewModal(false);
+                      handleApply(selectedJob);
+                    }}
+                  >
+                    {isRecruiter ? 'Apply (disabled)' : isApplied ? 'Applied' : 'Apply Now'}
+                  </button>
+                );
+              })()}
+            </div>
           </div>
         </div>
       )}
 
-      {/* AUTH PROMPT (Apply flow) */}
+      {/* AUTH PROMPT (Apply flow when not logged in) */}
       {showAuthPrompt && (
-        <div
-          className="modal-overlay"
-          onClick={(e) => {
-            if (e.target.classList.contains('modal-overlay')) setShowAuthPrompt(false);
-          }}
-        >
+        <div className="modal-overlay" onClick={(e) => { if (e.target.classList.contains('modal-overlay')) setShowAuthPrompt(false); }}>
           <div className="modal-box">
             <div className="modal-header">
               <div className="brand-circle">M</div>
@@ -840,10 +557,8 @@ export default function LandingPage() {
               <button className="modal-close" onClick={() => setShowAuthPrompt(false)}>✕</button>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-              <button className="btn-secondary" onClick={() => setShowAuthPrompt(false)}>
-                Cancel
-              </button>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button className="btn-secondary" onClick={() => setShowAuthPrompt(false)}>Cancel</button>
               <button
                 className="btn-primary"
                 onClick={() => {
@@ -856,7 +571,6 @@ export default function LandingPage() {
               </button>
               <button
                 className="btn-primary"
-                style={{ background: '#0a66c2' }}
                 onClick={() => {
                   setShowAuthPrompt(false);
                   navigate('/onboarding?from=apply');
@@ -869,21 +583,16 @@ export default function LandingPage() {
         </div>
       )}
 
-      {/* RECRUITER PROMPT (Post a Job flow) */}
+      {/* RECRUITER PROMPT (Post a Job flow for non-recruiters) */}
       {showRecruiterPrompt && (
-        <div
-          className="modal-overlay"
-          onClick={(e) => {
-            if (e.target.classList.contains('modal-overlay')) setShowRecruiterPrompt(false);
-          }}
-        >
+        <div className="modal-overlay" onClick={(e) => { if (e.target.classList.contains('modal-overlay')) setShowRecruiterPrompt(false); }}>
           <div className="modal-box">
             <div className="modal-header">
               <div className="brand-circle">M</div>
               <div>
                 <h2 className="modal-title">Recruiter account required</h2>
                 <p className="modal-subtitle">
-                  {currentRole === 'candidate'
+                  {currentRoleAtPrompt === 'candidate'
                     ? "You're logged in as a candidate. To post jobs, please use a recruiter account."
                     : "Please login or sign up as a recruiter to post jobs."}
                 </p>
@@ -891,10 +600,8 @@ export default function LandingPage() {
               <button className="modal-close" onClick={() => setShowRecruiterPrompt(false)}>✕</button>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-              <button className="btn-secondary" onClick={() => setShowRecruiterPrompt(false)}>
-                Cancel
-              </button>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button className="btn-secondary" onClick={() => setShowRecruiterPrompt(false)}>Cancel</button>
               <button
                 className="btn-primary"
                 onClick={() => {
@@ -907,7 +614,6 @@ export default function LandingPage() {
               </button>
               <button
                 className="btn-primary"
-                style={{ background: '#0a66c2' }}
                 onClick={() => {
                   localStorage.setItem('pendingSignupType', 'recruiter');
                   setShowRecruiterPrompt(false);
@@ -921,14 +627,9 @@ export default function LandingPage() {
         </div>
       )}
 
-      {/* LOGIN MODAL (shared for both flows) */}
+      {/* LOGIN MODAL (shared) */}
       {showLoginModal && (
-        <div
-          className="modal-overlay"
-          onClick={(e) => {
-            if (e.target.classList.contains('modal-overlay')) setShowLoginModal(false);
-          }}
-        >
+        <div className="modal-overlay" onClick={(e) => { if (e.target.classList.contains('modal-overlay')) setShowLoginModal(false); }}>
           <div className="modal-box" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div className="brand-circle">M</div>
@@ -987,6 +688,25 @@ export default function LandingPage() {
               >
                 {requireRecruiter ? 'Sign up as Recruiter' : 'Sign up'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* APPLIED SUCCESS / INFO MODAL (no alerts) */}
+      {showAppliedModal && (
+        <div className="modal-overlay" onClick={() => setShowAppliedModal(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="brand-circle">M</div>
+              <div>
+                <h2 className="modal-title">{appliedModalTitle}</h2>
+                <p className="modal-subtitle">Track your applications in your Dashboard.</p>
+              </div>
+              <button className="modal-close" onClick={() => setShowAppliedModal(false)}>✕</button>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <button className="btn-primary" onClick={() => setShowAppliedModal(false)}>Okay</button>
             </div>
           </div>
         </div>
