@@ -186,16 +186,24 @@ export default function LandingPage() {
 
   const handleApply = (job) => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
+  
     if (user) {
+      // recruiters can't apply (nice try, boss)
+      if (user.userType === 'recruiter') {
+        alert('Recruiters cannot apply to jobs. Switch to a candidate account to apply.');
+        return;
+      }
+  
+      // candidate (or any non-recruiter) → proceed
       applyToJob(job, user);
-    } else {
-      // Not logged in -> show auth prompt
-      setPendingJob(job);
-      setRequireRecruiter(false); // apply flow does not need recruiter
-      setShowAuthPrompt(true);
+      return;
     }
+  
+    // not logged in → open auth prompt in candidate mode
+    setPendingJob(job);
+    setRequireRecruiter(false); // applying is a candidate flow
+    setShowAuthPrompt(true);
   };
-
   const handleView = (job) => {
     setSelectedJob(job);
     setShowViewModal(true);

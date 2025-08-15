@@ -1,3 +1,4 @@
+// src/App.jsx
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 
@@ -89,9 +90,10 @@ import AboutPage from './pages/AboutPage';
 import PostJob from './pages/PostJob';
 import UserOnboarding from './pages/UserOnboarding';
 import MapPage from './pages/Mappage';
-import CompanyProfile from './pages/CompanyProfile';
 import Dashboard from './pages/Dasboard';
-// Dummy PostJobPage placeholder for now
+import CompanyDashboard from './pages/CompanyDashboard'; // ✅ added
+
+// Dummy PostJobPage placeholder for now (unused, safe to keep)
 function PostJobPage() {
   return <h1 style={{ padding: 30 }}>This is Post a Job page (UI coming soon)</h1>;
 }
@@ -136,6 +138,26 @@ function CompanyLoginModal({ onClose }) {
       savedCompany.email.toLowerCase() === email.toLowerCase() &&
       savedCompany.password === password
     ) {
+      // upsert recruiter into users
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      const idx = users.findIndex(u => u.email?.toLowerCase() === savedCompany.email.toLowerCase());
+      const recruiter = {
+        id: idx >= 0 ? users[idx].id : Date.now(),
+        userType: 'recruiter',
+        email: savedCompany.email,
+        password: savedCompany.password,
+        name: savedCompany.name,
+        company: savedCompany.name,
+        contact: savedCompany.contact,
+        createdAt: new Date().toISOString(),
+      };
+      if (idx >= 0) users[idx] = recruiter; else users.push(recruiter);
+      localStorage.setItem('users', JSON.stringify(users));
+
+      // set current user + notify header
+      localStorage.setItem('currentUser', JSON.stringify(recruiter));
+      try { window.dispatchEvent(new Event('authChanged')); } catch {}
+
       onClose();
       navigate('/post-job');
     } else {
@@ -171,15 +193,12 @@ function CompanyLoginModal({ onClose }) {
   );
 }
 
-
 export default function App() {
   const [showPostJobModal, setShowPostJobModal] = React.useState(false);
 
   return (
     <Router>
-      <Header
-        onPostJobClick={() => setShowPostJobModal(true)}
-      />
+      <Header onPostJobClick={() => setShowPostJobModal(true)} />
       <Routes>
         <Route path="/" element={<LandingPage onPostJobClick={() => setShowPostJobModal(true)} />} />
         <Route path="/jobs" element={<JobsPage />} />
@@ -190,7 +209,8 @@ export default function App() {
         <Route path="/mappage" element={<MapPage />} />
         <Route path="/post-job" element={<PostJob />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/company-profile" element={<CompanyProfile />} />
+        {/* <Route path="/company-profile" element={<CompanyProfile />} /> */}
+        <Route path="/company-dashboard" element={<CompanyDashboard />} /> {/* ✅ added */}
       </Routes>
 
       {showPostJobModal && (
