@@ -1,5 +1,5 @@
 // src/pages/JobsPage.jsx
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const defaultTitles = [
@@ -57,6 +57,9 @@ export default function JobsPage() {
   // which jobs has current user already applied to?
   const [appliedSet, setAppliedSet] = useState(() => new Set());
 
+  // subtle mount shimmer
+  const [hydrated, setHydrated] = useState(false);
+
   // ---------- helpers ----------
   const readUser = () => {
     try { setUser(JSON.parse(localStorage.getItem('currentUser')) || null); } catch { setUser(null); }
@@ -106,13 +109,25 @@ export default function JobsPage() {
     const storedTitles = JSON.parse(sessionStorage.getItem('searchedTitles')) || [];
     setTitleSuggestions([...new Set([...defaultTitles, ...storedTitles])]);
 
+    // mount hydrate for shimmer
+    const t = setTimeout(() => setHydrated(true), 60);
+
     return () => {
       window.removeEventListener('authChanged', onAuth);
       window.removeEventListener('storage', onAuth);
       window.removeEventListener('jobsChanged', onJobs);
+      clearTimeout(t);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // close modals on ESC
+  useEscapeToClose([
+    [showViewModal, () => setShowViewModal(false)],
+    [showAuthPrompt, () => setShowAuthPrompt(false)],
+    [showLoginModal, () => setShowLoginModal(false)],
+    [showAppliedModal, () => setShowAppliedModal(false)],
+  ]);
 
   // ---------- filters ----------
   const filteredJobs = useMemo(() => {
@@ -163,6 +178,9 @@ export default function JobsPage() {
     }
   };
 
+  const clearFilter = (key) => setFilters(prev => ({ ...prev, [key]: '' }));
+  const clearAll = () => setFilters({ title: '', location: '', experience: '', salary: '' });
+
   const openView = (job) => { setSelectedJob(job); setShowViewModal(true); };
 
   // apply logic with role restrictions + success modal
@@ -170,7 +188,6 @@ export default function JobsPage() {
     const apps = JSON.parse(localStorage.getItem('jobApplications')) || [];
     const duplicate = apps.find(a => a.jobId === job.id && a.userId === me.id);
     if (duplicate) {
-      // already applied — just ensure UI reflects it
       setAppliedSet(new Set([...Array.from(appliedSet), job.id]));
       setAppliedJobTitle(job.title);
       setShowAppliedModal(true);
@@ -251,15 +268,26 @@ export default function JobsPage() {
   // ---------- derived flags ----------
   const isRecruiter = user?.userType === 'recruiter';
 
+  // active filter pills (non-empty)
+  const activePills = Object.entries(filters)
+    .filter(([, v]) => String(v || '').trim() !== '')
+    .map(([k, v]) => ({ key: k, label: prettyLabel(k, v) }));
+
   return (
     <div style={styles.page}>
       <style>{css}</style>
 
       <div style={styles.container}>
-        <h2 style={styles.heading}>Explore Opportunities</h2>
+        {/* Heading row with count */}
+        <div style={styles.headingRow}>
+          <h2 style={styles.heading}>Explore Opportunities</h2>
+          <div style={styles.countPill} aria-label={`${filteredJobs.length} jobs`}>
+            {filteredJobs.length} jobs
+          </div>
+        </div>
 
         {/* Filters */}
-        <div style={styles.filters}>
+        <div style={styles.filters} role="region" aria-label="Job filters">
           <div style={{ position: 'relative', flex: 1 }}>
             <input
               list="titleSuggestions"
@@ -268,6 +296,7 @@ export default function JobsPage() {
               onChange={handleFilterChange}
               placeholder="Search by job title"
               style={styles.input}
+              aria-label="Search by job title"
             />
             <datalist id="titleSuggestions">
               {titleSuggestions.map((t, idx) => <option key={idx} value={t} />)}
@@ -280,6 +309,7 @@ export default function JobsPage() {
             onChange={handleFilterChange}
             placeholder="Location"
             style={styles.input}
+            aria-label="Location"
           />
 
           <select
@@ -287,6 +317,7 @@ export default function JobsPage() {
             value={filters.experience}
             onChange={handleFilterChange}
             style={styles.input}
+            aria-label="Experience"
           >
             <option value="">Experience</option>
             <option value="0-2">0-2 yrs</option>
@@ -299,6 +330,7 @@ export default function JobsPage() {
             value={filters.salary}
             onChange={handleFilterChange}
             style={styles.input}
+            aria-label="Salary"
           >
             <option value="">Salary</option>
             <option value="0-10">0-10L</option>
@@ -307,28 +339,65 @@ export default function JobsPage() {
           </select>
         </div>
 
+        {/* Active filter chips */}
+        {activePills.length > 0 && (
+          <div style={styles.pillsRow} aria-live="polite">
+            {activePills.map(p => (
+              <button
+                key={p.key}
+                onClick={() => clearFilter(p.key)}
+                style={styles.pill}
+                title="Clear filter"
+              >
+                {p.label} <span style={styles.pillClose}>×</span>
+              </button>
+            ))}
+            <button onClick={clearAll} style={styles.clearAllBtn} title="Clear all filters">Clear all</button>
+          </div>
+        )}
+
         {/* Jobs */}
         <div style={styles.jobsContainer}>
-          {filteredJobs.length ? (
+          {!hydrated ? (
+            <SkeletonList count={6} />
+          ) : filteredJobs.length ? (
             filteredJobs.map((job) => {
               const alreadyApplied = appliedSet.has(job.id);
               const applyDisabled = isRecruiter || alreadyApplied;
+              const isNew = isFresh(job.createdAt, 3); // 3 days window
+
               return (
-                <div key={job.id} style={styles.card}>
+                <div key={job.id} style={styles.card} className="mmt-card">
                   <div style={styles.cardHeader}>
                     <div style={styles.jobInfo}>
-                      <h3 style={styles.jobTitle}>{job.title}</h3>
+                      <div style={styles.titleRow}>
+                        <h3 style={styles.jobTitle}>{job.title}</h3>
+                        {isNew && <span style={styles.newBadge} aria-label="New">NEW</span>}
+                      </div>
                       <p style={styles.companyInfo}>
                         <strong>Company:</strong> {job.company} • {job.location} • {job.salary}
                       </p>
-                      <p><strong>Experience:</strong> {job.experience}</p>
+                      <p style={{ margin: '4px 0 0' }}>
+                        <strong>Experience:</strong> {job.experience}
+                      </p>
+
                       {!!job.tags?.length && (
-                        <p style={styles.tags}><strong>Tags:</strong> {job.tags.join(', ')}</p>
+                        <div style={styles.tagWrap} aria-label="Skills">
+                          {job.tags.map((t, i) => (
+                            <span key={i} style={styles.tagPill}>{t}</span>
+                          ))}
+                        </div>
                       )}
                     </div>
 
                     <div style={styles.buttonContainer}>
-                      <button style={styles.viewBtn} onClick={() => openView(job)}>View</button>
+                      <button
+                        style={styles.viewBtn}
+                        onClick={() => openView(job)}
+                        aria-label={`View details for ${job.title}`}
+                      >
+                        View
+                      </button>
 
                       <button
                         style={{
@@ -339,221 +408,334 @@ export default function JobsPage() {
                         disabled={applyDisabled}
                         onClick={() => handleApply(job)}
                         title={isRecruiter ? 'Recruiters cannot apply to jobs' : ''}
+                        aria-label={alreadyApplied ? `Already applied to ${job.title}` : `Apply to ${job.title}`}
                       >
                         {alreadyApplied ? 'Applied' : 'Apply'}
                       </button>
                     </div>
                   </div>
 
+                  <div style={styles.divider} />
+
                   <div style={styles.details}>{job.description}</div>
                 </div>
               );
             })
           ) : (
-            <p style={styles.noJobsText}>No jobs found matching your criteria.</p>
+            <EmptyState onReset={clearAll} />
           )}
         </div>
       </div>
 
       {/* View Job Modal */}
       {showViewModal && selectedJob && (
-        <div style={modal.overlay} onClick={() => setShowViewModal(false)}>
-          <div style={modal.box} onClick={(e) => e.stopPropagation()}>
-            <div style={modal.header}>
-              <div style={modal.brand}>M</div>
-              <div>
-                <h2 style={modal.title}>{selectedJob.title}</h2>
-                <div style={modal.subtitle}>{selectedJob.company} • {selectedJob.location}</div>
-              </div>
-              <button style={modal.close} onClick={() => setShowViewModal(false)}>✕</button>
+        <Modal onClose={() => setShowViewModal(false)}>
+          <div style={modal.header}>
+            <div style={modal.brand}>M</div>
+            <div>
+              <h2 style={modal.title}>{selectedJob.title}</h2>
+              <div style={modal.subtitle}>{selectedJob.company} • {selectedJob.location}</div>
             </div>
-
-            <div style={{ margin: '8px 0' }}><strong>Experience:</strong> {selectedJob.experience}</div>
-            <div style={{ margin: '8px 0' }}><strong>Salary:</strong> {selectedJob.salary}</div>
-            {!!selectedJob.tags?.length && (
-              <div style={{ margin: '8px 0' }}><strong>Skills:</strong> {selectedJob.tags.join(', ')}</div>
-            )}
-            <div style={{ marginTop: 12 }}><strong>Description</strong></div>
-            <p style={{ color: '#4b5563', lineHeight: 1.6 }}>{selectedJob.description}</p>
-
-            <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
-              <button style={modal.secondary} onClick={() => setShowViewModal(false)}>Close</button>
-              <button
-                style={{
-                  ...modal.primary,
-                  ...(isRecruiter || appliedSet.has(selectedJob.id) ? disabledBtn : {}),
-                  ...(appliedSet.has(selectedJob.id) ? appliedBtn : {}),
-                }}
-                disabled={isRecruiter || appliedSet.has(selectedJob.id)}
-                onClick={() => { setShowViewModal(false); handleApply(selectedJob); }}
-              >
-                {appliedSet.has(selectedJob.id) ? 'Applied' : 'Apply'}
-              </button>
-            </div>
+            <CloseBtn onClick={() => setShowViewModal(false)} />
           </div>
-        </div>
+
+          <KV label="Experience" value={selectedJob.experience} />
+          <KV label="Salary" value={selectedJob.salary} />
+          {!!selectedJob.tags?.length && <KV label="Skills" value={selectedJob.tags.join(', ')} />}
+
+          <div style={{ marginTop: 12, fontWeight: 700 }}><strong>Description</strong></div>
+          <p style={{ color: '#4b5563', lineHeight: 1.6 }}>{selectedJob.description}</p>
+
+          <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
+            <button style={modal.secondary} onClick={() => setShowViewModal(false)}>Close</button>
+            <button
+              style={{
+                ...modal.primary,
+                ...(isRecruiter || appliedSet.has(selectedJob.id) ? disabledBtn : {}),
+                ...(appliedSet.has(selectedJob.id) ? appliedBtn : {}),
+              }}
+              disabled={isRecruiter || appliedSet.has(selectedJob.id)}
+              onClick={() => { setShowViewModal(false); handleApply(selectedJob); }}
+            >
+              {appliedSet.has(selectedJob.id) ? 'Applied' : 'Apply'}
+            </button>
+          </div>
+        </Modal>
       )}
 
       {/* AUTH PROMPT (same vibe as landing page) */}
       {showAuthPrompt && (
-        <div style={modal.overlay} onClick={(e) => {
-          if (e.target === e.currentTarget) setShowAuthPrompt(false);
-        }}>
-          <div style={modal.box}>
-            <div style={modal.header}>
-              <div style={modal.brand}>M</div>
-              <div>
-                <h2 style={modal.title}>Login required</h2>
-                <p style={modal.subtitle}>Please login or sign up to apply for this job.</p>
-              </div>
-              <button style={modal.close} onClick={() => setShowAuthPrompt(false)}>✕</button>
+        <Modal onClose={() => setShowAuthPrompt(false)}>
+          <div style={modal.header}>
+            <div style={modal.brand}>M</div>
+            <div>
+              <h2 style={modal.title}>Login required</h2>
+              <p style={modal.subtitle}>Please login or sign up to apply for this job.</p>
             </div>
-
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-              <button style={modal.secondary} onClick={() => setShowAuthPrompt(false)}>Cancel</button>
-              <button
-                style={modal.primary}
-                onClick={() => {
-                  setShowAuthPrompt(false);
-                  setShowLoginModal(true);
-                }}
-              >
-                Login
-              </button>
-              <button
-                style={modal.primary}
-                onClick={() => {
-                  setShowAuthPrompt(false);
-                  navigate('/onboarding?from=apply');
-                }}
-              >
-                Sign Up
-              </button>
-            </div>
+            <CloseBtn onClick={() => setShowAuthPrompt(false)} />
           </div>
-        </div>
+
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <button style={modal.secondary} onClick={() => setShowAuthPrompt(false)}>Cancel</button>
+            <button
+              style={modal.primary}
+              onClick={() => {
+                setShowAuthPrompt(false);
+                setShowLoginModal(true);
+              }}
+            >
+              Login
+            </button>
+            <button
+              style={modal.primary}
+              onClick={() => {
+                setShowAuthPrompt(false);
+                navigate('/onboarding?from=apply');
+              }}
+            >
+              Sign Up
+            </button>
+          </div>
+        </Modal>
       )}
 
       {/* LOGIN MODAL (shared) */}
       {showLoginModal && (
-        <div style={modal.overlay} onClick={(e) => {
-          if (e.target === e.currentTarget) setShowLoginModal(false);
-        }}>
-          <div style={modal.box} onClick={(e) => e.stopPropagation()}>
-            <div style={modal.header}>
-              <div style={modal.brand}>M</div>
-              <div>
-                <h2 style={modal.title}>Welcome back</h2>
-                <p style={modal.subtitle}>Sign in to continue</p>
-              </div>
-              <button style={modal.close} onClick={() => setShowLoginModal(false)}>✕</button>
+        <Modal onClose={() => setShowLoginModal(false)}>
+          <div style={modal.header}>
+            <div style={modal.brand}>M</div>
+            <div>
+              <h2 style={modal.title}>Welcome back</h2>
+              <p style={modal.subtitle}>Sign in to continue</p>
             </div>
-
-            <form onSubmit={handleLoginSubmit}>
-              <div style={{ marginBottom: 10 }}>
-                <label style={labelCss}>Email</label>
-                <input
-                  type="email"
-                  value={loginData.email}
-                  onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                  required
-                  placeholder="you@domain.com"
-                  style={inputCss}
-                />
-              </div>
-              <div style={{ marginBottom: 10 }}>
-                <label style={labelCss}>Password</label>
-                <input
-                  type="password"
-                  value={loginData.password}
-                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                  required
-                  placeholder="••••••••"
-                  style={inputCss}
-                />
-              </div>
-
-              {loginError && <div style={errBanner}>{loginError}</div>}
-
-              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-                <button type="button" style={modal.secondary} onClick={() => setShowLoginModal(false)}>Cancel</button>
-                <button type="submit" style={modal.primary}>Login</button>
-              </div>
-            </form>
-
-            <div style={{ marginTop: 10, textAlign: 'center', color: '#6b7280' }}>
-              Don’t have an account?{' '}
-              <button
-                style={linkBtn}
-                onClick={() => {
-                  setShowLoginModal(false);
-                  navigate('/onboarding?from=apply');
-                }}
-              >
-                Sign up
-              </button>
-            </div>
+            <CloseBtn onClick={() => setShowLoginModal(false)} />
           </div>
-        </div>
+
+          <form onSubmit={handleLoginSubmit}>
+            <div style={{ marginBottom: 10 }}>
+              <label style={labelCss}>Email</label>
+              <input
+                type="email"
+                value={loginData.email}
+                onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                required
+                placeholder="you@domain.com"
+                style={inputCss}
+              />
+            </div>
+            <div style={{ marginBottom: 10 }}>
+              <label style={labelCss}>Password</label>
+              <input
+                type="password"
+                value={loginData.password}
+                onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                required
+                placeholder="••••••••"
+                style={inputCss}
+              />
+            </div>
+
+            {loginError && <div style={errBanner}>{loginError}</div>}
+
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button type="button" style={modal.secondary} onClick={() => setShowLoginModal(false)}>Cancel</button>
+              <button type="submit" style={modal.primary}>Login</button>
+            </div>
+          </form>
+
+          <div style={{ marginTop: 10, textAlign: 'center', color: '#6b7280' }}>
+            Don’t have an account?{' '}
+            <button
+              style={linkBtn}
+              onClick={() => {
+                setShowLoginModal(false);
+                navigate('/onboarding?from=apply');
+              }}
+            >
+              Sign up
+            </button>
+          </div>
+        </Modal>
       )}
 
       {/* APPLIED SUCCESS MODAL */}
       {showAppliedModal && (
-        <div style={modal.overlay} onClick={() => setShowAppliedModal(false)}>
-          <div style={modal.box} onClick={(e) => e.stopPropagation()}>
-            <div style={modal.header}>
-              <div style={modal.brand}>M</div>
-              <div>
-                <h2 style={modal.title}>Application submitted 🎉</h2>
-                <p style={modal.subtitle}>You’ve successfully applied to <strong>{appliedJobTitle}</strong>.</p>
-              </div>
-              <button style={modal.close} onClick={() => setShowAppliedModal(false)}>✕</button>
+        <Modal onClose={() => setShowAppliedModal(false)}>
+          <div style={modal.header}>
+            <div style={modal.brand}>M</div>
+            <div>
+              <h2 style={modal.title}>Application submitted 🎉</h2>
+              <p style={modal.subtitle}>You’ve successfully applied to <strong>{appliedJobTitle}</strong>.</p>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button style={modal.primary} onClick={() => setShowAppliedModal(false)}>Great!</button>
-            </div>
+            <CloseBtn onClick={() => setShowAppliedModal(false)} />
           </div>
-        </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <button style={modal.primary} onClick={() => setShowAppliedModal(false)}>Great!</button>
+          </div>
+        </Modal>
       )}
     </div>
   );
 }
 
+/* ---------- tiny components & hooks (modular, same file) ---------- */
+
+function Modal({ children, onClose }) {
+  return (
+    <div style={modal.overlay} onClick={e => { if (e.target === e.currentTarget) onClose?.(); }}>
+      <div style={modal.box} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function CloseBtn({ onClick }) {
+  return (
+    <button style={modal.close} onClick={onClick} aria-label="Close">✕</button>
+  );
+}
+
+function KV({ label, value }) {
+  return (
+    <div style={{ margin: '8px 0', display: 'flex', gap: 8 }}>
+      <div style={{ fontWeight: 700, minWidth: 92 }}>{label}:</div>
+      <div>{value}</div>
+    </div>
+  );
+}
+
+function SkeletonList({ count = 5 }) {
+  return (
+    <div>
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} style={styles.card}>
+          <div className="mmt-skel" style={skel.line(28, 220)} />
+          <div className="mmt-skel" style={skel.line(16, 340)} />
+          <div className="mmt-skel" style={skel.tagRow}>
+            <span className="mmt-skel" style={skel.tag} />
+            <span className="mmt-skel" style={skel.tag} />
+            <span className="mmt-skel" style={skel.tag} />
+          </div>
+          <div className="mmt-skel" style={skel.line(14, '92%')} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function EmptyState({ onReset }) {
+  return (
+    <div style={styles.emptyWrap}>
+      <div style={styles.emptyIcon}>🔍</div>
+      <h3 style={{ margin: '6px 0 6px', color: '#0a66c2', fontWeight: 800 }}>No matches</h3>
+      <p style={{ color: '#6b7280', margin: 0, textAlign: 'center' }}>
+        Try adjusting filters or clearing them to see all roles.
+      </p>
+      <button style={{ ...styles.viewBtn, marginTop: 12 }} onClick={onReset}>Reset filters</button>
+    </div>
+  );
+}
+
+function useEscapeToClose(pairs) {
+  const pairsRef = useRef(pairs);
+  useEffect(() => { pairsRef.current = pairs; }, [pairs]);
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        for (const [flag, close] of pairsRef.current) { if (flag) { close(); break; } }
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+}
+
+/* ---------- utils ---------- */
+const prettyLabel = (k, v) => {
+  const map = { title: 'Title', location: 'Location', experience: 'Experience', salary: 'Salary' };
+  const human = (key, val) => key === 'salary' ? `${val} L` : val;
+  return `${map[k] || k}: ${human(k, v)}`;
+};
+
+const isFresh = (iso, days = 3) => {
+  const created = new Date(iso).getTime();
+  const delta = Date.now() - created;
+  return delta <= days * 86400000;
+};
+
 /* ---------- styles ---------- */
 const styles = {
   page: { fontFamily: "'Inter', sans-serif", background: '#f8fafc', minHeight: '100vh' },
   container: { width: '92%', maxWidth: 1200, margin: '0 auto', padding: '32px 0' },
-  heading: { margin: '16px 0 18px', textAlign: 'center', color: '#0a66c2', fontWeight: 800 },
+
+  headingRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 6 },
+  heading: { margin: 0, textAlign: 'left', color: '#0a66c2', fontWeight: 800, fontSize: '1.6rem', letterSpacing: '0.2px' },
+  countPill: {
+    background: 'linear-gradient(180deg, #ffffff 0%, #f3f4f6 100%)',
+    border: '1px solid #e5e7eb', borderRadius: 999, padding: '8px 14px', fontWeight: 800, color: '#111827',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.06)'
+  },
+
   filters: {
-    display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 24, padding: 16,
-    background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.04)',
+    display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 12, marginBottom: 12, padding: 16,
+    background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 14, boxShadow: '0 8px 20px rgba(0,0,0,0.05)',
   },
   input: {
-    padding: '12px', border: '1px solid #e5e7eb', borderRadius: 10, fontSize: '1rem',
-    minWidth: 180, flex: 1, background: '#fff',
+    padding: '12px 12px', border: '1px solid #e5e7eb', borderRadius: 10, fontSize: '1rem',
+    minWidth: 180, flex: 1, background: '#fff', outline: '2px solid transparent', outlineOffset: 2,
+    transition: 'box-shadow .15s ease, border-color .15s ease',
   },
+
+  pillsRow: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 },
+  pill: {
+    background: '#eef2ff', color: '#0a66c2', border: '1px solid #dbeafe',
+    padding: '6px 10px', borderRadius: 999, fontWeight: 700, cursor: 'pointer',
+  },
+  pillClose: { marginLeft: 6, fontWeight: 900 },
+  clearAllBtn: {
+    background: '#e5e7eb', color: '#374151', padding: '6px 10px', borderRadius: 999, border: '1px solid #d1d5db', fontWeight: 700, cursor: 'pointer'
+  },
+
   jobsContainer: { width: '100%' },
   card: {
-    background: '#ffffff', borderRadius: 14, padding: 18, marginBottom: 16,
-    boxShadow: '0 6px 18px rgba(0,0,0,0.05)', border: '1px solid #e5e7eb',
-    transition: 'transform 0.12s ease',
+    background: '#ffffff', borderRadius: 16, padding: 18, marginBottom: 16,
+    boxShadow: '0 10px 24px rgba(0,0,0,0.06)', border: '1px solid #e5e7eb',
+    transition: 'transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease',
   },
   cardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 14 },
   jobInfo: { flex: 1, minWidth: 0 },
-  jobTitle: { color: '#0a66c2', fontSize: '1.25rem', margin: 0, fontWeight: 800 },
-  companyInfo: { margin: '6px 0 8px', color: '#374151' },
-  tags: { marginTop: 6, color: '#6b7280', fontSize: '0.95rem' },
-  details: { paddingTop: 10, color: '#4b5563', lineHeight: 1.5 },
+  titleRow: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
+  jobTitle: { color: '#0a66c2', fontSize: '1.25rem', margin: 0, fontWeight: 800, letterSpacing: '0.2px' },
+  newBadge: {
+    background: '#e6f4ff', color: '#0a66c2', border: '1px solid #cfe8ff', fontWeight: 800,
+    padding: '4px 8px', borderRadius: 999, fontSize: 12, letterSpacing: 0.3,
+  },
+  companyInfo: { margin: '6px 0 6px', color: '#374151' },
+  tagWrap: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 6 },
+  tagPill: {
+    background: '#f3f4f6', color: '#374151', border: '1px solid #e5e7eb',
+    padding: '4px 10px', borderRadius: 999, fontWeight: 700, fontSize: 12,
+  },
+  divider: { height: 1, background: 'linear-gradient(to right, transparent, #e5e7eb, transparent)', margin: '10px 0' },
+  details: { paddingTop: 2, color: '#4b5563', lineHeight: 1.55 },
+
   buttonContainer: { display: 'flex', gap: 8, flexShrink: 0 },
   viewBtn: {
     background: '#e5e7eb', color: '#374151', padding: '10px 16px', borderRadius: 10,
-    border: 'none', cursor: 'pointer', fontWeight: 700,
+    border: '1px solid #d1d5db', cursor: 'pointer', fontWeight: 800, transition: 'transform .1s ease, box-shadow .1s ease',
   },
   applyBtn: {
     background: '#0a66c2', color: '#fff', padding: '10px 16px', borderRadius: 10,
-    border: 'none', cursor: 'pointer', fontWeight: 800,
+    border: '1px solid #0a66c2', cursor: 'pointer', fontWeight: 900, letterSpacing: .2,
+    boxShadow: '0 6px 18px rgba(10,102,194,0.25)', transition: 'transform .1s ease, box-shadow .1s ease',
   },
-  noJobsText: { textAlign: 'center', color: '#6b7280', fontSize: '1.05rem', marginTop: 30 },
+
+  emptyWrap: {
+    background: '#fff', border: '1px solid #e5e7eb', borderRadius: 16,
+    padding: 24, textAlign: 'center', marginTop: 12, boxShadow: '0 8px 20px rgba(0,0,0,0.05)'
+  },
+  emptyIcon: { fontSize: 32, marginBottom: 6 },
 };
 
 const disabledBtn = {
@@ -561,11 +743,14 @@ const disabledBtn = {
   color: '#ffffff',
   cursor: 'not-allowed',
   boxShadow: 'none',
-  opacity: 0.9,
+  opacity: 0.95,
+  borderColor: '#cbd5e1'
 };
 
 const appliedBtn = {
   background: '#198754',
+  borderColor: '#198754',
+  boxShadow: '0 6px 18px rgba(25,135,84,0.25)',
 };
 
 const modal = {
@@ -574,8 +759,8 @@ const modal = {
     display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: 16,
   },
   box: {
-    background: '#fff', padding: 20, borderRadius: 12, width: '92%', maxWidth: 520,
-    boxShadow: '0 12px 40px rgba(0,0,0,0.25)',
+    background: '#fff', padding: 20, borderRadius: 14, width: '92%', maxWidth: 560,
+    boxShadow: '0 20px 60px rgba(0,0,0,0.3)', border: '1px solid #e5e7eb',
   },
   header: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 },
   brand: {
@@ -585,26 +770,56 @@ const modal = {
   title: { margin: 0, color: '#111827', fontSize: 20, fontWeight: 800 },
   subtitle: { margin: '2px 0 0', color: '#6b7280', fontSize: 14 },
   close: {
-    marginLeft: 'auto', background: '#f3f4f6', border: 'none', borderRadius: 8,
+    marginLeft: 'auto', background: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: 8,
     width: 32, height: 32, cursor: 'pointer', color: '#374151',
+    transition: 'transform .1s ease',
   },
   primary: {
     padding: '10px 16px', background: '#0a66c2', color: '#fff',
-    border: 'none', borderRadius: 8, fontWeight: 800, cursor: 'pointer',
+    border: '1px solid #0a66c2', borderRadius: 10, fontWeight: 900, cursor: 'pointer',
+    boxShadow: '0 6px 18px rgba(10,102,194,0.25)',
   },
   secondary: {
     padding: '10px 16px', background: '#e5e7eb', color: '#374151',
-    border: 'none', borderRadius: 8, fontWeight: 800, cursor: 'pointer',
+    border: '1px solid #d1d5db', borderRadius: 10, fontWeight: 800, cursor: 'pointer',
   },
 };
 
 const labelCss = { display: 'block', marginBottom: 6, fontWeight: 700, color: '#374151' };
-const inputCss = { width: '100%', padding: '10px 12px', border: '1px solid #e5e7eb', borderRadius: 8, outline: 'none' };
+const inputCss = {
+  width: '100%', padding: '10px 12px', border: '1px solid #e5e7eb', borderRadius: 10, outline: 'none',
+  transition: 'box-shadow .15s ease, border-color .15s ease'
+};
 const errBanner = { background: '#fee2e2', color: '#991b1b', border: '1px solid #fecaca', borderRadius: 8, padding: '8px 12px', fontSize: 14, margin: '8px 0' };
-const linkBtn = { background: 'none', border: 'none', color: '#0a66c2', fontWeight: 800, cursor: 'pointer', padding: 0 };
+const linkBtn = { background: 'none', border: 'none', color: '#0a66c2', fontWeight: 800, cursor: 'pointer', padding: 0, textDecoration: 'underline' };
+
+const skel = {
+  line: (h, w) => ({
+    height: h, width: typeof w === 'number' ? `${w}px` : w,
+    margin: '10px 0', borderRadius: 8, background: 'linear-gradient(90deg, #f3f4f6, #e5e7eb, #f3f4f6)', backgroundSize: '200% 100%', animation: 'mmt-shimmer 1.2s linear infinite'
+  }),
+  tagRow: { display: 'flex', gap: 8, margin: '8px 0' },
+  tag: {
+    height: 24, width: 72, borderRadius: 999,
+    background: 'linear-gradient(90deg, #f3f4f6, #e5e7eb, #f3f4f6)',
+    backgroundSize: '200% 100%', animation: 'mmt-shimmer 1.2s linear infinite'
+  }
+};
 
 const css = `
   @media (hover: hover) {
-    .card:hover { transform: translateY(-2px) }
+    .mmt-card:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(0,0,0,.08) }
+  }
+  .mmt-skel { overflow: hidden; position: relative }
+  @keyframes mmt-shimmer { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
+
+  /* focus rings for all interactive elements */
+  button, input, select {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+  button:focus-visible, input:focus-visible, select:focus-visible {
+    box-shadow: 0 0 0 3px rgba(10,102,194,0.25);
+    border-color: #0a66c2 !important;
   }
 `;
