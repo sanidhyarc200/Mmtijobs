@@ -60,18 +60,71 @@ export default function RegisterCompany() {
     setIsOwner(owns);
   }, [currentUser, location.search]);
 
+  // --- Validation (strong rules) ---
   const validate = () => {
     const e = {};
-    if (!companyName.trim()) e.companyName = "Company Name is required";
-    if (!companyEmail.trim()) e.companyEmail = "Company Email is required";
-    else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(companyEmail.trim())) e.companyEmail = "Invalid email address";
-    if (!contact.trim()) e.contact = "Contact number is required";
-    else if (!/^\d{10}$/.test(contact.trim())) e.contact = "Contact number must be 10 digits";
-    if (!password.trim()) e.password = "Password is required";
-    else if (password.length < 6) e.password = "Password must be at least 6 characters";
+    const name = companyName.trim();
+    const email = companyEmail.trim();
+    const phone = contact.trim();
+
+    // --- Company Name ---
+    if (!name) {
+      e.companyName = "Company Name is required";
+    } else {
+      if (name.length < 3) {
+        e.companyName = "Company Name must be at least 3 characters";
+      } else if (/^\d+$/.test(name)) {
+        e.companyName = "Company Name cannot be only numbers";
+      } else if (/^[a-z]$/i.test(name)) {
+        e.companyName = "Company Name cannot be a single letter";
+      }
+    }
+
+    // --- Company Email ---
+    if (!email) {
+      e.companyEmail = "Company Email is required";
+    } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email)) {
+      e.companyEmail = "Invalid email address";
+    }
+
+    // --- Contact Number ---
+    if (!phone) {
+      e.contact = "Contact number is required";
+    } else if (!/^\d{10}$/.test(phone)) {
+      e.contact = "Contact number must be 10 digits";
+    } else {
+      // prevent duplicate contact across companies
+      const existing = JSON.parse(localStorage.getItem("users")) || [];
+      const duplicate = existing.find(
+        (u) =>
+          u.userType === "recruiter" &&
+          u.contact === phone &&
+          u.email.toLowerCase() !== email.toLowerCase()
+      );
+      if (duplicate) {
+        e.contact = "This contact number is already registered with another company";
+      }
+    }
+
+    // --- Password (Strong rules) ---
+    if (!password.trim()) {
+      e.password = "Password is required";
+    } else if (password.length < 8) {
+      e.password = "Password must be at least 8 characters";
+    } else if (!/[A-Z]/.test(password)) {
+      e.password = "Password must contain at least one uppercase letter";
+    } else if (!/[a-z]/.test(password)) {
+      e.password = "Password must contain at least one lowercase letter";
+    } else if (!/[0-9]/.test(password)) {
+      e.password = "Password must contain at least one number";
+    } else if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      e.password = "Password must contain at least one special character";
+    }
+
     setErrors(e);
     return Object.keys(e).length === 0;
   };
+
 
   const upsertRecruiterUser = (companyData) => {
     const users = JSON.parse(localStorage.getItem("users")) || [];
