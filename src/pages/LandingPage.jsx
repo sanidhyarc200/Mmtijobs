@@ -89,6 +89,27 @@ const defaultJobs = [
     tags: ['Selenium', 'Jest', 'Automation'],
     description: 'Ensure product quality through comprehensive testing strategies. Experience with automation frameworks is required.',
   },
+  {
+    id: 9,
+    title: 'Security Analyst',
+    company: 'SafeNet Global',
+    location: 'Delhi',
+    experience: '2-5 years',
+    salary: '₹7-9 LPA',
+    tags: ['Network Security', 'Firewalls', 'SIEM'],
+    description: 'Monitor and analyze system security breaches. Strong knowledge of SIEM tools required.',
+  },
+  {
+    id: 10,
+    title: 'Technical Writer',
+    company: 'DocsHub Pvt Ltd',
+    location: 'Remote',
+    experience: '1-3 years',
+    salary: '₹4-6 LPA',
+    tags: ['Documentation', 'API Writing', 'Markdown'],
+    description: 'Create developer-friendly documentation and tutorials for APIs and products.',
+  },
+
 ];
 
 export default function LandingPage() {
@@ -481,6 +502,25 @@ export default function LandingPage() {
             </div>
           )}
         </div>
+        {/* Explore More Jobs button (students only) */}
+        {currentUser?.userType !== 'recruiter' && (
+          <div style={{ textAlign: 'center', marginTop: 20 }}>
+            <button
+              className="search-button"
+              onClick={() => {
+                if (!currentUser) {
+                  setPendingJob(null);
+                  setRequireRecruiter(false);
+                  setShowAuthPrompt(true);
+                } else if (currentUser.userType === 'candidate') {
+                  navigate('/jobs');
+                }
+              }}
+            >
+              Explore More Jobs ...
+            </button>
+          </div>
+        )}
       </section>
 
       {/* Recruiter Section */}

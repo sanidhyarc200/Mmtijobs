@@ -137,11 +137,17 @@ export default function JobsPage() {
       const match = String(s).match(/\d+(\.\d+)?/);
       return match ? parseFloat(match[0]) : 0;
     };
+    const normalize = (str) =>
+      str.toLowerCase()
+         .replace(/[-_]+/g, " ")
+         .replace(/\s+/g, " ")
+         .trim();
 
     return jobs.filter((job) => {
       const { title, location, experience, salary } = filters;
 
-      const okTitle = !title || job.title.toLowerCase().includes(title.toLowerCase());
+      const okTitle = !title || normalize(job.title).includes(normalize(title)) 
+        || normalize(title).split(" ").every(word => normalize(job.title).includes(word));
       const okLocation = !location || job.location.toLowerCase().includes(location.toLowerCase());
 
       // normalize experience tokens
