@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const defaultTitles = [
-  'Front-End Engineer', 'Back-End Engineer', 'Full Stack Engineer', 'DevOps Engineer',
+  'Front end Engineer', 'Back end Engineer', 'Full Stack Engineer', 'DevOps Engineer',
   'Data Scientist', 'Mobile Engineer', 'Security Engineer', 'Cloud Architect',
   'Game Developer', 'Machine Learning Engineer', 'Human Resources Manager',
   'HR Assistant', 'Payroll Specialist', 'Training Coordinator',
