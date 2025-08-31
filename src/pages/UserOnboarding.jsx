@@ -130,6 +130,12 @@ export default function UserOnboarding() {
 
     // Store user in localStorage (unchanged behavior)
     const users = JSON.parse(localStorage.getItem('users') || '[]');
+    
+    if (users.some(u => u.email?.toLowerCase() === formData.email.trim().toLowerCase())) {
+      setErrors({ email: "This email is already registered. Please login instead." });
+      return;
+    }
+  
     users.push({
       username: formData.username,
       password: formData.password,

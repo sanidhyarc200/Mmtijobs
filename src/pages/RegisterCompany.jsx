@@ -147,6 +147,15 @@ export default function RegisterCompany() {
   const registerCompany = () => {
     if (!validate()) return;
 
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+  const emailLower = companyEmail.trim().toLowerCase();
+
+  // 🚫 Prevent duplicate email across applicants & recruiters
+  if (users.some(u => u.email?.toLowerCase() === emailLower)) {
+    setErrors({ companyEmail: "This email is already registered with another account" });
+    return;
+  }
+
     const companyData = {
       name: companyName.trim(),
       email: companyEmail.trim(),
