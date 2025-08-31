@@ -174,7 +174,10 @@ export default function JobsPage() {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
 
-    if (name === 'title' && value.trim().length >= 3) {
+  };
+  const handleTitleBlur = (e) => {
+    const value = e.target.value.trim();
+    if (value.length >= 3) {
       const stored = JSON.parse(sessionStorage.getItem('searchedTitles')) || [];
       if (!stored.includes(value) && !defaultTitles.includes(value)) {
         const updated = [...stored, value];
@@ -295,15 +298,16 @@ export default function JobsPage() {
         {/* Filters */}
         <div style={styles.filters} role="region" aria-label="Job filters">
           <div style={{ position: 'relative', flex: 1 }}>
-            <input
-              list="titleSuggestions"
-              name="title"
-              value={filters.title}
-              onChange={handleFilterChange}
-              placeholder="Search by job title"
-              style={styles.input}
-              aria-label="Search by job title"
-            />
+          <input
+            list="titleSuggestions"
+            name="title"
+            value={filters.title}
+            onChange={handleFilterChange}
+            onBlur={handleTitleBlur}   // 👈 added here
+            placeholder="Search by job title"
+            style={styles.input}
+            aria-label="Search by job title"
+          />
             <datalist id="titleSuggestions">
               {titleSuggestions.map((t, idx) => <option key={idx} value={t} />)}
             </datalist>
