@@ -49,15 +49,38 @@ export default function UserOnboarding() {
   // ---------- Handlers ----------
   const handleInputChange = (e) => {
     const { name, value, type, files } = e.target;
+    const newValue = type === 'file' ? (files && files[0] ? files[0] : null) : value;
+
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'file' ? (files && files[0] ? files[0] : null) : value
+      [name]: newValue
     }));
-    if (errors[name]) {
-      const next = { ...errors };
-      delete next[name];
-      setErrors(next);
+
+    let newErrors = { ...errors };
+    if (newErrors[name]) delete newErrors[name];
+
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
+
+    // 🔥 Live checks
+    if (name === "contact" && newValue.trim().length === 10) {
+      if (users.some(u => String(u.contact).trim() === String(newValue).trim())) {
+        newErrors.contact = "This mobile number is already registered.";
+      }
     }
+
+    if (name === "email" && newValue.trim().length > 5) {
+      if (users.some(u => u.email?.toLowerCase() === newValue.trim().toLowerCase())) {
+        newErrors.email = "This email is already registered.";
+      }
+    }
+
+    if (name === "username" && newValue.trim().length > 2) {
+      if (users.some(u => u.username?.toLowerCase() === newValue.trim().toLowerCase())) {
+        newErrors.username = "This username is already taken.";
+      }
+    }
+
+    setErrors(newErrors);
   };
 
   const validateStep = (step) => {
@@ -153,8 +176,14 @@ export default function UserOnboarding() {
     }
 
     // 🚫 Duplicate mobile
-    if (users.some(u => u.contact === formData.contact.trim())) {
+    if (users.some(u => String(u.contact).trim() === String(formData.contact).trim())) {
       setErrors({ contact: "This mobile number is already registered." });
+      return;
+    }
+
+    // 🚫 Duplicate username
+    if (users.some(u => u.username?.toLowerCase() === formData.username.trim().toLowerCase())) {
+      setErrors({ username: "This username is already taken." });
       return;
     }
 
