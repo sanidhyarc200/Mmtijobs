@@ -68,26 +68,29 @@ export default function CompanyDashboard() {
           </div>
         ) : (
           <div style={{ display: "grid", gap: 10 }}>
-            {myJobs.map(job => (
-              <div key={job.id} style={jobCard}>
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                    <h4 style={{ margin: 0, color: "#0a66c2" }}>{job.title}</h4>
-                    <span style={pill}>{job.location}</span>
-                    <span style={pill}>{job.experience}</span>
-                    {job.salary && <span style={pill}>{job.salary}</span>}
-                  </div>
-                  <div style={{ color: "#6b7280", fontSize: 14, marginTop: 6 }}>
-                    Posted on {new Date(job.postedAt || Date.now()).toLocaleDateString()} • {job.company}
-                  </div>
-                  {job.tags?.length > 0 && (
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
-                      {job.tags.map((t, i) => <span key={i} style={tag}>{t}</span>)}
-                    </div>
-                  )}
-                </div>
+         {myJobs.map(job => (
+          <div key={job.id} style={jobCard}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <h4 style={{ margin: 0, color: "#0a66c2" }}>{job.title}</h4>
+                <span style={pill}>{job.location}</span>
+                <span style={pill}>{job.experienceRange}</span>
+                {job.salary && <span style={pill}>{job.salary}</span>}
               </div>
-            ))}
+              <div style={{ color: "#6b7280", fontSize: 14, marginTop: 6 }}>
+                Posted on {new Date(job.createdAt || Date.now()).toLocaleDateString()} • {job.company}
+              </div>
+
+              <button
+                onClick={() => navigate(`/job-applicants/${job.id}`)}
+                style={{ ...btnPrimary, marginTop: 10 }}
+              >
+                View Applicants
+              </button>
+            </div>
+          </div>
+        ))}
+
           </div>
         )}
       </section>
