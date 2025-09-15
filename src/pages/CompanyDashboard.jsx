@@ -68,28 +68,61 @@ export default function CompanyDashboard() {
           </div>
         ) : (
           <div style={{ display: "grid", gap: 10 }}>
-         {myJobs.map(job => (
-          <div key={job.id} style={jobCard}>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                <h4 style={{ margin: 0, color: "#0a66c2" }}>{job.title}</h4>
-                <span style={pill}>{job.location}</span>
-                <span style={pill}>{job.experienceRange}</span>
-                {job.salary && <span style={pill}>{job.salary}</span>}
-              </div>
-              <div style={{ color: "#6b7280", fontSize: 14, marginTop: 6 }}>
-                Posted on {new Date(job.createdAt || Date.now()).toLocaleDateString()} • {job.company}
-              </div>
+         {myJobs.map(job => {
+              const applicantCount = countApplicantsForJob(job.id);
 
-              <button
-                onClick={() => navigate(`/job-applicants/${job.id}`)}
-                style={{ ...btnPrimary, marginTop: 10 }}
-              >
-                View Applicants
-              </button>
-            </div>
-          </div>
-        ))}
+              return (
+                <div key={job.id} style={jobCard}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    {/* Left side: job info */}
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                        <h4 style={{ margin: 0, color: "#0a66c2" }}>{job.title}</h4>
+                        <span style={pill}>{job.location}</span>
+                        <span style={pill}>{job.experienceRange}</span>
+                        {job.salary && <span style={pill}>{job.salary}</span>}
+                      </div>
+                      <div style={{ color: "#6b7280", fontSize: 14, marginTop: 6 }}>
+                        Posted on {new Date(job.createdAt || Date.now()).toLocaleDateString()} • {job.company}
+                      </div>
+
+                      <button
+                        onClick={() => navigate(`/job-applicants/${job.id}`)}
+                        style={{ ...btnPrimary, marginTop: 10 }}
+                      >
+                        View Applicants
+                      </button>
+                    </div>
+
+                    {/* Right side: applicant count badge */}
+                    <div
+                      style={{
+                        minWidth: 40,
+                        height: 40,
+                        borderRadius: "50%",
+                        background: "#e0f2fe",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        fontWeight: 700,
+                        color: "#0369a1",
+                        fontSize: "0.9em",
+                      }}
+                    >
+                      {applicantCount}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
 
           </div>
         )}
@@ -121,6 +154,11 @@ function countApplicants(jobs) {
   const ids = new Set(jobs.map(j => j.id));
   return apps.filter(a => ids.has(a.jobId)).length;
 }
+function countApplicantsForJob(jobId) {
+  const apps = JSON.parse(localStorage.getItem("jobApplications")) || [];
+  return apps.filter((a) => a.jobId === jobId).length;
+}
+
 
 /* styles */
 const card = { background: "#fff", borderRadius: 12, boxShadow: "0 6px 20px rgba(0,0,0,0.08)", padding: 16 };
