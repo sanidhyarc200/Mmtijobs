@@ -159,70 +159,99 @@ export default function Dashboard() {
 
         {/* Main Panel */}
         <main style={{ flex: 1, ...baseCard }}>
-          {activeTab === "profile" && (
-            <div>
-              <h2 style={{ color: BLUE, marginBottom: "20px" }}>My Profile</h2>
+        {activeTab === "profile" && (
+        <div>
+          <h2 style={{ color: BLUE, marginBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            My Profile
+            <button
+              onClick={() => navigate("/edit-profile")}
+              style={{
+                padding: "4px 10px",
+                background: "transparent",
+                color: BLUE,
+                border: "none",
+                borderBottom: `1px solid ${BLUE}`,
+                borderRadius: "0",
+                fontWeight: 500,
+                cursor: "pointer",
+                fontSize: "0.8em",
+                transition: "color 0.2s ease, border-color 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "#004182"; // darker blue
+                e.currentTarget.style.borderColor = "#004182";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = BLUE;
+                e.currentTarget.style.borderColor = BLUE;
+              }}
+            >
+              Edit Profile
+            </button>
 
-              {/* Personal + Professional */}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "20px",
-                  marginBottom: "20px",
-                }}
-              >
-                <HoverCard title="Personal Information">
-                  <p>
-                    <strong>Name:</strong> {currentUser.firstName}{" "}
-                    {currentUser.middleName} {currentUser.lastName}
-                  </p>
-                  <p>
-                    <strong>Email:</strong> {currentUser.email}
-                  </p>
-                  <p>
-                    <strong>Contact:</strong> {currentUser.contact}
-                  </p>
-                </HoverCard>
+          </h2>
 
-                <HoverCard title="Professional Information">
-                  <p>
-                    <strong>Degree:</strong> {currentUser.degree}
-                  </p>
-                  <p>
-                    <strong>Passout Year:</strong> {currentUser.passout}
-                  </p>
-                  <p>
-                    <strong>Experience:</strong> {currentUser.experience} years
-                  </p>
-                  <p>
-                    <strong>Tech Stack:</strong> {currentUser.techstack}
-                  </p>
-                </HoverCard>
-              </div>
+          {/* Personal + Professional */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "20px",
+              marginBottom: "20px",
+            }}
+          >
+            <HoverCard title="Personal Information">
+              <p>
+                <strong>Name:</strong> {currentUser.firstName}{" "}
+                {currentUser.middleName} {currentUser.lastName}
+              </p>
+              <p>
+                <strong>Email:</strong> {currentUser.email}
+              </p>
+              <p>
+                <strong>Contact:</strong> {currentUser.contact}
+              </p>
+            </HoverCard>
 
-              <HoverCard title="Career Preferences">
-                <p>
-                  <strong>Last Salary:</strong> {currentUser.lastSalary}
-                </p>
-                <p>
-                  <strong>Expected Salary:</strong> {currentUser.currentSalary}
-                </p>
-                <p>
-                  <strong>Preferred Location:</strong> {currentUser.location}
-                </p>
-                <p>
-                  <strong>Notice Period:</strong> {currentUser.noticePeriod}
-                </p>
-                <p>
-                  <strong>Skills:</strong> {currentUser.skills}
-                </p>
-                <p>
-                  <strong>Description:</strong> {currentUser.description}
-                </p>
-              </HoverCard>
-            </div>
-          )}
+            <HoverCard title="Professional Information">
+              <p>
+                <strong>Degree:</strong> {currentUser.degree}
+              </p>
+              <p>
+                <strong>Passout Year:</strong> {currentUser.passout}
+              </p>
+              <p>
+                <strong>Experience:</strong> {currentUser.experience} years
+              </p>
+              <p>
+                <strong>Tech Stack:</strong> {currentUser.techstack}
+              </p>
+            </HoverCard>
+          </div>
+
+          <HoverCard title="Career Preferences">
+            <p>
+              <strong>Last Salary:</strong> {currentUser.lastSalary}
+            </p>
+            <p>
+              <strong>Expected Salary:</strong> {currentUser.currentSalary}
+            </p>
+            <p>
+              <strong>Preferred Location:</strong> {currentUser.location}
+            </p>
+            <p>
+              <strong>Notice Period:</strong> {currentUser.noticePeriod}
+            </p>
+            <p>
+              <strong>Skills:</strong> {currentUser.skills}
+            </p>
+            <p>
+              <strong>Description:</strong> {currentUser.description}
+            </p>
+          </HoverCard>
+        </div>
+      )}
+
 
           {activeTab === "applications" && (
             <div>

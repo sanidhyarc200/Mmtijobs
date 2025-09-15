@@ -93,7 +93,7 @@ import MapPage from './pages/Mappage';
 import Dashboard from './pages/Dasboard';
 import CompanyDashboard from './pages/CompanyDashboard'; // ✅ added
 import JobApplicants from './pages/JobApplicants';
-
+import EditProfile from './pages/EditProfile'; // ✅ added
 // Dummy PostJobPage placeholder for now (unused, safe to keep)
 function PostJobPage() {
   return <h1 style={{ padding: 30 }}>This is Post a Job page (UI coming soon)</h1>;
@@ -210,6 +210,7 @@ export default function App() {
         <Route path="/mappage" element={<MapPage />} />
         <Route path="/post-job" element={<PostJob />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/edit-profile" element={<EditProfile />} /> {/* ✅ added */}
         {/* <Route path="/company-profile" element={<CompanyProfile />} /> */}
         <Route path="/job-applicants/:jobId" element={<JobApplicants />} />
         <Route path="/company-dashboard" element={<CompanyDashboard />} /> {/* ✅ added */}
