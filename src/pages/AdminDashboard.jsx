@@ -371,9 +371,91 @@ export default function AdminDashboard() {
               <button className="icon-btn" onClick={closeEdit}>✕</button>
             </div>
             <div className="modal-body">
-              {/* add your form fields back here, unchanged */}
-            </div>
-            <div className="modal-footer">
+            {editModal.type === "company" && (
+              <div className="form-grid">
+                <label>Company Name
+                  <input value={editModal.item.companyName || editModal.item.name || ""}
+                    onChange={e => setEditModal(m => ({...m, item: {...m.item, companyName: e.target.value}}))}/>
+                </label>
+                <label>HR Name
+                  <input value={editModal.item.hrName || editModal.item.hr || ""}
+                    onChange={e => setEditModal(m => ({...m, item: {...m.item, hrName: e.target.value}}))}/>
+                </label>
+                <label>Email
+                  <input value={editModal.item.email || ""}
+                    onChange={e => setEditModal(m => ({...m, item: {...m.item, email: e.target.value}}))}/>
+                </label>
+                <label>Phone
+                  <input value={editModal.item.contact || editModal.item.phone || ""}
+                    onChange={e => setEditModal(m => ({...m, item: {...m.item, contact: e.target.value}}))}/>
+                </label>
+              </div>
+            )}
+
+            {editModal.type === "student" && (
+              <div className="form-grid">
+                <label>First Name
+                  <input value={editModal.item.firstName || ""}
+                    onChange={e => setEditModal(m => ({...m, item: {...m.item, firstName: e.target.value}}))}/>
+                </label>
+                <label>Last Name
+                  <input value={editModal.item.lastName || ""}
+                    onChange={e => setEditModal(m => ({...m, item: {...m.item, lastName: e.target.value}}))}/>
+                </label>
+                <label>Email
+                  <input value={editModal.item.email || ""}
+                    onChange={e => setEditModal(m => ({...m, item: {...m.item, email: e.target.value}}))}/>
+                </label>
+                <label>Degree
+                  <input value={editModal.item.degree || ""}
+                    onChange={e => setEditModal(m => ({...m, item: {...m.item, degree: e.target.value}}))}/>
+                </label>
+                <label>Experience
+                  <input value={editModal.item.experience || ""}
+                    onChange={e => setEditModal(m => ({...m, item: {...m.item, experience: e.target.value}}))}/>
+                </label>
+                <label>Location
+                  <input value={editModal.item.location || ""}
+                    onChange={e => setEditModal(m => ({...m, item: {...m.item, location: e.target.value}}))}/>
+                </label>
+              </div>
+            )}
+
+            {editModal.type === "job" && (
+              <div className="form-grid">
+                <label>Title
+                  <input value={editModal.item.title || ""}
+                    onChange={e => setEditModal(m => ({...m, item: {...m.item, title: e.target.value}}))}/>
+                </label>
+                <label>Company
+                  <input value={editModal.item.company || ""}
+                    onChange={e => setEditModal(m => ({...m, item: {...m.item, company: e.target.value}}))}/>
+                </label>
+                <label>Location
+                  <input value={editModal.item.location || ""}
+                    onChange={e => setEditModal(m => ({...m, item: {...m.item, location: e.target.value}}))}/>
+                </label>
+                <label>Experience
+                  <input value={editModal.item.experience || ""}
+                    onChange={e => setEditModal(m => ({...m, item: {...m.item, experience: e.target.value}}))}/>
+                </label>
+                <label>Salary
+                  <input value={editModal.item.salary || ""}
+                    onChange={e => setEditModal(m => ({...m, item: {...m.item, salary: e.target.value}}))}/>
+                </label>
+                <label>Status
+                  <select value={editModal.item.status || "pending"}
+                    onChange={e => setEditModal(m => ({...m, item: {...m.item, status: e.target.value}}))}>
+                    <option value="pending">Pending</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </label>
+              </div>
+            )}
+          </div>
+
+                      <div className="modal-footer">
               <button className="btn" onClick={handleEditSave}>Save</button>
               <button className="btn secondary" onClick={closeEdit}>Cancel</button>
             </div>

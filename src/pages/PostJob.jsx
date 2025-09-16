@@ -113,7 +113,7 @@ export default function PostJob() {
       company: user.company || user.name || "Unknown Company",
       posterEmail: user.email,
       createdAt: new Date().toISOString(),
-      status: "Open",
+      status: "pending",
     };
 
     const existing = JSON.parse(localStorage.getItem("jobs")) || [];
