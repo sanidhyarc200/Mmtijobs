@@ -31,9 +31,33 @@ export default function Header({ onPostJobClick }) {
   const handleLoginSubmit = (e) => {
     e.preventDefault();
     setLoginError('');
+
+    const email = loginData.email.trim();
+    const password = loginData.password;
+
+    // 👉 Admin hardcoded credentials
+    if (email === 'sanidhyakoranne123@gmail.com' && password === 'Mmti@help49') {
+      const adminUser = {
+        id: 'admin-1',
+        name: 'Administrator',
+        email,
+        role: 'admin',
+        userType: 'admin',
+        loggedInAt: new Date().toISOString(),
+      };
+      localStorage.setItem('currentUser', JSON.stringify(adminUser));
+      try { window.dispatchEvent(new Event('authChanged')); } catch {}
+      setIsLoggedIn(true);
+      setCurrentUser(adminUser);
+      setShowLoginModal(false);
+      navigate('/admin-dashboard');
+      return;
+    }
+
+    // 👉 Normal users (students/candidates)
     const users = JSON.parse(localStorage.getItem('users')) || [];
     const user = users.find(
-      (u) => u.email === loginData.email && u.password === loginData.password
+      (u) => u.email === email && u.password === password
     );
 
     if (user) {
@@ -43,11 +67,12 @@ export default function Header({ onPostJobClick }) {
       setCurrentUser(user);
       setShowLoginModal(false);
 
-      // 👉 send to correct dashboard
+      // send to correct dashboard
       navigate(user.userType === 'recruiter' ? '/company-dashboard' : '/dashboard');
-    } else {
-      setLoginError('Invalid email or password.');
+      return;
     }
+
+    setLoginError('Invalid email or password.');
   };
 
   const handleLogout = () => {
@@ -65,7 +90,6 @@ export default function Header({ onPostJobClick }) {
   const handleChooseRole = (role) => {
     localStorage.setItem('pendingSignupType', role);
     if (role === 'recruiter') {
-      // force fresh company registration form
       navigate('/register-company?from=signup&fresh=1');
     } else {
       navigate(`/onboarding?userType=${encodeURIComponent(role)}`);
@@ -73,11 +97,13 @@ export default function Header({ onPostJobClick }) {
     setShowRoleModal(false);
   };
 
-  // dynamic dashboard path
   const dashboardPath =
-    currentUser?.userType === 'recruiter' ? '/company-dashboard' : '/dashboard';
+    currentUser?.userType === 'recruiter'
+      ? '/company-dashboard'
+      : currentUser?.userType === 'admin'
+      ? '/admin-dashboard'
+      : '/dashboard';
 
-  // Close modals on ESC
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'Escape') {
@@ -106,13 +132,11 @@ export default function Header({ onPostJobClick }) {
               <Link to={dashboardPath} className="nav-link">Dashboard</Link>
               <button onClick={handleLogout} className="logout-btn">Logout</button>
 
-              {/* 👉 Post a Job should NOT ask anything if recruiter */}
               <button
                 onClick={() => {
                   if (currentUser?.userType === 'recruiter') {
                     navigate('/post-job');
                   } else {
-                    // not a recruiter → open the old modal flow
                     onPostJobClick?.();
                   }
                 }}
@@ -134,7 +158,6 @@ export default function Header({ onPostJobClick }) {
                 Login
               </button>
 
-              {/* Instead of Link -> open Role modal first */}
               <button onClick={handleOpenSignupRoleModal} className="signup-btn as-button">
                 Sign Up
               </button>
@@ -311,8 +334,8 @@ export default function Header({ onPostJobClick }) {
         </div>
       )}
 
-      {/* keep your existing CSS below */}
-      <style jsx>{`
+        {/* keep your existing CSS below */}
+        <style jsx>{`
     /* ======= Brand palette ======= */
     :root {
       --brand: #0a66c2;
@@ -633,3 +656,8 @@ export default function Header({ onPostJobClick }) {
     </header>
   );
 }
+
+
+
+
+   
