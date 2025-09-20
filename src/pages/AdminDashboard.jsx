@@ -94,7 +94,26 @@ export default function AdminDashboard() {
       return;
     }
 
-    setCompanies(getCompanies());
+    // --- Permanent static clients ---
+    const staticClients = [
+      { companyName: "Medinatridle heath IIB", email: "contact@medinitriddlehealth.com", contact: "8989954397", hrName: "HR Manager" },
+      { companyName: "Samarth Electrocare", email: "samathelectrocare@gmail.com", contact: "7755990767", hrName: "HR Manager" },
+      { companyName: "Neelanj business Solution LLP", email: "neelanjbusinesssolution@gmail.com", contact: "7998406170", hrName: "HR Manager" },
+      { companyName: "RAJRUDRA Enterprises pvt ltd", email: "rajrudraenterprises.mandeep@gmail.com", contact: "9752319442", hrName: "HR Manager" },
+      { companyName: "Orphic Solution, Bhopal", email: "hr@orphicsolution.com", contact: "9584360388", hrName: "HR Manager" },
+      { companyName: "yokohama pvt ltd engine", email: "yokohama pvt ltd engine", contact: "7697651756", hrName: "HR Manager" },
+      { companyName: "Raj Seeds Trades", email: "hr@rajseeds.co.in", contact: "626200198", hrName: "HR Manager" },
+      { companyName: "Sasthi Enterprises Pvt. Ltd.", email: "hr@harenply.com", contact: "9259538852", hrName: "HR Manager" },
+      { companyName: "GENTRIGO SOLUTIONs", email: "Info.gentrigo@gmail.com", contact: "6265389979", hrName: "HR Manager" },
+      { companyName: "Tendonifoodchemical", email: "tendonifoodchemical@gmail.com", contact: "6269990150", hrName: "HR Manager" },
+    ];
+
+    // --- Local companies (new signups)
+    const storedCompanies = getCompanies();
+
+    // --- Merge static + dynamic (static always on top)
+    setCompanies([...staticClients, ...storedCompanies]);
+
     setStudents(getStudents());
     setJobs(getJobs());
   }, [navigate]);
@@ -198,28 +217,13 @@ export default function AdminDashboard() {
       <aside className="admin-sidebar">
         <div className="sidebar-title">Admin</div>
         <nav className="sidebar-nav">
-          <button
-            className={`sidebar-btn ${
-              activeSection === "recruiters" ? "active" : ""
-            }`}
-            onClick={() => setActiveSection("recruiters")}
-          >
+          <button className={`sidebar-btn ${activeSection === "recruiters" ? "active" : ""}`} onClick={() => setActiveSection("recruiters")}>
             Recruiters / Clients
           </button>
-          <button
-            className={`sidebar-btn ${
-              activeSection === "students" ? "active" : ""
-            }`}
-            onClick={() => setActiveSection("students")}
-          >
+          <button className={`sidebar-btn ${activeSection === "students" ? "active" : ""}`} onClick={() => setActiveSection("students")}>
             Students
           </button>
-          <button
-            className={`sidebar-btn ${
-              activeSection === "jobs" ? "active" : ""
-            }`}
-            onClick={() => setActiveSection("jobs")}
-          >
+          <button className={`sidebar-btn ${activeSection === "jobs" ? "active" : ""}`} onClick={() => setActiveSection("jobs")}>
             Jobs
           </button>
         </nav>
@@ -233,10 +237,7 @@ export default function AdminDashboard() {
         <Card title="Total Recruiters" value={stats.totalCompanies} />
         <Card title="Total Students" value={stats.totalStudents} />
         <Card title="Total Jobs" value={stats.totalJobs} />
-        <Card
-          title="Active / Pending / Inactive"
-          value={`${stats.activeJobs} / ${stats.pendingJobs} / ${stats.inactiveJobs}`}
-        />
+        <Card title="Active / Pending / Inactive" value={`${stats.activeJobs} / ${stats.pendingJobs} / ${stats.inactiveJobs}`} />
       </div>
     );
   }
@@ -263,9 +264,7 @@ export default function AdminDashboard() {
               {companies.length ? (
                 companies.map((c, idx) => {
                   const jobsCount = jobs.filter(
-                    (j) =>
-                      (j.company || "").trim() ===
-                      (c.companyName || c.name || "").trim()
+                    (j) => (j.company || "").trim() === (c.companyName || c.name || "").trim()
                   ).length;
                   return (
                     <tr key={idx}>
@@ -275,27 +274,15 @@ export default function AdminDashboard() {
                       <td>{c.contact || c.phone || "-"}</td>
                       <td>{jobsCount}</td>
                       <td className="actions">
-                        <button
-                          className="btn secondary"
-                          onClick={() => openEdit("company", idx, c)}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          className="btn danger"
-                          onClick={() => handleDelete("company", idx)}
-                        >
-                          Delete
-                        </button>
+                        <button className="btn secondary" onClick={() => openEdit("company", idx, c)}>Edit</button>
+                        <button className="btn danger" onClick={() => handleDelete("company", idx)}>Delete</button>
                       </td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan={6} className="empty">
-                    No recruiters found.
-                  </td>
+                  <td colSpan={6} className="empty">No recruiters found.</td>
                 </tr>
               )}
             </tbody>
@@ -326,10 +313,7 @@ export default function AdminDashboard() {
             <tbody>
               {students.length ? (
                 students.map((s, idx) => {
-                  const name =
-                    [s.firstName, s.middleName, s.lastName]
-                      .filter(Boolean)
-                      .join(" ") || s.name || "-";
+                  const name = [s.firstName, s.middleName, s.lastName].filter(Boolean).join(" ") || s.name || "-";
                   return (
                     <tr key={idx}>
                       <td>{name}</td>
@@ -338,27 +322,15 @@ export default function AdminDashboard() {
                       <td>{s.experience || "-"}</td>
                       <td>{s.location || "-"}</td>
                       <td className="actions">
-                        <button
-                          className="btn secondary"
-                          onClick={() => openEdit("student", idx, s)}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          className="btn danger"
-                          onClick={() => handleDelete("student", idx)}
-                        >
-                          Delete
-                        </button>
+                        <button className="btn secondary" onClick={() => openEdit("student", idx, s)}>Edit</button>
+                        <button className="btn danger" onClick={() => handleDelete("student", idx)}>Delete</button>
                       </td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan={6} className="empty">
-                    No students found.
-                  </td>
+                  <td colSpan={6} className="empty">No students found.</td>
                 </tr>
               )}
             </tbody>
@@ -394,20 +366,8 @@ export default function AdminDashboard() {
                     <td>{j.title || "-"}</td>
                     <td>{j.company || "-"}</td>
                     <td>
-                      <span
-                        className={`pill ${
-                          j.status === "active"
-                            ? "ok"
-                            : j.status === "pending"
-                            ? "pending"
-                            : "warn"
-                        }`}
-                      >
-                        {j.status === "active"
-                          ? "Active"
-                          : j.status === "pending"
-                          ? "Pending"
-                          : "Inactive"}
+                      <span className={`pill ${j.status === "active" ? "ok" : j.status === "pending" ? "pending" : "warn"}`}>
+                        {j.status === "active" ? "Active" : j.status === "pending" ? "Pending" : "Inactive"}
                       </span>
                     </td>
                     <td>{j.location || "-"}</td>
@@ -415,40 +375,20 @@ export default function AdminDashboard() {
                     <td>{j.salary || "-"}</td>
                     <td className="actions">
                       {j.status === "pending" ? (
-                        <button
-                          className="btn"
-                          onClick={() => approveJob(idx)}
-                        >
-                          Approve
-                        </button>
+                        <button className="btn" onClick={() => approveJob(idx)}>Approve</button>
                       ) : (
-                        <button
-                          className="btn"
-                          onClick={() => handleToggleJobStatus(idx)}
-                        >
+                        <button className="btn" onClick={() => handleToggleJobStatus(idx)}>
                           {j.status === "active" ? "Deactivate" : "Activate"}
                         </button>
                       )}
-                      <button
-                        className="btn secondary"
-                        onClick={() => openEdit("job", idx, j)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="btn danger"
-                        onClick={() => handleDelete("job", idx)}
-                      >
-                        Delete
-                      </button>
+                      <button className="btn secondary" onClick={() => openEdit("job", idx, j)}>Edit</button>
+                      <button className="btn danger" onClick={() => handleDelete("job", idx)}>Delete</button>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="empty">
-                    No jobs found.
-                  </td>
+                  <td colSpan={7} className="empty">No jobs found.</td>
                 </tr>
               )}
             </tbody>
@@ -460,21 +400,9 @@ export default function AdminDashboard() {
 
   return (
     <div className="admin-layout">
-      {/* Toast for pending jobs */}
       {jobs.some((j) => j.status === "pending") && (
-        <div
-          style={{
-            background: "#fff8e1",
-            border: "1px solid #fcd34d",
-            padding: "12px 16px",
-            borderRadius: "10px",
-            color: "#92400e",
-            fontWeight: 600,
-            marginBottom: "12px",
-          }}
-        >
-          ⚠️ {jobs.filter((j) => j.status === "pending").length} job(s) pending
-          approval
+        <div style={{ background: "#fff8e1", border: "1px solid #fcd34d", padding: "12px 16px", borderRadius: "10px", color: "#92400e", fontWeight: 600, marginBottom: "12px" }}>
+          ⚠️ {jobs.filter((j) => j.status === "pending").length} job(s) pending approval
         </div>
       )}
 
@@ -493,216 +421,68 @@ export default function AdminDashboard() {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Edit {editModal.type}</h3>
-              <button className="icon-btn" onClick={closeEdit}>
-                ✕
-              </button>
+              <button className="icon-btn" onClick={closeEdit}>✕</button>
             </div>
             <div className="modal-body">
               {editModal.type === "company" && (
                 <div className="form-grid">
-                  <label>
-                    Company Name
-                    <input
-                      value={
-                        editModal.item.companyName || editModal.item.name || ""
-                      }
-                      onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, companyName: e.target.value },
-                        }))
-                      }
-                    />
+                  <label>Company Name
+                    <input value={editModal.item.companyName || editModal.item.name || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, companyName: e.target.value } }))} />
                   </label>
-                  <label>
-                    HR Name
-                    <input
-                      value={editModal.item.hrName || editModal.item.hr || ""}
-                      onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, hrName: e.target.value },
-                        }))
-                      }
-                    />
+                  <label>HR Name
+                    <input value={editModal.item.hrName || editModal.item.hr || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, hrName: e.target.value } }))} />
                   </label>
-                  <label>
-                    Email
-                    <input
-                      value={editModal.item.email || ""}
-                      onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, email: e.target.value },
-                        }))
-                      }
-                    />
+                  <label>Email
+                    <input value={editModal.item.email || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, email: e.target.value } }))} />
                   </label>
-                  <label>
-                    Phone
-                    <input
-                      value={editModal.item.contact || editModal.item.phone || ""}
-                      onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, contact: e.target.value },
-                        }))
-                      }
-                    />
+                  <label>Phone
+                    <input value={editModal.item.contact || editModal.item.phone || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, contact: e.target.value } }))} />
                   </label>
                 </div>
               )}
 
               {editModal.type === "student" && (
                 <div className="form-grid">
-                  <label>
-                    First Name
-                    <input
-                      value={editModal.item.firstName || ""}
-                      onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, firstName: e.target.value },
-                        }))
-                      }
-                    />
+                  <label>First Name
+                    <input value={editModal.item.firstName || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, firstName: e.target.value } }))} />
                   </label>
-                  <label>
-                    Last Name
-                    <input
-                      value={editModal.item.lastName || ""}
-                      onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, lastName: e.target.value },
-                        }))
-                      }
-                    />
+                  <label>Last Name
+                    <input value={editModal.item.lastName || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, lastName: e.target.value } }))} />
                   </label>
-                  <label>
-                    Email
-                    <input
-                      value={editModal.item.email || ""}
-                      onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, email: e.target.value },
-                        }))
-                      }
-                    />
+                  <label>Email
+                    <input value={editModal.item.email || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, email: e.target.value } }))} />
                   </label>
-                  <label>
-                    Degree
-                    <input
-                      value={editModal.item.degree || ""}
-                      onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, degree: e.target.value },
-                        }))
-                      }
-                    />
+                  <label>Degree
+                    <input value={editModal.item.degree || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, degree: e.target.value } }))} />
                   </label>
-                  <label>
-                    Experience
-                    <input
-                      value={editModal.item.experience || ""}
-                      onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, experience: e.target.value },
-                        }))
-                      }
-                    />
+                  <label>Experience
+                    <input value={editModal.item.experience || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, experience: e.target.value } }))} />
                   </label>
-                  <label>
-                    Location
-                    <input
-                      value={editModal.item.location || ""}
-                      onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, location: e.target.value },
-                        }))
-                      }
-                    />
+                  <label>Location
+                    <input value={editModal.item.location || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, location: e.target.value } }))} />
                   </label>
                 </div>
               )}
 
               {editModal.type === "job" && (
                 <div className="form-grid">
-                  <label>
-                    Title
-                    <input
-                      value={editModal.item.title || ""}
-                      onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, title: e.target.value },
-                        }))
-                      }
-                    />
+                  <label>Title
+                    <input value={editModal.item.title || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, title: e.target.value } }))} />
                   </label>
-                  <label>
-                    Company
-                    <input
-                      value={editModal.item.company || ""}
-                      onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, company: e.target.value },
-                        }))
-                      }
-                    />
+                  <label>Company
+                    <input value={editModal.item.company || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, company: e.target.value } }))} />
                   </label>
-                  <label>
-                    Location
-                    <input
-                      value={editModal.item.location || ""}
-                      onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, location: e.target.value },
-                        }))
-                      }
-                    />
+                  <label>Location
+                    <input value={editModal.item.location || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, location: e.target.value } }))} />
                   </label>
-                  <label>
-                    Experience
-                    <input
-                      value={editModal.item.experienceRange || ""}
-                      onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, experienceRange: e.target.value },
-                        }))
-                      }
-                    />
+                  <label>Experience
+                    <input value={editModal.item.experienceRange || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, experienceRange: e.target.value } }))} />
                   </label>
-                  <label>
-                    Salary
-                    <input
-                      value={editModal.item.salary || ""}
-                      onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, salary: e.target.value },
-                        }))
-                      }
-                    />
+                  <label>Salary
+                    <input value={editModal.item.salary || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, salary: e.target.value } }))} />
                   </label>
-                  <label>
-                    Status
-                    <select
-                      value={editModal.item.status || "pending"}
-                      onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, status: e.target.value },
-                        }))
-                      }
-                    >
+                  <label>Status
+                    <select value={editModal.item.status || "pending"} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, status: e.target.value } }))}>
                       <option value="pending">Pending</option>
                       <option value="active">Active</option>
                       <option value="inactive">Inactive</option>
@@ -713,18 +493,13 @@ export default function AdminDashboard() {
             </div>
 
             <div className="modal-footer">
-              <button className="btn" onClick={handleEditSave}>
-                Save
-              </button>
-              <button className="btn secondary" onClick={closeEdit}>
-                Cancel
-              </button>
+              <button className="btn" onClick={handleEditSave}>Save</button>
+              <button className="btn secondary" onClick={closeEdit}>Cancel</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Inline CSS */}
       <style>{`
         .admin-layout { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
         .cards-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; }
