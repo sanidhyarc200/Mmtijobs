@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import logo from '../assets/logo.png';
 
 export default function Header({ onPostJobClick }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -118,7 +119,9 @@ export default function Header({ onPostJobClick }) {
   return (
     <header className="header">
       <div className="nav-container">
-        <Link to="/" className="logo">MMTijobs</Link>
+      <Link to="/" className="logo">
+      <img src={logo} alt="MMTijobs" className="logo-img" />
+    </Link>
 
         {/* Desktop Navigation */}
         <nav className="desktop-nav">
@@ -369,12 +372,14 @@ export default function Header({ onPostJobClick }) {
 
     /* ======= Brand ======= */
     .logo {
-      font-size: 22px;
-      font-weight: 800;
-      color: var(--brand);
-      text-decoration: none;
-      letter-spacing: 0.3px;
-      transition: transform 0.1s ease;
+      display: flex;
+      align-items: center;
+      height: 50px;          /* lock header height */
+    }
+    .logo-img {
+      height: 98px;   /* 👈 keeps header same height */
+      width: auto;
+      display: block;
     }
     .logo:hover { transform: translateY(-1px); }
 
