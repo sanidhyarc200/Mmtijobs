@@ -66,7 +66,8 @@ export default function JobsPage() {
   };
 
   const loadJobs = () => {
-    const stored = JSON.parse(localStorage.getItem('jobs')) || [];
+    const stored = (JSON.parse(localStorage.getItem("jobs")) || [])
+      .filter((j) => j.status === "active");
     // normalize and sort newest first
     const normalized = stored.map(j => ({
       id: j.id,

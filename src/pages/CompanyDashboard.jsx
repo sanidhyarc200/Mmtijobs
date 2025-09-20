@@ -88,6 +88,26 @@ export default function CompanyDashboard() {
                         <span style={pill}>{job.location}</span>
                         <span style={pill}>{job.experienceRange}</span>
                         {job.salary && <span style={pill}>{job.salary}</span>}
+                        <span
+                        style={{
+                          ...pill,
+                          background:
+                            job.status === "active"
+                              ? "#dcfce7"
+                              : job.status === "pending"
+                              ? "#fef9c3"
+                              : "#fee2e2",
+                          color:
+                            job.status === "active"
+                              ? "#166534"
+                              : job.status === "pending"
+                              ? "#92400e"
+                              : "#991b1b",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {job.status ? job.status.charAt(0).toUpperCase() + job.status.slice(1) : "Unknown"}
+                      </span>
                       </div>
                       <div style={{ color: "#6b7280", fontSize: 14, marginTop: 6 }}>
                         Posted on {new Date(job.createdAt || Date.now()).toLocaleDateString()} • {job.company}

@@ -8,6 +8,7 @@ export default function Dashboard() {
   const [applications, setApplications] = useState([]);
   const [savedJobs, setSavedJobs] = useState([]);
   const [activeTab, setActiveTab] = useState("profile");
+  const [showAppModal, setShowAppModal] = useState(false); // NEW modal state
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("currentUser"));
@@ -18,7 +19,8 @@ export default function Dashboard() {
     setCurrentUser(user);
 
     // Applications
-    const allApplications = JSON.parse(localStorage.getItem("jobApplications")) || [];
+    const allApplications =
+      JSON.parse(localStorage.getItem("jobApplications")) || [];
     setApplications(allApplications.filter((app) => app.userId === user.id));
 
     // Saved jobs
@@ -50,11 +52,13 @@ export default function Dashboard() {
       style={{ ...baseCard }}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = "translateY(-4px)";
-        e.currentTarget.style.boxShadow = "0 10px 28px rgba(10,102,194,0.18)";
+        e.currentTarget.style.boxShadow =
+          "0 10px 28px rgba(10,102,194,0.18)";
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = "translateY(0)";
-        e.currentTarget.style.boxShadow = "0 6px 20px rgba(10,102,194,0.08)";
+        e.currentTarget.style.boxShadow =
+          "0 6px 20px rgba(10,102,194,0.08)";
       }}
     >
       {title && (
@@ -76,7 +80,13 @@ export default function Dashboard() {
   );
 
   return (
-    <div style={{ fontFamily: "'Inter', sans-serif", background: BG, minHeight: "100vh" }}>
+    <div
+      style={{
+        fontFamily: "'Inter', sans-serif",
+        background: BG,
+        minHeight: "100vh",
+      }}
+    >
       {/* Header */}
       <header
         style={{
@@ -88,25 +98,26 @@ export default function Dashboard() {
           boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
         }}
       >
-        {/* <h1 style={{ color: BLUE, margin: 0, fontWeight: 900 }}>MMTI Jobs Dashboard</h1> */}
         <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
           <span style={{ color: BLUE, fontWeight: 600 }}>
             Welcome, {currentUser.firstName}
           </span>
-          {/* <button
-            onClick={handleLogout}
+
+          {/* NEW: Applied jobs button */}
+          <button
+            onClick={() => setShowAppModal(true)}
             style={{
-              padding: "8px 18px",
-              background: "#f3f4f6",
-              color: "#374151",
+              padding: "6px 12px",
+              background: BLUE,
+              color: "white",
               border: "none",
               borderRadius: "8px",
-              fontWeight: 600,
               cursor: "pointer",
+              fontSize: "0.85em",
             }}
           >
-            Logout
-          </button> */}
+            Applied Jobs: {applications.length}
+          </button>
         </div>
       </header>
 
@@ -159,99 +170,113 @@ export default function Dashboard() {
 
         {/* Main Panel */}
         <main style={{ flex: 1, ...baseCard }}>
-        {activeTab === "profile" && (
-        <div>
-          <h2 style={{ color: BLUE, marginBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            My Profile
-            <button
-              onClick={() => navigate("/edit-profile")}
-              style={{
-                padding: "4px 10px",
-                background: "transparent",
-                color: BLUE,
-                border: "none",
-                borderBottom: `1px solid ${BLUE}`,
-                borderRadius: "0",
-                fontWeight: 500,
-                cursor: "pointer",
-                fontSize: "0.8em",
-                transition: "color 0.2s ease, border-color 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = "#004182"; // darker blue
-                e.currentTarget.style.borderColor = "#004182";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = BLUE;
-                e.currentTarget.style.borderColor = BLUE;
-              }}
-            >
-              Edit Profile
-            </button>
+          {activeTab === "profile" && (
+            <div>
+              <h2
+                style={{
+                  color: BLUE,
+                  marginBottom: "20px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                My Profile
+                <button
+                  onClick={() => navigate("/edit-profile")}
+                  style={{
+                    padding: "4px 10px",
+                    background: "transparent",
+                    color: BLUE,
+                    border: "none",
+                    borderBottom: `1px solid ${BLUE}`,
+                    borderRadius: "0",
+                    fontWeight: 500,
+                    cursor: "pointer",
+                    fontSize: "0.8em",
+                    transition:
+                      "color 0.2s ease, border-color 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = "#004182"; // darker blue
+                    e.currentTarget.style.borderColor = "#004182";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = BLUE;
+                    e.currentTarget.style.borderColor = BLUE;
+                  }}
+                >
+                  Edit Profile
+                </button>
+              </h2>
 
-          </h2>
+              {/* Personal + Professional */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "20px",
+                  marginBottom: "20px",
+                }}
+              >
+                <HoverCard title="Personal Information">
+                  <p>
+                    <strong>Name:</strong> {currentUser.firstName}{" "}
+                    {currentUser.middleName} {currentUser.lastName}
+                  </p>
+                  <p>
+                    <strong>Email:</strong> {currentUser.email}
+                  </p>
+                  <p>
+                    <strong>Contact:</strong> {currentUser.contact}
+                  </p>
+                </HoverCard>
 
-          {/* Personal + Professional */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "20px",
-              marginBottom: "20px",
-            }}
-          >
-            <HoverCard title="Personal Information">
-              <p>
-                <strong>Name:</strong> {currentUser.firstName}{" "}
-                {currentUser.middleName} {currentUser.lastName}
-              </p>
-              <p>
-                <strong>Email:</strong> {currentUser.email}
-              </p>
-              <p>
-                <strong>Contact:</strong> {currentUser.contact}
-              </p>
-            </HoverCard>
+                <HoverCard title="Professional Information">
+                  <p>
+                    <strong>Degree:</strong> {currentUser.degree}
+                  </p>
+                  <p>
+                    <strong>Passout Year:</strong> {currentUser.passout}
+                  </p>
+                  <p>
+                    <strong>Experience:</strong>{" "}
+                    {currentUser.experience} years
+                  </p>
+                  <p>
+                    <strong>Tech Stack:</strong>{" "}
+                    {currentUser.techstack}
+                  </p>
+                </HoverCard>
+              </div>
 
-            <HoverCard title="Professional Information">
-              <p>
-                <strong>Degree:</strong> {currentUser.degree}
-              </p>
-              <p>
-                <strong>Passout Year:</strong> {currentUser.passout}
-              </p>
-              <p>
-                <strong>Experience:</strong> {currentUser.experience} years
-              </p>
-              <p>
-                <strong>Tech Stack:</strong> {currentUser.techstack}
-              </p>
-            </HoverCard>
-          </div>
-
-          <HoverCard title="Career Preferences">
-            <p>
-              <strong>Last Salary:</strong> {currentUser.lastSalary}
-            </p>
-            <p>
-              <strong>Expected Salary:</strong> {currentUser.currentSalary}
-            </p>
-            <p>
-              <strong>Preferred Location:</strong> {currentUser.location}
-            </p>
-            <p>
-              <strong>Notice Period:</strong> {currentUser.noticePeriod}
-            </p>
-            <p>
-              <strong>Skills:</strong> {currentUser.skills}
-            </p>
-            <p>
-              <strong>Description:</strong> {currentUser.description}
-            </p>
-          </HoverCard>
-        </div>
-      )}
-
+              <HoverCard title="Career Preferences">
+                <p>
+                  <strong>Last Salary:</strong>{" "}
+                  {currentUser.lastSalary}
+                </p>
+                <p>
+                  <strong>Expected Salary:</strong>{" "}
+                  {currentUser.currentSalary}
+                </p>
+                <p>
+                  <strong>Preferred Location:</strong>{" "}
+                  {currentUser.location}
+                </p>
+                <p>
+                  <strong>Notice Period:</strong>{" "}
+                  {currentUser.noticePeriod}
+                </p>
+                <p>
+                  <strong>Skills:</strong> {currentUser.skills}
+                </p>
+                <p>
+                  <strong>Description:</strong>{" "}
+                  {currentUser.description}
+                </p>
+              </HoverCard>
+            </div>
+          )}
 
           {activeTab === "applications" && (
             <div>
@@ -262,10 +287,20 @@ export default function Dashboard() {
                 <div style={{ display: "grid", gap: "16px" }}>
                   {applications.map((app, index) => (
                     <HoverCard key={index}>
-                      <h3 style={{ color: BLUE, marginBottom: "5px" }}>
+                      <h3
+                        style={{
+                          color: BLUE,
+                          marginBottom: "5px",
+                        }}
+                      >
                         {app.jobTitle}
                       </h3>
-                      <p style={{ color: "#4b5563", marginBottom: "5px" }}>
+                      <p
+                        style={{
+                          color: "#4b5563",
+                          marginBottom: "5px",
+                        }}
+                      >
                         {app.company}
                       </p>
                       <div
@@ -300,9 +335,16 @@ export default function Dashboard() {
                         >
                           {app.status}
                         </span>
-                        <span style={{ color: "#6b7280", fontSize: "0.85em" }}>
+                        <span
+                          style={{
+                            color: "#6b7280",
+                            fontSize: "0.85em",
+                          }}
+                        >
                           Applied on:{" "}
-                          {new Date(app.appliedDate).toLocaleDateString()}
+                          {new Date(
+                            app.appliedDate
+                          ).toLocaleDateString()}
                         </span>
                       </div>
                     </HoverCard>
@@ -325,10 +367,20 @@ export default function Dashboard() {
                 <div style={{ display: "grid", gap: "16px" }}>
                   {savedJobs.map((job, index) => (
                     <HoverCard key={index}>
-                      <h3 style={{ color: BLUE, marginBottom: "5px" }}>
+                      <h3
+                        style={{
+                          color: BLUE,
+                          marginBottom: "5px",
+                        }}
+                      >
                         {job.title}
                       </h3>
-                      <p style={{ color: "#4b5563", marginBottom: "5px" }}>
+                      <p
+                        style={{
+                          color: "#4b5563",
+                          marginBottom: "5px",
+                        }}
+                      >
                         {job.company || "Unknown Company"}
                       </p>
                       <div
@@ -338,7 +390,12 @@ export default function Dashboard() {
                           alignItems: "center",
                         }}
                       >
-                        <span style={{ color: "#6b7280", fontSize: "0.9em" }}>
+                        <span
+                          style={{
+                            color: "#6b7280",
+                            fontSize: "0.9em",
+                          }}
+                        >
                           {job.location}
                         </span>
                         <button
@@ -367,6 +424,78 @@ export default function Dashboard() {
           )}
         </main>
       </div>
+
+      {/* NEW: Applications Modal */}
+      {showAppModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.4)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              background: "#fff",
+              padding: "24px",
+              borderRadius: "12px",
+              width: "500px",
+              maxHeight: "80vh",
+              overflowY: "auto",
+            }}
+          >
+            <h3 style={{ marginTop: 0, color: BLUE }}>
+              Jobs Applied ({applications.length})
+            </h3>
+
+            {applications.length > 0 ? (
+              <ul style={{ listStyle: "none", padding: 0 }}>
+                {applications.map((app, idx) => (
+                  <li
+                    key={idx}
+                    style={{
+                      padding: "10px",
+                      borderBottom: "1px solid #e5e7eb",
+                    }}
+                  >
+                    <strong>{app.jobTitle}</strong> – {app.company}
+                    <br />
+                    <span
+                      style={{ fontSize: "0.85em", color: "#6b7280" }}
+                    >
+                      Status: {app.status} | Applied on:{" "}
+                      {new Date(
+                        app.appliedDate
+                      ).toLocaleDateString()}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No applications yet.</p>
+            )}
+
+            <button
+              onClick={() => setShowAppModal(false)}
+              style={{
+                marginTop: "12px",
+                padding: "8px 14px",
+                background: BLUE,
+                color: "#fff",
+                border: "none",
+                borderRadius: "6px",
+                cursor: "pointer",
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

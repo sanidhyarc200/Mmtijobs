@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
  *  -------------------------
  *  Companies: may be stored as single object 'registeredCompany' or array 'registeredCompanies'
  *  Students:  'users' (array from onboarding)
- *  Jobs:      'jobs' (array with {status: 'active'|'inactive'})
+ *  Jobs:      'jobs' (array with {status: 'pending'|'active'|'inactive'})
  */
 
 function readJSON(key, fallback) {
@@ -47,14 +47,12 @@ function saveStudents(list) {
 
 function getJobs() {
   const arr = readJSON("jobs", []);
-  const normalized = (Array.isArray(arr) ? arr : []).map(j => ({
-    ...j,
-    status: j.status === "inactive" ? "inactive" : "active",
-  }));
-  if (JSON.stringify(arr) !== JSON.stringify(normalized)) {
-    writeJSON("jobs", normalized);
-  }
-  return normalized;
+  if (!Array.isArray(arr)) return [];
+  return arr.map((j) => {
+    if (j.status === "pending") return { ...j, status: "pending" };
+    if (j.status === "inactive") return { ...j, status: "inactive" };
+    return { ...j, status: "active" };
+  });
 }
 
 function saveJobs(list) {
@@ -103,8 +101,9 @@ export default function AdminDashboard() {
 
   const stats = useMemo(() => {
     const totalJobs = jobs.length;
-    const active = jobs.filter(j => j.status === "active").length;
-    const inactive = totalJobs - active;
+    const active = jobs.filter((j) => j.status === "active").length;
+    const inactive = jobs.filter((j) => j.status === "inactive").length;
+    const pending = jobs.filter((j) => j.status === "pending").length;
 
     return {
       totalCompanies: companies.length,
@@ -112,6 +111,7 @@ export default function AdminDashboard() {
       totalJobs,
       activeJobs: active,
       inactiveJobs: inactive,
+      pendingJobs: pending,
     };
   }, [companies, students, jobs]);
 
@@ -147,9 +147,20 @@ export default function AdminDashboard() {
   function handleToggleJobStatus(index) {
     const list = [...jobs];
     const j = list[index];
-    list[index] = { ...j, status: j.status === "active" ? "inactive" : "active" };
+    list[index] = {
+      ...j,
+      status: j.status === "active" ? "inactive" : "active",
+    };
     setJobs(list);
     saveJobs(list);
+  }
+
+  function approveJob(index) {
+    const list = [...jobs];
+    list[index] = { ...list[index], status: "active" };
+    setJobs(list);
+    saveJobs(list);
+    alert(`✅ Job "${list[index].title}" approved!`);
   }
 
   function handleEditSave() {
@@ -165,7 +176,15 @@ export default function AdminDashboard() {
       setStudents(list);
       saveStudents(list);
     } else if (type === "job") {
-      const updated = { ...item, status: item.status === "inactive" ? "inactive" : "active" };
+      const updated = {
+        ...item,
+        status:
+          item.status === "pending"
+            ? "pending"
+            : item.status === "inactive"
+            ? "inactive"
+            : "active",
+      };
       const list = [...jobs];
       list[index] = updated;
       setJobs(list);
@@ -180,19 +199,25 @@ export default function AdminDashboard() {
         <div className="sidebar-title">Admin</div>
         <nav className="sidebar-nav">
           <button
-            className={`sidebar-btn ${activeSection === "recruiters" ? "active" : ""}`}
+            className={`sidebar-btn ${
+              activeSection === "recruiters" ? "active" : ""
+            }`}
             onClick={() => setActiveSection("recruiters")}
           >
             Recruiters / Clients
           </button>
           <button
-            className={`sidebar-btn ${activeSection === "students" ? "active" : ""}`}
+            className={`sidebar-btn ${
+              activeSection === "students" ? "active" : ""
+            }`}
             onClick={() => setActiveSection("students")}
           >
             Students
           </button>
           <button
-            className={`sidebar-btn ${activeSection === "jobs" ? "active" : ""}`}
+            className={`sidebar-btn ${
+              activeSection === "jobs" ? "active" : ""
+            }`}
             onClick={() => setActiveSection("jobs")}
           >
             Jobs
@@ -208,7 +233,10 @@ export default function AdminDashboard() {
         <Card title="Total Recruiters" value={stats.totalCompanies} />
         <Card title="Total Students" value={stats.totalStudents} />
         <Card title="Total Jobs" value={stats.totalJobs} />
-        <Card title="Active / Inactive" value={`${stats.activeJobs} / ${stats.inactiveJobs}`} />
+        <Card
+          title="Active / Pending / Inactive"
+          value={`${stats.activeJobs} / ${stats.pendingJobs} / ${stats.inactiveJobs}`}
+        />
       </div>
     );
   }
@@ -232,23 +260,43 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {companies.length ? companies.map((c, idx) => {
-                const jobsCount = jobs.filter(j => (j.company || "").trim() === (c.companyName || c.name || "").trim()).length;
-                return (
-                  <tr key={idx}>
-                    <td>{c.companyName || c.name || "-"}</td>
-                    <td>{c.hrName || c.hr || "-"}</td>
-                    <td>{c.email || "-"}</td>
-                    <td>{c.contact || c.phone || "-"}</td>
-                    <td>{jobsCount}</td>
-                    <td className="actions">
-                      <button className="btn secondary" onClick={() => openEdit("company", idx, c)}>Edit</button>
-                      <button className="btn danger" onClick={() => handleDelete("company", idx)}>Delete</button>
-                    </td>
-                  </tr>
-                );
-              }) : (
-                <tr><td colSpan={6} className="empty">No recruiters found.</td></tr>
+              {companies.length ? (
+                companies.map((c, idx) => {
+                  const jobsCount = jobs.filter(
+                    (j) =>
+                      (j.company || "").trim() ===
+                      (c.companyName || c.name || "").trim()
+                  ).length;
+                  return (
+                    <tr key={idx}>
+                      <td>{c.companyName || c.name || "-"}</td>
+                      <td>{c.hrName || c.hr || "-"}</td>
+                      <td>{c.email || "-"}</td>
+                      <td>{c.contact || c.phone || "-"}</td>
+                      <td>{jobsCount}</td>
+                      <td className="actions">
+                        <button
+                          className="btn secondary"
+                          onClick={() => openEdit("company", idx, c)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="btn danger"
+                          onClick={() => handleDelete("company", idx)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={6} className="empty">
+                    No recruiters found.
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
@@ -276,23 +324,42 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {students.length ? students.map((s, idx) => {
-                const name = [s.firstName, s.middleName, s.lastName].filter(Boolean).join(" ") || s.name || "-";
-                return (
-                  <tr key={idx}>
-                    <td>{name}</td>
-                    <td>{s.email || "-"}</td>
-                    <td>{s.degree || "-"}</td>
-                    <td>{s.experience || "-"}</td>
-                    <td>{s.location || "-"}</td>
-                    <td className="actions">
-                      <button className="btn secondary" onClick={() => openEdit("student", idx, s)}>Edit</button>
-                      <button className="btn danger" onClick={() => handleDelete("student", idx)}>Delete</button>
-                    </td>
-                  </tr>
-                );
-              }) : (
-                <tr><td colSpan={6} className="empty">No students found.</td></tr>
+              {students.length ? (
+                students.map((s, idx) => {
+                  const name =
+                    [s.firstName, s.middleName, s.lastName]
+                      .filter(Boolean)
+                      .join(" ") || s.name || "-";
+                  return (
+                    <tr key={idx}>
+                      <td>{name}</td>
+                      <td>{s.email || "-"}</td>
+                      <td>{s.degree || "-"}</td>
+                      <td>{s.experience || "-"}</td>
+                      <td>{s.location || "-"}</td>
+                      <td className="actions">
+                        <button
+                          className="btn secondary"
+                          onClick={() => openEdit("student", idx, s)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="btn danger"
+                          onClick={() => handleDelete("student", idx)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={6} className="empty">
+                    No students found.
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
@@ -321,28 +388,68 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {jobs.length ? jobs.map((j, idx) => (
-                <tr key={j.id || idx}>
-                  <td>{j.title || "-"}</td>
-                  <td>{j.company || "-"}</td>
-                  <td>
-                    <span className={`pill ${j.status === "active" ? "ok" : "warn"}`}>
-                      {j.status === "active" ? "Active" : "Inactive"}
-                    </span>
-                  </td>
-                  <td>{j.location || "-"}</td>
-                  <td>{j.experience || "-"}</td>
-                  <td>{j.salary || "-"}</td>
-                  <td className="actions">
-                    <button className="btn" onClick={() => handleToggleJobStatus(idx)}>
-                      {j.status === "active" ? "Deactivate" : "Activate"}
-                    </button>
-                    <button className="btn secondary" onClick={() => openEdit("job", idx, j)}>Edit</button>
-                    <button className="btn danger" onClick={() => handleDelete("job", idx)}>Delete</button>
+              {jobs.length ? (
+                jobs.map((j, idx) => (
+                  <tr key={j.id || idx}>
+                    <td>{j.title || "-"}</td>
+                    <td>{j.company || "-"}</td>
+                    <td>
+                      <span
+                        className={`pill ${
+                          j.status === "active"
+                            ? "ok"
+                            : j.status === "pending"
+                            ? "pending"
+                            : "warn"
+                        }`}
+                      >
+                        {j.status === "active"
+                          ? "Active"
+                          : j.status === "pending"
+                          ? "Pending"
+                          : "Inactive"}
+                      </span>
+                    </td>
+                    <td>{j.location || "-"}</td>
+                    <td>{j.experienceRange || "-"}</td>
+                    <td>{j.salary || "-"}</td>
+                    <td className="actions">
+                      {j.status === "pending" ? (
+                        <button
+                          className="btn"
+                          onClick={() => approveJob(idx)}
+                        >
+                          Approve
+                        </button>
+                      ) : (
+                        <button
+                          className="btn"
+                          onClick={() => handleToggleJobStatus(idx)}
+                        >
+                          {j.status === "active" ? "Deactivate" : "Activate"}
+                        </button>
+                      )}
+                      <button
+                        className="btn secondary"
+                        onClick={() => openEdit("job", idx, j)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="btn danger"
+                        onClick={() => handleDelete("job", idx)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={7} className="empty">
+                    No jobs found.
                   </td>
                 </tr>
-              )) : (
-                <tr><td colSpan={7} className="empty">No jobs found.</td></tr>
               )}
             </tbody>
           </table>
@@ -353,6 +460,24 @@ export default function AdminDashboard() {
 
   return (
     <div className="admin-layout">
+      {/* Toast for pending jobs */}
+      {jobs.some((j) => j.status === "pending") && (
+        <div
+          style={{
+            background: "#fff8e1",
+            border: "1px solid #fcd34d",
+            padding: "12px 16px",
+            borderRadius: "10px",
+            color: "#92400e",
+            fontWeight: 600,
+            marginBottom: "12px",
+          }}
+        >
+          ⚠️ {jobs.filter((j) => j.status === "pending").length} job(s) pending
+          approval
+        </div>
+      )}
+
       <TopCards />
       <div className="content-row">
         <Sidebar />
@@ -365,99 +490,235 @@ export default function AdminDashboard() {
 
       {editModal.open && (
         <div className="modal-backdrop" onClick={closeEdit}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Edit {editModal.type}</h3>
-              <button className="icon-btn" onClick={closeEdit}>✕</button>
+              <button className="icon-btn" onClick={closeEdit}>
+                ✕
+              </button>
             </div>
             <div className="modal-body">
-            {editModal.type === "company" && (
-              <div className="form-grid">
-                <label>Company Name
-                  <input value={editModal.item.companyName || editModal.item.name || ""}
-                    onChange={e => setEditModal(m => ({...m, item: {...m.item, companyName: e.target.value}}))}/>
-                </label>
-                <label>HR Name
-                  <input value={editModal.item.hrName || editModal.item.hr || ""}
-                    onChange={e => setEditModal(m => ({...m, item: {...m.item, hrName: e.target.value}}))}/>
-                </label>
-                <label>Email
-                  <input value={editModal.item.email || ""}
-                    onChange={e => setEditModal(m => ({...m, item: {...m.item, email: e.target.value}}))}/>
-                </label>
-                <label>Phone
-                  <input value={editModal.item.contact || editModal.item.phone || ""}
-                    onChange={e => setEditModal(m => ({...m, item: {...m.item, contact: e.target.value}}))}/>
-                </label>
-              </div>
-            )}
+              {editModal.type === "company" && (
+                <div className="form-grid">
+                  <label>
+                    Company Name
+                    <input
+                      value={
+                        editModal.item.companyName || editModal.item.name || ""
+                      }
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, companyName: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    HR Name
+                    <input
+                      value={editModal.item.hrName || editModal.item.hr || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, hrName: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    Email
+                    <input
+                      value={editModal.item.email || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, email: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    Phone
+                    <input
+                      value={editModal.item.contact || editModal.item.phone || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, contact: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                </div>
+              )}
 
-            {editModal.type === "student" && (
-              <div className="form-grid">
-                <label>First Name
-                  <input value={editModal.item.firstName || ""}
-                    onChange={e => setEditModal(m => ({...m, item: {...m.item, firstName: e.target.value}}))}/>
-                </label>
-                <label>Last Name
-                  <input value={editModal.item.lastName || ""}
-                    onChange={e => setEditModal(m => ({...m, item: {...m.item, lastName: e.target.value}}))}/>
-                </label>
-                <label>Email
-                  <input value={editModal.item.email || ""}
-                    onChange={e => setEditModal(m => ({...m, item: {...m.item, email: e.target.value}}))}/>
-                </label>
-                <label>Degree
-                  <input value={editModal.item.degree || ""}
-                    onChange={e => setEditModal(m => ({...m, item: {...m.item, degree: e.target.value}}))}/>
-                </label>
-                <label>Experience
-                  <input value={editModal.item.experience || ""}
-                    onChange={e => setEditModal(m => ({...m, item: {...m.item, experience: e.target.value}}))}/>
-                </label>
-                <label>Location
-                  <input value={editModal.item.location || ""}
-                    onChange={e => setEditModal(m => ({...m, item: {...m.item, location: e.target.value}}))}/>
-                </label>
-              </div>
-            )}
+              {editModal.type === "student" && (
+                <div className="form-grid">
+                  <label>
+                    First Name
+                    <input
+                      value={editModal.item.firstName || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, firstName: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    Last Name
+                    <input
+                      value={editModal.item.lastName || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, lastName: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    Email
+                    <input
+                      value={editModal.item.email || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, email: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    Degree
+                    <input
+                      value={editModal.item.degree || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, degree: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    Experience
+                    <input
+                      value={editModal.item.experience || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, experience: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    Location
+                    <input
+                      value={editModal.item.location || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, location: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                </div>
+              )}
 
-            {editModal.type === "job" && (
-              <div className="form-grid">
-                <label>Title
-                  <input value={editModal.item.title || ""}
-                    onChange={e => setEditModal(m => ({...m, item: {...m.item, title: e.target.value}}))}/>
-                </label>
-                <label>Company
-                  <input value={editModal.item.company || ""}
-                    onChange={e => setEditModal(m => ({...m, item: {...m.item, company: e.target.value}}))}/>
-                </label>
-                <label>Location
-                  <input value={editModal.item.location || ""}
-                    onChange={e => setEditModal(m => ({...m, item: {...m.item, location: e.target.value}}))}/>
-                </label>
-                <label>Experience
-                  <input value={editModal.item.experience || ""}
-                    onChange={e => setEditModal(m => ({...m, item: {...m.item, experience: e.target.value}}))}/>
-                </label>
-                <label>Salary
-                  <input value={editModal.item.salary || ""}
-                    onChange={e => setEditModal(m => ({...m, item: {...m.item, salary: e.target.value}}))}/>
-                </label>
-                <label>Status
-                  <select value={editModal.item.status || "pending"}
-                    onChange={e => setEditModal(m => ({...m, item: {...m.item, status: e.target.value}}))}>
-                    <option value="pending">Pending</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
-                </label>
-              </div>
-            )}
-          </div>
+              {editModal.type === "job" && (
+                <div className="form-grid">
+                  <label>
+                    Title
+                    <input
+                      value={editModal.item.title || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, title: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    Company
+                    <input
+                      value={editModal.item.company || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, company: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    Location
+                    <input
+                      value={editModal.item.location || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, location: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    Experience
+                    <input
+                      value={editModal.item.experienceRange || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, experienceRange: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    Salary
+                    <input
+                      value={editModal.item.salary || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, salary: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    Status
+                    <select
+                      value={editModal.item.status || "pending"}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, status: e.target.value },
+                        }))
+                      }
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                  </label>
+                </div>
+              )}
+            </div>
 
-                      <div className="modal-footer">
-              <button className="btn" onClick={handleEditSave}>Save</button>
-              <button className="btn secondary" onClick={closeEdit}>Cancel</button>
+            <div className="modal-footer">
+              <button className="btn" onClick={handleEditSave}>
+                Save
+              </button>
+              <button className="btn secondary" onClick={closeEdit}>
+                Cancel
+              </button>
             </div>
           </div>
         </div>
@@ -486,13 +747,14 @@ export default function AdminDashboard() {
         .nice-table th, .nice-table td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; font-size: 14px; text-align: left; }
         .nice-table th { font-weight: 700; color: #1f2937; background: #f8fafc; }
         .nice-table tr:hover td { background: #f9fbff; }
-        .actions { display: flex; gap: 8px; }
+        .actions { display: flex; gap: 8px; flex-wrap: wrap; }
         .btn { padding: 8px 12px; border: 1px solid #3b82f6; background: #3b82f6; color: #fff; border-radius: 10px; font-weight: 600; cursor: pointer; }
         .btn.secondary { background: #fff; color: #1f2937; border-color: #d1d5db; }
         .btn.danger { background: #ef4444; border-color: #ef4444; color: #fff; }
         .icon-btn { background: transparent; border: none; font-size: 18px; cursor: pointer; }
         .pill { display: inline-block; font-size: 12px; padding: 4px 8px; border-radius: 999px; border: 1px solid #e5e7eb; }
         .pill.ok { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
+        .pill.pending { background: #fef9c3; color: #92400e; border-color: #fde68a; }
         .pill.warn { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
         .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
         .modal { width: 100%; max-width: 720px; background: #fff; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
