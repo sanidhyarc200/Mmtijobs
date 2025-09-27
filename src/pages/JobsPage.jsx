@@ -336,7 +336,7 @@ export default function JobsPage() {
             <option value="6+">6+ yrs</option>
           </select>
 
-          <select
+          {/* <select
             name="salary"
             value={filters.salary}
             onChange={handleFilterChange}
@@ -347,7 +347,7 @@ export default function JobsPage() {
             <option value="0-10">0-10L</option>
             <option value="10-20">10-20L</option>
             <option value="20+">20L+</option>
-          </select>
+          </select> */}
         </div>
 
         {/* Active filter chips */}
