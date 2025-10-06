@@ -82,6 +82,7 @@ export default function Header({ onPostJobClick }) {
     setIsLoggedIn(false);
     setCurrentUser(null);
     setIsMenuOpen(false);
+    navigate('/');
   };
 
   const handleOpenSignupRoleModal = () => {
