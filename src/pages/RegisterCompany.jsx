@@ -11,6 +11,7 @@ export default function RegisterCompany() {
   const [companyEmail, setCompanyEmail] = useState("");
   const [contact, setContact] = useState("");
   const [password, setPassword] = useState("");
+  const [profilePic, setProfilePic] = useState(null);
 
   // flow state
   const [errors, setErrors] = useState({});
@@ -23,6 +24,15 @@ export default function RegisterCompany() {
   const [currentUser, setCurrentUser] = useState(null);
   const [registered, setRegistered] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
+
+  const handlePicUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setProfilePic(reader.result);
+    reader.readAsDataURL(file);
+     };
+    
 
   // read current user first
   useEffect(() => {
@@ -161,6 +171,7 @@ export default function RegisterCompany() {
       email: companyEmail.trim(),
       contact: contact.trim(),
       password,
+      profilePic,
       createdAt: new Date().toISOString(),
     };
 
@@ -191,7 +202,7 @@ export default function RegisterCompany() {
     try { window.dispatchEvent(new Event("authChanged")); } catch {}
     navigate("/company-dashboard");
   };
-
+  
   // --- UI (clean white/blue) ---
   const BLUE = "#0a66c2", BG = "#f3f6fb";
   const btnPrimary = { padding: "10px 16px", background: BLUE, color: "#fff", border: "none", borderRadius: 10, fontWeight: 800, cursor: "pointer" };
@@ -208,6 +219,50 @@ export default function RegisterCompany() {
       </div>
 
       <div style={{ maxWidth: 880, margin: "18px auto 0", background: "#fff", borderRadius: 16, boxShadow: "0 16px 40px rgba(10,102,194,0.08)", border: "1px solid #e6eef9", padding: 18 }}>
+        {/* Profile Picture Upload */}
+<div style={{ textAlign: "center", marginBottom: 20 }}>
+  <div style={{ position: "relative", display: "inline-block" }}>
+    <img
+      src={profilePic || "https://via.placeholder.com/120x120.png?text=Upload+Logo"}
+      alt="profile"
+      style={{
+        width: 120,
+        height: 120,
+        borderRadius: "50%",
+        objectFit: "cover",
+        border: "3px solid #e5e7eb",
+      }}
+    />
+    <label
+      htmlFor="file"
+      style={{
+        position: "absolute",
+        bottom: 0,
+        right: 0,
+        background: "#0a66c2",
+        color: "#fff",
+        borderRadius: "50%",
+        width: 32,
+        height: 32,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        cursor: "pointer",
+        fontWeight: 700,
+      }}
+    >
+      +
+    </label>
+    <input
+      id="file"
+      type="file"
+      accept="image/*"
+      style={{ display: "none" }}
+      onChange={handlePicUpload}
+    />
+  </div>
+</div>
+
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <div>
             <label style={label}>Company Name</label>
