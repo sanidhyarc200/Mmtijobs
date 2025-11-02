@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import FloatingResumeCTA from "../components/FloatingResumeCTA";
+
 import { useNavigate } from 'react-router-dom';
 
 const defaultTitles = [
@@ -333,10 +335,49 @@ export default function LandingPage() {
           background: linear-gradient(135deg, rgba(10, 102, 194, 0.9), rgba(0, 65, 130, 0.8)), url('https://images.unsplash.com/photo-1521737711867-e3b97375f902?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80'); background-size: cover; background-position: center; background-attachment: fixed; color: white; text-align: center; padding: 30px 20px; }
         .hero-title { font-size: 2.2em; font-weight: 700; margin-bottom: 10px; text-shadow: 2px 2px 10px rgba(0,0,0,0.3); line-height: 1.2; }
         .hero-subtitle { font-size: 1.1em; margin-bottom: 20px; text-shadow: 1px 1px 5px rgba(0,0,0,0.3); opacity: 0.95; font-weight: 400; }
-        .search-container { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 12px; padding: 15px 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); width: 90%; max-width: 1200px; border: 1px solid rgba(255,255,255,0.2); }
-        .search-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        .search-input { flex: 1; min-width: 200px; padding: 10px 15px; border: 2px solid transparent; border-radius: 8px; font-size: 1em; background: white; color: #1f2937; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.1); height: 42px; }
-        .search-input:focus { border-color: #0a66c2; box-shadow: 0 4px 15px rgba(10, 102, 194, 0.3); outline: none; }
+        .search-input,
+        .search-container select {
+          flex: 1;
+          min-width: 380px;
+          height: 44px;
+          padding: 10px 14px;
+          border: 1.8px solid #d1d5db;
+          border-radius: 8px;
+          font-size: 0.95em;
+          font-weight: 500;
+          background-color: #fff;
+          color: #1f2937;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+          appearance: none;
+          background-image: url("data:image/svg+xml,%3Csvg fill='%230a66c2' height='20' width='20' xmlns='http://www.w3.org/2000/svg'%3E<path d='M5 7l5 5 5-5z'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 12px center;
+          background-size: 16px;
+          transition: all 0.2s ease;
+        }
+        .search-input:hover,
+        .search-container select:hover {
+          border-color: #0a66c2;
+          box-shadow: 0 4px 12px rgba(10,102,194,0.15);
+        }
+        .search-input:focus,
+        .search-container select:focus {
+          outline: none;
+          border-color: #0a66c2;
+          box-shadow: 0 0 0 3px rgba(10,102,194,0.15);
+        }
+        .search-container select {
+          cursor: pointer;
+          background-color: #fff;
+          background-image: url("data:image/svg+xml,%3Csvg fill='%230a66c2' height='20' width='20' xmlns='http://www.w3.org/2000/svg'%3E<path d='M5 7l5 5 5-5z'/%3E%3C/svg%3E");
+        }
+        .search-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          flex-wrap: wrap;
+          justify-content: center;
+        }
         .search-button { padding: 10px 20px; background: linear-gradient(135deg, #0a66c2, #004182); color: white; border: none; border-radius: 8px; font-size: 1em; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(10, 102, 194, 0.4); height: 42px; white-space: nowrap; }
         .search-button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(10, 102, 194, 0.5); }
 
@@ -751,6 +792,8 @@ export default function LandingPage() {
           </div>
         </div>
       )}
+      <FloatingResumeCTA />
     </div>
+    
   );
 }

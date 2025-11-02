@@ -95,6 +95,10 @@ import CompanyDashboard from './pages/CompanyDashboard'; // ✅ added
 import JobApplicants from './pages/JobApplicants';
 import EditProfile from './pages/EditProfile'; // ✅ added
 import AdminDashboard from './pages/AdminDashboard';
+import ResumeBuilder from './pages/ResumeBilder';
+import ResumeTemplateSelect from "./pages/ResumeTemplateSelect";
+
+
 // Dummy PostJobPage placeholder for now (unused, safe to keep)
 function PostJobPage() {
   return <h1 style={{ padding: 30 }}>This is Post a Job page (UI coming soon)</h1>;
@@ -216,6 +220,9 @@ export default function App() {
         <Route path="/job-applicants/:jobId" element={<JobApplicants />} />
         <Route path="/company-dashboard" element={<CompanyDashboard />} /> {/* ✅ added */}
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/resume-builder" element={<ResumeBuilder />} />
+        <Route path="/resume-builder/start" element={<ResumeTemplateSelect />} />
+
       </Routes>
 
       {showPostJobModal && (

@@ -119,65 +119,66 @@ export default function Header({ onPostJobClick }) {
 
   return (
     <header className="header">
-      <div className="nav-container">
-      <Link to="/" className="logo">
+      <div className="nav-layout">
+  {/* Left: Logo */}
+  <div className="nav-left">
+    <Link to="/" className="logo">
       <img src={logo} alt="MMTijobs" className="logo-img" />
     </Link>
+  </div>
 
-        {/* Desktop Navigation */}
-        <nav className="desktop-nav">
-          <Link to="/" className="nav-link">Home</Link>
-          <Link to="/about" className="nav-link">About</Link>
-          <Link to="/jobs" className="nav-link">Jobs</Link>
-          <Link to="/mappage" className="nav-link">Map</Link>
+  {/* Center: Navigation Menu */}
+  <div className="nav-center">
+    <nav className="desktop-nav">
+      <Link to="/" className="nav-link">Home</Link>
+      <Link to="/about" className="nav-link">About</Link>
+      <Link to="/jobs" className="nav-link">Jobs</Link>
+      <Link to="/mappage" className="nav-link">Map</Link>
+    </nav>
+  </div>
 
-          {isLoggedIn ? (
-            <>
-              <Link to={dashboardPath} className="nav-link">Dashboard</Link>
-              <button onClick={handleLogout} className="logout-btn">Logout</button>
-
-              <button
-                onClick={() => {
-                  if (currentUser?.userType === 'recruiter') {
-                    navigate('/post-job');
-                  } else {
-                    onPostJobClick?.();
-                  }
-                }}
-                className="post-job-btn"
-              >
-                Post a Job
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={() => {
-                  setLoginData({ email: '', password: '' });
-                  setLoginError('');
-                  setShowLoginModal(true);
-                }}
-                className="login-btn"
-              >
-                Login
-              </button>
-
-              <button onClick={handleOpenSignupRoleModal} className="signup-btn as-button">
-                Sign Up
-              </button>
-            </>
-          )}
-        </nav>
-
-        {/* Mobile Menu Button */}
+  {/* Right: Login / Signup or User Actions */}
+  <div className="nav-right">
+    {isLoggedIn ? (
+      <>
+        <Link to={dashboardPath} className="nav-link">Dashboard</Link>
+        <button onClick={handleLogout} className="logout-btn">Logout</button>
         <button
-          className="mobile-menu-btn"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          aria-label="Toggle menu"
+          onClick={() => {
+            if (currentUser?.userType === 'recruiter') navigate('/post-job');
+            else onPostJobClick?.();
+          }}
+          className="post-job-btn"
         >
-          {isMenuOpen ? '✕' : '☰'}
+          Post a Job
         </button>
-      </div>
+      </>
+    ) : (
+      <>
+        <button
+          onClick={() => {
+            setLoginData({ email: '', password: '' });
+            setLoginError('');
+            setShowLoginModal(true);
+          }}
+          className="login-btn"
+        >
+          Login
+        </button>
+
+        <button onClick={handleOpenSignupRoleModal} className="signup-btn as-button">
+          Sign Up
+        </button>
+
+        <Link to="/register-company" className="recruiter-link">
+          Recruiter Sign In
+        </Link>
+      </>
+    )}
+  </div>
+</div>
+
+
 
       {/* Mobile Menu */}
       {isMenuOpen && (
@@ -655,7 +656,46 @@ export default function Header({ onPostJobClick }) {
       .nav-link, .post-job-btn, .signup-btn, .login-btn, .logout-btn,
       .mobile-post-job-btn, .mobile-login-btn, .mobile-logout-btn, .mobile-signup-btn,
       .role-card, .modal-box { transition: none !important; }
+
     }
+  .nav-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  padding: 8px 5%;
+  max-width: 1550px;
+  margin: 0 auto;
+}
+
+.nav-left {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.nav-center {
+  display: flex;
+  justify-content: center;
+}
+
+.nav-right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 14px;
+}
+
+.recruiter-link {
+  color: var(--brand);
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 14px;
+}
+.recruiter-link:hover {
+  color: var(--brand-dark);
+}
+
+
 `}</style>
 
 
@@ -663,7 +703,3 @@ export default function Header({ onPostJobClick }) {
   );
 }
 
-
-
-
-   
