@@ -1,88 +1,87 @@
 // src/pages/JobsPage.jsx
-import React, { useEffect, useMemo, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
+/* ----------------------
+  Constants (titles + fallback)
+   ---------------------- */
 const defaultTitles = [
-  'Front end Engineer', 'Back end Engineer', 'Full Stack Engineer', 'DevOps Engineer',
-  'Data Scientist', 'Mobile Engineer', 'Security Engineer', 'Cloud Architect',
-  'Game Developer', 'Machine Learning Engineer', 'Human Resources Manager',
-  'HR Assistant', 'Payroll Specialist', 'Training Coordinator',
-  'Benefits Administrator', 'Employee Relations Manager', 'HRIS Specialist',
-  'Recruitment Manager', 'Account Manager', 'Client Accountant', 'Sales Representative',
-  'Customer Service/Sales Representative', 'Sales Use Tax Accountant'
+  "Front end Engineer", "Back end Engineer", "Full Stack Engineer", "DevOps Engineer",
+  "Data Scientist", "Mobile Engineer", "Security Engineer", "Cloud Architect",
+  "Game Developer", "Machine Learning Engineer", "Human Resources Manager",
+  "HR Assistant", "Payroll Specialist", "Training Coordinator",
+  "Benefits Administrator", "Employee Relations Manager", "HRIS Specialist",
+  "Recruitment Manager", "Account Manager", "Client Accountant", "Sales Representative",
+  "Customer Service/Sales Representative", "Sales Use Tax Accountant"
 ];
 
-// tasteful fallback jobs so page isn't empty on a fresh install
 const fallbackJobs = Array.from({ length: 12 }, (_, i) => ({
   id: 100000 + i,
-  title: i % 2 ? 'Frontend Developer' : 'Backend Developer',
+  title: i % 2 ? "Frontend Developer" : "Backend Developer",
   company: `Startup ${i + 1}`,
-  location: i % 3 === 0 ? 'Remote' : i % 3 === 1 ? 'Bangalore' : 'Hyderabad',
+  location: i % 3 === 0 ? "Remote" : i % 3 === 1 ? "Bangalore" : "Hyderabad",
   salary: `${8 + i} LPA`,
-  experience: i % 3 === 0 ? '0-2 years' : i % 3 === 1 ? '3-5 years' : '6+ years',
-  tags: ['React', 'Node.js', 'Cloud'].slice(0, (i % 3) + 1),
+  experience: i % 3 === 0 ? "0-2 years" : i % 3 === 1 ? "3-5 years" : "6+ years",
+  tags: ["React", "Node.js", "Cloud"].slice(0, (i % 3) + 1),
   description:
-    'Work with a modern stack, ship features fast, and learn from a supportive team. We value ownership, craft, and kindness.',
+    "Work with a modern stack, ship features fast, and learn from a supportive team. We value ownership, craft, and kindness.",
   createdAt: new Date(Date.now() - i * 86400000).toISOString(),
 }));
 
+/* ----------------------
+  Component
+   ---------------------- */
 export default function JobsPage() {
   const navigate = useNavigate();
 
+  // focus state for input styling
+  const [focused, setFocused] = useState(null);
+
   // who’s here?
   const [user, setUser] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('currentUser')) || null; } catch { return null; }
+    try { return JSON.parse(localStorage.getItem("currentUser")) || null; } catch { return null; }
   });
 
-  // jobs + filters
+  // jobs + filters + suggestions
   const [jobs, setJobs] = useState([]);
-  const [filters, setFilters] = useState({ title: '', location: '', experience: '', salary: '' });
+  const [filters, setFilters] = useState({ title: "", location: "", experience: "", salary: "" });
   const [titleSuggestions, setTitleSuggestions] = useState(defaultTitles);
 
-  // UI state
+  // UI + modals
   const [selectedJob, setSelectedJob] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
-
-  // apply flow
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [loginData, setLoginData] = useState({ email: '', password: '' });
-  const [loginError, setLoginError] = useState('');
+  const [loginData, setLoginData] = useState({ email: "", password: "" });
+  const [loginError, setLoginError] = useState("");
   const [pendingJob, setPendingJob] = useState(null);
-
-  // after apply success
   const [showAppliedModal, setShowAppliedModal] = useState(false);
-  const [appliedJobTitle, setAppliedJobTitle] = useState('');
+  const [appliedJobTitle, setAppliedJobTitle] = useState("");
 
-  // which jobs has current user already applied to?
+  // applied tracking + hydration shimmer
   const [appliedSet, setAppliedSet] = useState(() => new Set());
-
-  // subtle mount shimmer
   const [hydrated, setHydrated] = useState(false);
 
-  // ---------- helpers ----------
-  const readUser = () => {
-    try { setUser(JSON.parse(localStorage.getItem('currentUser')) || null); } catch { setUser(null); }
-  };
+  // refs for escape hook
+  const escapePairsRef = useRef([]);
 
+  /* ----------------------
+     Data loading and events
+     ---------------------- */
   const loadJobs = () => {
-    const stored = (JSON.parse(localStorage.getItem("jobs")) || [])
-      .filter((j) => j.status === "active");
-    // normalize and sort newest first
+    const stored = (JSON.parse(localStorage.getItem("jobs")) || []).filter((j) => j.status === "active");
     const normalized = stored.map(j => ({
       id: j.id,
-      title: j.title || j.jobTitle || 'Untitled Role',
-      company: j.company || 'Unknown Company',
-      location: j.location || '—',
-      // prefer explicit, else derive from experienceRange
-      experience: j.experience || j.experienceRange || '—',
-      salary: j.salary || (j.salaryMin && j.salaryMax ? `${j.salaryMin}-${j.salaryMax} LPA` : '—'),
+      title: j.title || j.jobTitle || "Untitled Role",
+      company: j.company || "Unknown Company",
+      location: j.location || "—",
+      experience: j.experience || j.experienceRange || "—",
+      salary: j.salary || (j.salaryMin && j.salaryMax ? `${j.salaryMin}-${j.salaryMax} LPA` : "—"),
       tags: Array.isArray(j.tags) ? j.tags : (Array.isArray(j.hiringProcess) ? j.hiringProcess : []),
-      description: j.description || '—',
+      description: j.description || "—",
       createdAt: j.createdAt || new Date().toISOString(),
     })).sort((a,b) => (new Date(b.createdAt)) - (new Date(a.createdAt)));
 
-    // combine with fallback (but keep real jobs first)
     const combined = normalized.length ? normalized.concat(fallbackJobs) : fallbackJobs;
     setJobs(combined);
   };
@@ -90,7 +89,7 @@ export default function JobsPage() {
   const refreshAppliedSet = (u) => {
     const me = u ?? user;
     if (!me) { setAppliedSet(new Set()); return; }
-    const apps = JSON.parse(localStorage.getItem('jobApplications')) || [];
+    const apps = JSON.parse(localStorage.getItem("jobApplications")) || [];
     const mine = apps.filter(a => a.userId === me.id).map(a => a.jobId);
     setAppliedSet(new Set(mine));
   };
@@ -99,30 +98,35 @@ export default function JobsPage() {
     loadJobs();
     refreshAppliedSet(user);
 
-    const onAuth = () => { readUser(); refreshAppliedSet(JSON.parse(localStorage.getItem('currentUser')) || null); };
+    // favorites: restore session title suggestions
+    const storedTitles = JSON.parse(sessionStorage.getItem('searchedTitles')) || [];
+    setTitleSuggestions([...new Set([...defaultTitles, ...storedTitles])]);
+
+    // hydrated shimmer
+    const t = setTimeout(() => setHydrated(true), 60);
+
+    // event handlers
+    const onAuth = () => {
+      try { const cur = JSON.parse(localStorage.getItem("currentUser")); setUser(cur); refreshAppliedSet(cur); } catch { setUser(null); refreshAppliedSet(null); }
+    };
     const onJobs = () => loadJobs();
 
     window.addEventListener('authChanged', onAuth);
     window.addEventListener('storage', onAuth);
     window.addEventListener('jobsChanged', onJobs);
 
-    // title suggestions memory
-    const storedTitles = JSON.parse(sessionStorage.getItem('searchedTitles')) || [];
-    setTitleSuggestions([...new Set([...defaultTitles, ...storedTitles])]);
-
-    // mount hydrate for shimmer
-    const t = setTimeout(() => setHydrated(true), 60);
-
     return () => {
+      clearTimeout(t);
       window.removeEventListener('authChanged', onAuth);
       window.removeEventListener('storage', onAuth);
       window.removeEventListener('jobsChanged', onJobs);
-      clearTimeout(t);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // close modals on ESC
+  /* ----------------------
+     Keyboard escape hook (multiple modals)
+     ---------------------- */
   useEscapeToClose([
     [showViewModal, () => setShowViewModal(false)],
     [showAuthPrompt, () => setShowAuthPrompt(false)],
@@ -130,34 +134,33 @@ export default function JobsPage() {
     [showAppliedModal, () => setShowAppliedModal(false)],
   ]);
 
-  // ---------- filters ----------
+  /* ----------------------
+     Filtering logic (preserve behavior)
+     ---------------------- */
   const filteredJobs = useMemo(() => {
     const extractSalary = (s) => {
       if (!s) return 0;
-      // pulls first number it finds
       const match = String(s).match(/\d+(\.\d+)?/);
       return match ? parseFloat(match[0]) : 0;
     };
     const normalize = (str) =>
-      str.toLowerCase()
-         .replace(/[-_]+/g, " ")
-         .replace(/\s+/g, " ")
-         .trim();
+      (str || "").toLowerCase().replace(/[-_]+/g, " ").replace(/\s+/g, " ").trim();
 
     return jobs.filter((job) => {
       const { title, location, experience, salary } = filters;
 
-      const okTitle = !title || normalize(job.title).includes(normalize(title)) 
-        || normalize(title).split(" ").every(word => normalize(job.title).includes(word));
+      const okTitle = !title ||
+        normalize(job.title).includes(normalize(title)) ||
+        normalize(title).split(" ").every(word => normalize(job.title).includes(word));
+
       const okLocation = !location || job.location.toLowerCase().includes(location.toLowerCase());
 
-      // normalize experience tokens
       const jexp = (job.experience || '').toLowerCase();
       const okExp =
         !experience ||
-        (experience === '0-2' && (jexp.includes('0-2') || jexp.includes('0 - 2') || jexp.includes('0–2') || jexp.includes('0-1') || jexp.includes('fresh')))
-        || (experience === '3-5' && (jexp.includes('3-5') || jexp.includes('3 - 5') || jexp.includes('3–5')))
-        || (experience === '6+'  && (jexp.includes('6+') || jexp.includes('6') || jexp.includes('7') || jexp.includes('8') || jexp.includes('9')));
+        (experience === '0-2' && (jexp.includes('0') || jexp.includes('fresh') || jexp.includes('entry'))) ||
+        (experience === '3-5' && (jexp.includes('3') || jexp.includes('4') || jexp.includes('3-5'))) ||
+        (experience === '6+' && (jexp.includes('6') || jexp.includes('7') || jexp.includes('8') || jexp.includes('+')));
 
       const sal = extractSalary(job.salary);
       const okSal =
@@ -170,12 +173,11 @@ export default function JobsPage() {
     });
   }, [jobs, filters]);
 
-  // ---------- UI handlers ----------
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
-
   };
+
   const handleTitleBlur = (e) => {
     const value = e.target.value.trim();
     if (value.length >= 3) {
@@ -191,9 +193,11 @@ export default function JobsPage() {
   const clearFilter = (key) => setFilters(prev => ({ ...prev, [key]: '' }));
   const clearAll = () => setFilters({ title: '', location: '', experience: '', salary: '' });
 
+  /* ----------------------
+     Apply / Auth flows
+     ---------------------- */
   const openView = (job) => { setSelectedJob(job); setShowViewModal(true); };
 
-  // apply logic with role restrictions + success modal
   const applyToJob = (job, me) => {
     const apps = JSON.parse(localStorage.getItem('jobApplications')) || [];
     const duplicate = apps.find(a => a.jobId === job.id && a.userId === me.id);
@@ -221,32 +225,24 @@ export default function JobsPage() {
 
   const handleApply = (job) => {
     const me = user;
-
     if (!me) {
-      // not logged in → same auth prompt as landing
       setPendingJob(job);
       setShowAuthPrompt(true);
       return;
     }
-
     if (me.userType === 'recruiter') {
-      // recruiters cannot apply – keep button disabled anyway
+      // recruiters cannot apply
       return;
     }
-
-    // candidate
     applyToJob(job, me);
   };
 
-  // shared login submit (used by auth prompt → login)
   const handleLoginSubmit = (e) => {
     e.preventDefault();
     setLoginError('');
-
     const users = JSON.parse(localStorage.getItem('users')) || [];
     const found = users.find(
-      (u) => u.email?.toLowerCase() === loginData.email.trim().toLowerCase()
-         && u.password === loginData.password
+      (u) => u.email?.toLowerCase() === loginData.email.trim().toLowerCase() && u.password === loginData.password
     );
 
     if (!found) {
@@ -254,7 +250,6 @@ export default function JobsPage() {
       return;
     }
 
-    // if they signed in as recruiter *from apply flow*, block it nicely
     if (found.userType === 'recruiter' && pendingJob) {
       setLoginError('Recruiters cannot apply to jobs. Please sign in as a candidate.');
       return;
@@ -262,53 +257,49 @@ export default function JobsPage() {
 
     localStorage.setItem('currentUser', JSON.stringify(found));
     try { window.dispatchEvent(new Event('authChanged')); } catch {}
-
     setShowLoginModal(false);
     setShowAuthPrompt(false);
     setLoginData({ email: '', password: '' });
     setUser(found);
     refreshAppliedSet(found);
-
-    if (pendingJob) {
-      applyToJob(pendingJob, found);
-      setPendingJob(null);
-    }
+    if (pendingJob) { applyToJob(pendingJob, found); setPendingJob(null); }
   };
 
-  // ---------- derived flags ----------
   const isRecruiter = user?.userType === 'recruiter';
 
-  // active filter pills (non-empty)
+  // Active filter pills
   const activePills = Object.entries(filters)
     .filter(([, v]) => String(v || '').trim() !== '')
     .map(([k, v]) => ({ key: k, label: prettyLabel(k, v) }));
 
+  /* ----------------------
+     Render
+     ---------------------- */
   return (
     <div style={styles.page}>
       <style>{css}</style>
 
       <div style={styles.container}>
-        {/* Heading row with count */}
+        {/* Heading */}
         <div style={styles.headingRow}>
           <h2 style={styles.heading}>Explore Opportunities</h2>
-          <div style={styles.countPill} aria-label={`${filteredJobs.length} jobs`}>
-            {filteredJobs.length} jobs
-          </div>
+          <div style={styles.countPill} aria-label={`${filteredJobs.length} jobs`}>{filteredJobs.length} jobs</div>
         </div>
 
         {/* Filters */}
         <div style={styles.filters} role="region" aria-label="Job filters">
-          <div style={{ position: 'relative', flex: 1 }}>
-          <input
-            list="titleSuggestions"
-            name="title"
-            value={filters.title}
-            onChange={handleFilterChange}
-            onBlur={handleTitleBlur}   // 👈 added here
-            placeholder="Search by job title"
-            style={styles.input}
-            aria-label="Search by job title"
-          />
+          <div style={{ position: 'relative' }}>
+            <input
+              list="titleSuggestions"
+              name="title"
+              value={filters.title}
+              onChange={handleFilterChange}
+              onFocus={() => setFocused('title')}
+              onBlur={(e) => { setFocused(null); handleTitleBlur(e); }}
+              placeholder="Search by job title"
+              style={{ ...styles.input, ...(focused === "title" ? styles.inputFocus : {}) }}
+              aria-label="Search by job title"
+            />
             <datalist id="titleSuggestions">
               {titleSuggestions.map((t, idx) => <option key={idx} value={t} />)}
             </datalist>
@@ -318,8 +309,10 @@ export default function JobsPage() {
             name="location"
             value={filters.location}
             onChange={handleFilterChange}
+            onFocus={() => setFocused('location')}
+            onBlur={() => setFocused(null)}
             placeholder="Location"
-            style={styles.input}
+            style={{ ...styles.input, ...(focused === "location" ? styles.inputFocus : {}) }}
             aria-label="Location"
           />
 
@@ -327,7 +320,9 @@ export default function JobsPage() {
             name="experience"
             value={filters.experience}
             onChange={handleFilterChange}
-            style={styles.input}
+            onFocus={() => setFocused('experience')}
+            onBlur={() => setFocused(null)}
+            style={{ ...styles.input, ...(focused === "experience" ? styles.inputFocus : {}) }}
             aria-label="Experience"
           >
             <option value="">Experience</option>
@@ -336,30 +331,15 @@ export default function JobsPage() {
             <option value="6+">6+ yrs</option>
           </select>
 
-          {/* <select
-            name="salary"
-            value={filters.salary}
-            onChange={handleFilterChange}
-            style={styles.input}
-            aria-label="Salary"
-          >
-            <option value="">Salary</option>
-            <option value="0-10">0-10L</option>
-            <option value="10-20">10-20L</option>
-            <option value="20+">20L+</option>
-          </select> */}
+          {/* optional salary select kept but commented earlier; left placeholder for future */}
+          {/* <select name="salary" ... /> */}
         </div>
 
-        {/* Active filter chips */}
+        {/* Active pills */}
         {activePills.length > 0 && (
           <div style={styles.pillsRow} aria-live="polite">
             {activePills.map(p => (
-              <button
-                key={p.key}
-                onClick={() => clearFilter(p.key)}
-                style={styles.pill}
-                title="Clear filter"
-              >
+              <button key={p.key} onClick={() => clearFilter(p.key)} style={styles.pill} title="Clear filter">
                 {p.label} <span style={styles.pillClose}>×</span>
               </button>
             ))}
@@ -367,7 +347,7 @@ export default function JobsPage() {
           </div>
         )}
 
-        {/* Jobs */}
+        {/* Jobs list */}
         <div style={styles.jobsContainer}>
           {!hydrated ? (
             <SkeletonList count={6} />
@@ -375,7 +355,7 @@ export default function JobsPage() {
             filteredJobs.map((job) => {
               const alreadyApplied = appliedSet.has(job.id);
               const applyDisabled = isRecruiter || alreadyApplied;
-              const isNew = isFresh(job.createdAt, 3); // 3 days window
+              const isNew = isFresh(job.createdAt, 3);
 
               return (
                 <div key={job.id} style={styles.card} className="mmt-card">
@@ -385,30 +365,21 @@ export default function JobsPage() {
                         <h3 style={styles.jobTitle}>{job.title}</h3>
                         {isNew && <span style={styles.newBadge} aria-label="New">NEW</span>}
                       </div>
+
                       <p style={styles.companyInfo}>
                         <strong>Company:</strong> {job.company} • {job.location} • {job.salary}
                       </p>
-                      <p style={{ margin: '4px 0 0' }}>
-                        <strong>Experience:</strong> {job.experience}
-                      </p>
+                      <p style={{ margin: '4px 0 0' }}><strong>Experience:</strong> {job.experience}</p>
 
                       {!!job.tags?.length && (
                         <div style={styles.tagWrap} aria-label="Skills">
-                          {job.tags.map((t, i) => (
-                            <span key={i} style={styles.tagPill}>{t}</span>
-                          ))}
+                          {job.tags.map((t, i) => <span key={i} style={styles.tagPill}>{t}</span>)}
                         </div>
                       )}
                     </div>
 
                     <div style={styles.buttonContainer}>
-                      <button
-                        style={styles.viewBtn}
-                        onClick={() => openView(job)}
-                        aria-label={`View details for ${job.title}`}
-                      >
-                        View
-                      </button>
+                      <button style={styles.viewBtn} onClick={() => openView(job)} aria-label={`View ${job.title}`}>View</button>
 
                       <button
                         style={{
@@ -474,7 +445,7 @@ export default function JobsPage() {
         </Modal>
       )}
 
-      {/* AUTH PROMPT (same vibe as landing page) */}
+      {/* Auth prompt */}
       {showAuthPrompt && (
         <Modal onClose={() => setShowAuthPrompt(false)}>
           <div style={modal.header}>
@@ -488,29 +459,13 @@ export default function JobsPage() {
 
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
             <button style={modal.secondary} onClick={() => setShowAuthPrompt(false)}>Cancel</button>
-            <button
-              style={modal.primary}
-              onClick={() => {
-                setShowAuthPrompt(false);
-                setShowLoginModal(true);
-              }}
-            >
-              Login
-            </button>
-            <button
-              style={modal.primary}
-              onClick={() => {
-                setShowAuthPrompt(false);
-                navigate('/onboarding?from=apply');
-              }}
-            >
-              Sign Up
-            </button>
+            <button style={modal.primary} onClick={() => { setShowAuthPrompt(false); setShowLoginModal(true); }}>Login</button>
+            <button style={modal.primary} onClick={() => { setShowAuthPrompt(false); navigate('/onboarding?from=apply'); }}>Sign Up</button>
           </div>
         </Modal>
       )}
 
-      {/* LOGIN MODAL (shared) */}
+      {/* Login modal */}
       {showLoginModal && (
         <Modal onClose={() => setShowLoginModal(false)}>
           <div style={modal.header}>
@@ -525,25 +480,11 @@ export default function JobsPage() {
           <form onSubmit={handleLoginSubmit}>
             <div style={{ marginBottom: 10 }}>
               <label style={labelCss}>Email</label>
-              <input
-                type="email"
-                value={loginData.email}
-                onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                required
-                placeholder="you@domain.com"
-                style={inputCss}
-              />
+              <input type="email" value={loginData.email} onChange={(e) => setLoginData({ ...loginData, email: e.target.value })} required placeholder="you@domain.com" style={inputCss} />
             </div>
             <div style={{ marginBottom: 10 }}>
               <label style={labelCss}>Password</label>
-              <input
-                type="password"
-                value={loginData.password}
-                onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                required
-                placeholder="••••••••"
-                style={inputCss}
-              />
+              <input type="password" value={loginData.password} onChange={(e) => setLoginData({ ...loginData, password: e.target.value })} required placeholder="••••••••" style={inputCss} />
             </div>
 
             {loginError && <div style={errBanner}>{loginError}</div>}
@@ -556,20 +497,14 @@ export default function JobsPage() {
 
           <div style={{ marginTop: 10, textAlign: 'center', color: '#6b7280' }}>
             Don’t have an account?{' '}
-            <button
-              style={linkBtn}
-              onClick={() => {
-                setShowLoginModal(false);
-                navigate('/onboarding?from=apply');
-              }}
-            >
+            <button style={linkBtn} onClick={() => { setShowLoginModal(false); navigate('/onboarding?from=apply'); }}>
               Sign up
             </button>
           </div>
         </Modal>
       )}
 
-      {/* APPLIED SUCCESS MODAL */}
+      {/* Applied confirmation */}
       {showAppliedModal && (
         <Modal onClose={() => setShowAppliedModal(false)}>
           <div style={modal.header}>
@@ -589,7 +524,9 @@ export default function JobsPage() {
   );
 }
 
-/* ---------- tiny components & hooks (modular, same file) ---------- */
+/* ----------------------
+  Small modular components (in-file)
+   ---------------------- */
 
 function Modal({ children, onClose }) {
   return (
@@ -648,6 +585,9 @@ function EmptyState({ onReset }) {
   );
 }
 
+/* ----------------------
+  Helper: ESC to close multiple modals (keeps original hook behavior)
+   ---------------------- */
 function useEscapeToClose(pairs) {
   const pairsRef = useRef(pairs);
   useEffect(() => { pairsRef.current = pairs; }, [pairs]);
@@ -662,7 +602,9 @@ function useEscapeToClose(pairs) {
   }, []);
 }
 
-/* ---------- utils ---------- */
+/* ----------------------
+  Small utilities
+   ---------------------- */
 const prettyLabel = (k, v) => {
   const map = { title: 'Title', location: 'Location', experience: 'Experience', salary: 'Salary' };
   const human = (key, val) => key === 'salary' ? `${val} L` : val;
@@ -675,7 +617,9 @@ const isFresh = (iso, days = 3) => {
   return delta <= days * 86400000;
 };
 
-/* ---------- styles ---------- */
+/* ----------------------
+  Styles & CSS
+   ---------------------- */
 const styles = {
   page: { fontFamily: "'Inter', sans-serif", background: '#f8fafc', minHeight: '100vh' },
   container: { width: '92%', maxWidth: 1200, margin: '0 auto', padding: '32px 0' },
@@ -689,13 +633,35 @@ const styles = {
   },
 
   filters: {
-    display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 12, marginBottom: 12, padding: 16,
-    background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 14, boxShadow: '0 8px 20px rgba(0,0,0,0.05)',
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+    gap: 14,
+    marginTop: 16,
+    marginBottom: 16,
+    padding: '20px 24px',
+    background: '#ffffff',
+    border: '1px solid #e5e7eb',
+    borderRadius: 16,
+    boxShadow: '0 8px 24px rgba(0,0,0,0.05)',
+    alignItems: 'center',
   },
   input: {
-    padding: '12px 12px', border: '1px solid #e5e7eb', borderRadius: 10, fontSize: '1rem',
-    minWidth: 180, flex: 1, background: '#fff', outline: '2px solid transparent', outlineOffset: 2,
-    transition: 'box-shadow .15s ease, border-color .15s ease',
+    width: '100%',
+    padding: '12px 14px',
+    border: '1.5px solid #e5e7eb',
+    borderRadius: 12,
+    fontSize: '15px',
+    fontWeight: 500,
+    color: '#111827',
+    background: '#f9fafb',
+    boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
+    outline: 'none',
+    transition: 'all 0.2s ease',
+  },
+  inputFocus: {
+    borderColor: '#0a66c2',
+    boxShadow: '0 0 0 3px rgba(10,102,194,0.15)',
+    background: '#fff',
   },
 
   pillsRow: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 },
@@ -824,7 +790,19 @@ const css = `
   .mmt-skel { overflow: hidden; position: relative }
   @keyframes mmt-shimmer { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
 
-  /* focus rings for all interactive elements */
+  /* custom select arrow + consistent look */
+  select {
+    appearance: none;
+    font-family: 'Inter', sans-serif;
+    background-color: #f9fafb;
+    background-image: url("data:image/svg+xml,%3Csvg fill='none' height='20' width='20' stroke='%230a66c2' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 32px !important;
+  }
+
+  /* focus rings for accessibility */
   button, input, select {
     outline: 2px solid transparent;
     outline-offset: 2px;
@@ -834,3 +812,5 @@ const css = `
     border-color: #0a66c2 !important;
   }
 `;
+
+/* End of file */
