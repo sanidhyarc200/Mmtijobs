@@ -386,6 +386,15 @@ const btnLink = {
   cursor: "pointer",
   padding: 0,
 };
+const pill = {
+  background: "#e5e7eb",
+  color: "#111827",
+  padding: "4px 10px",
+  borderRadius: "50px",
+  fontSize: "0.85rem",
+  fontWeight: 600,
+  display: "inline-block",
+};
 
 const jobCard = {
   background: "#fff",
