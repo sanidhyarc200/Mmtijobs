@@ -552,3 +552,13 @@ const errBanner = { background: "#fee2e2", color: "#991b1b", border: "1px solid 
 const btnPrimary = { padding: "10px 16px", background: "#0a66c2", color: "#fff", border: "none", borderRadius: 8, fontWeight: 800, cursor: "pointer" };
 const btnSecondary = { padding: "10px 16px", background: "#e5e7eb", border: "none", borderRadius: 8, fontWeight: 800, cursor: "pointer" };
 const linkBtn = { background: "none", border: "none", color: "#0a66c2", fontWeight: 800, cursor: "pointer", padding: 0 };
+const pill = {
+  background: "#e5e7eb",
+  color: "#111827",
+  padding: "4px 10px",
+  borderRadius: "50px",
+  fontSize: "0.85rem",
+  fontWeight: 600,
+  display: "inline-block",
+};
+
