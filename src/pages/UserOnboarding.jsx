@@ -154,59 +154,104 @@ export default function UserOnboarding() {
   const validateStep = (step) => {
     const newErrors = {};
     const f = formData;
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
     const isNum = (v) => !isNaN(parseFloat(v)) && isFinite(v);
-
+  
     switch (step) {
       case 1:
-        if (!f.profilePic) newErrors.profilePic = "Profile picture is required.";
-        if (!f.firstName.trim()) newErrors.firstName = "First name required";
-        if (!f.lastName.trim()) newErrors.lastName = "Last name required";
+        if (!f.firstName.trim()) newErrors.firstName = "First name is required";
+        if (!f.lastName.trim()) newErrors.lastName = "Last name is required";
+  
+        // Contact number
         if (!/^[0-9]{10}$/.test(f.contact || ""))
-          newErrors.contact = "Enter 10-digit contact number";
+          newErrors.contact = "Enter 10-digit mobile";
+        else if (users.some(u => String(u.contact) === String(f.contact)))
+          newErrors.contact = "This mobile number is already registered";
+  
+        // Email
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email || ""))
           newErrors.email = "Enter a valid email";
+        else if (
+          users.some(
+            (u) => u.email?.trim().toLowerCase() === f.email.trim().toLowerCase()
+          )
+        )
+          newErrors.email = "This email is already registered";
+  
+        // Profile Pic Required
+        if (!formData.profilePic)
+          newErrors.profilePic = "Profile picture required";
         break;
-
+  
       case 2:
         if (!f.degree.trim()) newErrors.degree = "Degree is required";
         const year = parseInt(f.passout, 10);
         if (!year || year < 1990 || year > new Date().getFullYear())
-          newErrors.passout = "Enter valid year";
+          newErrors.passout = "Enter a valid year";
         if (!f.experience.trim() || !isNum(f.experience))
-          newErrors.experience = "Enter years";
-        if (!f.techstack.trim()) newErrors.techstack = "Tech stack required";
+          newErrors.experience = "Enter experience in years";
+        if (!f.techstack.trim()) newErrors.techstack = "Tech stack is required";
         break;
-
+  
       case 3:
-        if (!isNum(f.lastSalary)) newErrors.lastSalary = "Enter numeric";
-        if (!isNum(f.currentSalary)) newErrors.currentSalary = "Enter numeric";
-        if (!f.location.trim()) newErrors.location = "Location required";
-        if (!f.noticePeriod.trim()) newErrors.noticePeriod = "Required";
+        if (!isNum(f.lastSalary)) newErrors.lastSalary = "Enter numeric value";
+        if (!isNum(f.currentSalary)) newErrors.currentSalary = "Enter numeric value";
+        if (!f.location.trim())
+          newErrors.location = "Location required";
+        else if (/^\d+$/.test(f.location.trim()))
+          newErrors.location = "Location cannot be only numbers";
+        if (!f.noticePeriod.trim())
+          newErrors.noticePeriod = "Notice period required";
         break;
-
+  
       case 4:
         if (!f.skills.trim()) newErrors.skills = "Skills required";
         if (!f.description.trim())
           newErrors.description = "Description required";
-        if (!f.cv) newErrors.cv = "Resume required";
+  
+        if (!f.cv) {
+          newErrors.cv = "Resume required";
+        } else {
+          const allowed = [
+            "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          ];
+          if (!allowed.includes(f.cv.type))
+            newErrors.cv = "Only PDF/DOC/DOCX allowed";
+          if (f.cv.size > 5 * 1024 * 1024)
+            newErrors.cv = "File must be ≤ 5MB";
+        }
         break;
-
+  
       case 5:
-        if (!f.username.trim()) newErrors.username = "Username required";
-        if (!f.password.trim()) newErrors.password = "Password required";
-        if (f.password.length < 8)
-          newErrors.password = "Min 8 characters";
+        // PASSWORD ONLY
+        if (!f.password.trim())
+          newErrors.password = "Password is required";
+        else if (f.password.length < 8)
+          newErrors.password = "Minimum 8 characters";
+        else if (!/[A-Z]/.test(f.password))
+          newErrors.password = "Must include an uppercase letter";
+        else if (!/[a-z]/.test(f.password))
+          newErrors.password = "Must include a lowercase letter";
+        else if (!/[0-9]/.test(f.password))
+          newErrors.password = "Must include a number";
+        else if (!/[!@#$%^&*(),.?\":{}|<>]/.test(f.password))
+          newErrors.password = "Must include a special character";
+  
         if (f.password !== f.confirmPassword)
-          newErrors.confirmPassword = "Passwords mismatch";
+          newErrors.confirmPassword = "Passwords do not match";
+  
         break;
-
+  
       default:
         break;
     }
-
+  
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+  
 
   /* ------------------ CHANGE STEP ------------------ */
   const goToStep = (step) => {
@@ -733,16 +778,6 @@ export default function UserOnboarding() {
             {currentStep === 5 && (
               <>
                 <div style={styles.grid}>
-                  <Field
-                    styles={styles}
-                    label="Username"
-                    name="username"
-                    value={formData.username}
-                    onChange={handleInputChange}
-                    error={errors.username}
-                    placeholder="Choose a username"
-                  />
-
                   <Field
                     styles={styles}
                     label="Password"
