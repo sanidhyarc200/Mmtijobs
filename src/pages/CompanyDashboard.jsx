@@ -8,9 +8,37 @@ export default function CompanyDashboard() {
   const [company, setCompany] = useState(null);
   const [jobs, setJobs] = useState([]);
 
+  // Edit Profile Modal State
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editData, setEditData] = useState({
+    name: "",
+    contact: "",
+    description: "",
+    address: "",
+    website: "",
+    profilePic: "",
+  });
+
+  const BLUE = "#0a66c2";
+
   useEffect(() => {
-    setCurrentUser(JSON.parse(localStorage.getItem("currentUser")));
-    setCompany(JSON.parse(localStorage.getItem("registeredCompany")));
+    const cu = JSON.parse(localStorage.getItem("currentUser"));
+    const comp = JSON.parse(localStorage.getItem("registeredCompany"));
+
+    setCurrentUser(cu);
+    setCompany(comp);
+
+    if (comp) {
+      setEditData({
+        name: comp.name || "",
+        contact: comp.contact || "",
+        description: comp.description || "",
+        address: comp.address || "",
+        website: comp.website || "",
+        profilePic: comp.profilePic || "",
+      });
+    }
+
     setJobs(JSON.parse(localStorage.getItem("jobs")) || []);
   }, []);
 
@@ -18,12 +46,11 @@ export default function CompanyDashboard() {
     if (!company && !currentUser) return [];
     const email = currentUser?.email || company?.email;
     const uid = currentUser?.id;
+
     return (jobs || []).filter(
       (j) => j.companyEmail === email || j.postedBy === uid
     );
   }, [jobs, company, currentUser]);
-
-  const BLUE = "#0a66c2";
 
   return (
     <div
@@ -72,14 +99,17 @@ export default function CompanyDashboard() {
             }}
           />
         </div>
+
         <h1 style={{ margin: 0, fontWeight: 900, fontSize: 30 }}>
           {company?.name || currentUser?.company || "Your Company"}
         </h1>
+
         <p style={{ margin: "8px 0 0", opacity: 0.9 }}>
           Manage your profile, job listings, and applicants with ease.
         </p>
       </div>
 
+      {/* MAIN CONTENT */}
       <div
         style={{
           maxWidth: 1100,
@@ -87,7 +117,8 @@ export default function CompanyDashboard() {
           padding: "0 16px",
         }}
       >
-        {/* --- ACTION BAR --- */}
+
+        {/* ACTION BAR */}
         <div
           style={{
             display: "flex",
@@ -100,15 +131,13 @@ export default function CompanyDashboard() {
           <h2 style={{ color: BLUE, fontWeight: 800, margin: "8px 0" }}>
             Dashboard Overview
           </h2>
-          <button
-            onClick={() => navigate("/post-job")}
-            style={btnPrimary}
-          >
+
+          <button onClick={() => navigate("/post-job")} style={btnPrimary}>
             + Post New Job
           </button>
         </div>
 
-        {/* --- PROFILE + STATS --- */}
+        {/* PROFILE + STATS */}
         <div
           style={{
             display: "grid",
@@ -117,9 +146,30 @@ export default function CompanyDashboard() {
             marginBottom: 24,
           }}
         >
-          {/* Company Profile */}
+          {/* PROFILE CARD */}
           <div style={card}>
-            <h3 style={h3}>Company Profile</h3>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <h3 style={h3}>Company Profile</h3>
+
+              <button
+                onClick={() => setShowEditModal(true)}
+                style={{
+                  ...btnPrimarySmall,
+                  padding: "6px 12px",
+                  background: BLUE,
+                  fontSize: 13,
+                }}
+              >
+                Edit
+              </button>
+            </div>
+
             {company ? (
               <div style={{ display: "grid", gap: 10 }}>
                 <Row label="Name" value={company.name} />
@@ -133,7 +183,7 @@ export default function CompanyDashboard() {
             )}
           </div>
 
-          {/* Stats */}
+          {/* STATS CARD */}
           <div style={card}>
             <h3 style={h3}>Quick Stats</h3>
             <div
@@ -150,9 +200,10 @@ export default function CompanyDashboard() {
           </div>
         </div>
 
-        {/* --- JOBS LIST --- */}
+        {/* JOB LIST */}
         <section style={card}>
           <h3 style={h3}>Your Job Posts</h3>
+
           {myJobs.length === 0 ? (
             <div
               style={{
@@ -164,10 +215,7 @@ export default function CompanyDashboard() {
               You haven’t posted any jobs yet.
               <button
                 onClick={() => navigate("/post-job")}
-                style={{
-                  ...btnLink,
-                  marginLeft: 6,
-                }}
+                style={{ ...btnLink, marginLeft: 6 }}
               >
                 Post one now →
               </button>
@@ -176,6 +224,7 @@ export default function CompanyDashboard() {
             <div style={{ display: "grid", gap: 12 }}>
               {myJobs.map((job) => {
                 const applicantCount = countApplicantsForJob(job.id);
+
                 return (
                   <div key={job.id} style={jobCard}>
                     <div
@@ -186,7 +235,6 @@ export default function CompanyDashboard() {
                         flexWrap: "wrap",
                       }}
                     >
-                      {/* Job Details */}
                       <div>
                         <h4
                           style={{
@@ -197,6 +245,7 @@ export default function CompanyDashboard() {
                         >
                           {job.title}
                         </h4>
+
                         <div
                           style={{
                             display: "flex",
@@ -209,30 +258,8 @@ export default function CompanyDashboard() {
                           <span style={pill}>{job.location}</span>
                           <span style={pill}>{job.experienceRange}</span>
                           {job.salary && <span style={pill}>{job.salary}</span>}
-                          <span
-                            style={{
-                              ...pill,
-                              background:
-                                job.status === "active"
-                                  ? "#dcfce7"
-                                  : job.status === "pending"
-                                  ? "#fef9c3"
-                                  : "#fee2e2",
-                              color:
-                                job.status === "active"
-                                  ? "#166534"
-                                  : job.status === "pending"
-                                  ? "#92400e"
-                                  : "#991b1b",
-                              fontWeight: 600,
-                            }}
-                          >
-                            {job.status
-                              ? job.status.charAt(0).toUpperCase() +
-                                job.status.slice(1)
-                              : "Unknown"}
-                          </span>
                         </div>
+
                         <div
                           style={{
                             color: "#6b7280",
@@ -246,6 +273,7 @@ export default function CompanyDashboard() {
                           ).toLocaleDateString()}{" "}
                           • {job.company}
                         </div>
+
                         <button
                           onClick={() =>
                             navigate(`/job-applicants/${job.id}`)
@@ -256,7 +284,6 @@ export default function CompanyDashboard() {
                         </button>
                       </div>
 
-                      {/* Applicant Count */}
                       <div
                         style={{
                           minWidth: 46,
@@ -282,11 +309,170 @@ export default function CompanyDashboard() {
           )}
         </section>
       </div>
+
+      {/* ======================================================
+         EDIT PROFILE MODAL — Correct Placement
+      ======================================================= */}
+      {showEditModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.45)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              background: "#fff",
+              width: 500,
+              borderRadius: 14,
+              padding: 24,
+              boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
+            }}
+          >
+            <h3 style={{ marginTop: 0, color: BLUE, fontWeight: 800 }}>
+              Edit Company Profile
+            </h3>
+
+            <label style={labelStyle}>Company Name</label>
+            <input
+              type="text"
+              value={editData.name}
+              onChange={(e) =>
+                setEditData({ ...editData, name: e.target.value })
+              }
+              style={inputStyle}
+            />
+
+            <label style={labelStyle}>Email (Locked)</label>
+            <input
+              type="text"
+              value={company.email}
+              disabled
+              style={{
+                ...inputStyle,
+                background: "#f3f4f6",
+                cursor: "not-allowed",
+              }}
+            />
+
+            <label style={labelStyle}>Contact</label>
+            <input
+              type="text"
+              value={editData.contact}
+              onChange={(e) =>
+                setEditData({ ...editData, contact: e.target.value })
+              }
+              style={inputStyle}
+            />
+
+            <label style={labelStyle}>Description</label>
+            <textarea
+              value={editData.description}
+              onChange={(e) =>
+                setEditData({ ...editData, description: e.target.value })
+              }
+              style={{ ...inputStyle, height: 80 }}
+            />
+
+            <label style={labelStyle}>Address</label>
+            <textarea
+              value={editData.address}
+              onChange={(e) =>
+                setEditData({ ...editData, address: e.target.value })
+              }
+              style={{ ...inputStyle, height: 70 }}
+            />
+
+            <label style={labelStyle}>Website</label>
+            <input
+              type="text"
+              value={editData.website}
+              onChange={(e) =>
+                setEditData({ ...editData, website: e.target.value })
+              }
+              style={inputStyle}
+            />
+
+            <label style={labelStyle}>Profile Picture</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = () =>
+                  setEditData({ ...editData, profilePic: reader.result });
+
+                reader.readAsDataURL(file);
+              }}
+              style={inputStyle}
+            />
+
+            {editData.profilePic && (
+              <img
+                src={editData.profilePic}
+                alt="preview"
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: "50%",
+                  marginTop: 10,
+                  objectFit: "cover",
+                  border: "2px solid #ddd",
+                }}
+              />
+            )}
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                marginTop: 20,
+                gap: 10,
+              }}
+            >
+              <button
+                onClick={() => setShowEditModal(false)}
+                style={{
+                  ...btnPrimarySmall,
+                  background: "#e5e7eb",
+                  color: "#374151",
+                }}
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={() => {
+                  const updated = { ...company, ...editData };
+                  localStorage.setItem(
+                    "registeredCompany",
+                    JSON.stringify(updated)
+                  );
+                  setCompany(updated);
+                  setShowEditModal(false);
+                }}
+                style={{ ...btnPrimarySmall, background: BLUE, color: "#fff" }}
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-/* --- COMPONENTS --- */
+/* ===== COMPONENTS ===== */
+
 function Row({ label, value }) {
   return (
     <div
@@ -315,21 +501,15 @@ function Stat({ label, value }) {
       }}
     >
       <div style={{ color: "#6b7280", fontSize: 14 }}>{label}</div>
-      <div
-        style={{
-          fontSize: 26,
-          fontWeight: 800,
-          color: "#111827",
-          marginTop: 4,
-        }}
-      >
+      <div style={{ fontSize: 26, fontWeight: 800, color: "#111827" }}>
         {value}
       </div>
     </div>
   );
 }
 
-/* --- HELPERS --- */
+/* ===== HELPERS ===== */
+
 function countApplicants(jobs) {
   const apps = JSON.parse(localStorage.getItem("jobApplications")) || [];
   const ids = new Set(jobs.map((j) => j.id));
@@ -341,7 +521,8 @@ function countApplicantsForJob(jobId) {
   return apps.filter((a) => a.jobId === jobId).length;
 }
 
-/* --- STYLES --- */
+/* ===== STYLES ===== */
+
 const card = {
   background: "#fff",
   borderRadius: 14,
@@ -386,6 +567,7 @@ const btnLink = {
   cursor: "pointer",
   padding: 0,
 };
+
 const pill = {
   background: "#e5e7eb",
   color: "#111827",
@@ -403,4 +585,18 @@ const jobCard = {
   padding: 16,
   transition: "transform 0.2s ease, box-shadow 0.2s ease",
   boxShadow: "0 6px 14px rgba(0,0,0,0.05)",
+};
+
+const inputStyle = {
+  width: "100%",
+  padding: "10px 12px",
+  borderRadius: 8,
+  border: "1px solid #d1d5db",
+  marginTop: 6,
+  fontSize: 14,
+};
+
+const labelStyle = {
+  fontWeight: 600,
+  marginTop: 12,
 };
