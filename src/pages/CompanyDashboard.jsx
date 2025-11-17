@@ -313,25 +313,36 @@ export default function CompanyDashboard() {
       {/* ======================================================
          EDIT PROFILE MODAL — Correct Placement
       ======================================================= */}
-      {showEditModal && (
+    {showEditModal && (
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(0,0,0,0.45)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 9999,
+        }}
+      >
         <div
           style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.45)",
+            background: "#fff",
+            width: 500,
+            borderRadius: 14,
+            padding: 0,
+            boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
+            maxHeight: "80vh",
             display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 9999,
+            flexDirection: "column",
           }}
         >
+          {/* SCROLL AREA */}
           <div
             style={{
-              background: "#fff",
-              width: 500,
-              borderRadius: 14,
               padding: 24,
-              boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
+              overflowY: "auto",
+              maxHeight: "calc(80vh - 70px)", // keeps footer visible
             }}
           >
             <h3 style={{ marginTop: 0, color: BLUE, fontWeight: 800 }}>
@@ -429,48 +440,51 @@ export default function CompanyDashboard() {
                 }}
               />
             )}
+          </div>
 
-            <div
+          {/* FIXED FOOTER */}
+          <div
+            style={{
+              padding: "12px 24px",
+              borderTop: "1px solid #eee",
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 10,
+              background: "#fff",
+            }}
+          >
+            <button
+              onClick={() => setShowEditModal(false)}
               style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                marginTop: 20,
-                gap: 10,
+                ...btnPrimarySmall,
+                background: "#e5e7eb",
+                color: "#374151",
               }}
             >
-              <button
-                onClick={() => setShowEditModal(false)}
-                style={{
-                  ...btnPrimarySmall,
-                  background: "#e5e7eb",
-                  color: "#374151",
-                }}
-              >
-                Cancel
-              </button>
+              Cancel
+            </button>
 
-              <button
-                onClick={() => {
-                  const updated = { ...company, ...editData };
-                  localStorage.setItem(
-                    "registeredCompany",
-                    JSON.stringify(updated)
-                  );
-                  setCompany(updated);
-                  setShowEditModal(false);
-                }}
-                style={{ ...btnPrimarySmall, background: BLUE, color: "#fff" }}
-              >
-                Save Changes
-              </button>
-            </div>
+            <button
+              onClick={() => {
+                const updated = { ...company, ...editData };
+                localStorage.setItem(
+                  "registeredCompany",
+                  JSON.stringify(updated)
+                );
+                setCompany(updated);
+                setShowEditModal(false);
+              }}
+              style={{ ...btnPrimarySmall, background: BLUE, color: "#fff" }}
+            >
+              Save Changes
+            </button>
           </div>
         </div>
-      )}
+      </div>
+    )}
     </div>
   );
 }
-
 /* ===== COMPONENTS ===== */
 
 function Row({ label, value }) {
