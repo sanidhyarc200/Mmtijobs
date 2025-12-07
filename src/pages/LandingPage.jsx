@@ -128,6 +128,13 @@ export default function LandingPage() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [filteredJobs, setFilteredJobs] = useState(defaultJobs);
   const [titleSuggestions, setTitleSuggestions] = useState(defaultTitles);
+  const [locationSuggestions, setLocationSuggestions] = useState(() => {
+    try { 
+      return JSON.parse(sessionStorage.getItem('searchedLocations')) || []; 
+    } catch { 
+      return []; 
+    }
+  });
 
   // auth/user state
   const [currentUser, setCurrentUser] = useState(() => {
@@ -185,6 +192,10 @@ export default function LandingPage() {
   useEffect(() => {
     const storedTitles = JSON.parse(sessionStorage.getItem('searchedTitles')) || [];
     setTitleSuggestions([...new Set([...defaultTitles, ...storedTitles])]);
+
+    const storedLoc = JSON.parse(sessionStorage.getItem('searchedLocations')) || [];
+    setLocationSuggestions(storedLoc);
+
 
     const experienceMap = {
       '0-1 years': [0, 1],
@@ -484,8 +495,29 @@ export default function LandingPage() {
               className="search-input"
               placeholder="Location"
               value={location}
-              onChange={(e) => setLocation(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                setLocation(val);
+
+                // store location search history
+                if (val.length >= 2) {
+                  const stored = JSON.parse(sessionStorage.getItem('searchedLocations')) || [];
+                  if (!stored.includes(val)) {
+                    const updated = [...stored, val];
+                    sessionStorage.setItem('searchedLocations', JSON.stringify(updated));
+                    setLocationSuggestions(updated);
+                  }
+                }
+              }}
+              list="location-suggestions"
             />
+
+            <datalist id="location-suggestions">
+              {locationSuggestions.map((loc, idx) => (
+                <option key={idx} value={loc} />
+              ))}
+            </datalist>
+
             <select className="search-input" value={experience} onChange={(e) => setExperience(e.target.value)}>
               <option value="">Experience</option>
               <option value="0-1 years">0-1 years</option>
