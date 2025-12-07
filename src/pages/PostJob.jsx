@@ -47,6 +47,8 @@ export default function PostJob() {
     cgpa: "",
     gender: "Any",
     description: "",
+    numberOfOpenings: "",
+
   });
 
   const [errors, setErrors] = useState({});
@@ -81,6 +83,8 @@ export default function PostJob() {
     if (!form.expFrom) newErrors.expFrom = "Experience from required";
     if (!form.expTo || parseFloat(form.expTo) < parseFloat(form.expFrom)) newErrors.expTo = "Enter valid experience";
     if (!form.description.trim()) newErrors.description = "Description required";
+    if (!form.numberOfOpenings || form.numberOfOpenings <= 0)
+      newErrors.numberOfOpenings = "Enter valid number of openings";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -107,6 +111,7 @@ export default function PostJob() {
       cgpa: form.cgpa,
       gender: form.gender,
       description: form.description.trim(),
+      numberOfOpenings: form.numberOfOpenings,
       postedBy: user.id,
       company: user.company || user.name || "Unknown Company",
       posterEmail: user.email,
@@ -345,6 +350,22 @@ export default function PostJob() {
             />
             {errors.salaryMax && <p style={err}>{errors.salaryMax}</p>}
           </div>
+          {/* Number of Openings */}
+          <div style={group}>
+            <label style={lbl}>Number of Openings</label>
+            <input
+              name="numberOfOpenings"
+              type="number"
+              value={form.numberOfOpenings}
+              onChange={handleChange}
+              disabled={disabled}
+              style={inp(disabled)}
+            />
+            {errors.numberOfOpenings && (
+              <p style={err}>{errors.numberOfOpenings}</p>
+            )}
+          </div>
+
 
           {/* Hiring Process */}
           <div style={{ gridColumn: "1 / -1", marginTop: 20 }}>
