@@ -5,7 +5,7 @@ export default function AboutPage() {
   const navigate = useNavigate();
   const year = new Date().getFullYear();
   const revealRefs = useRef([]);
-  const [modalData, setModalData] = useState(null); // MODAL STATE
+  const [modalData, setModalData] = useState(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -216,35 +216,61 @@ export default function AboutPage() {
           margin-bottom: 12px;
         }
 
-        /* === TESTIMONIALS === */
+        /* === TESTIMONIALS (FIXED & IMPROVED) === */
         .testimonials {
-          padding: 100px 10%;
+          padding: 60px 10% 70px;
           background: #f1f6ff;
           text-align: center;
+        }
+        .testimonials h2 {
+          margin-bottom: 32px; /* adds gap */
+          font-size: 30px;
+          font-weight: 800;
         }
 
         .testimonial-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 30px;
+          grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); /* bigger cards */
+          gap: 28px;                                                    /* more breathing room */
         }
+
 
         .testimonial-card {
           background: #fff;
-          padding: 22px;
-          border-radius: 14px;
-          box-shadow: 0 10px 28px rgba(0,0,0,0.07);
-          transition: transform .3s ease;
+          padding: 30px 24px;       /* more padding */
+          border-radius: 16px;
+          box-shadow: 0 8px 26px rgba(0,0,0,0.07);
+          transition: transform .25s ease, box-shadow .25s ease;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          min-height: 300px;        /* increased height */
         }
 
         .testimonial-card:hover {
-          transform: translateY(-4px);
+          transform: translateY(-3px);
+          box-shadow: 0 10px 24px rgba(0,0,0,0.12);
         }
 
         .testimonial-card img {
-          width: 100%;
-          border-radius: 12px;
-          margin-bottom: 12px;
+        width: 92%;
+        height: 180px;            /* bigger image */
+        object-fit: cover;
+        border-radius: 12px;
+        margin-bottom: 14px;
+      }
+
+        .testimonial-card h4 {
+          margin: 6px 0 4px;
+          font-size: 16px;
+          font-weight: 700;
+        }
+
+        .testimonial-card p {
+          font-size: 14px;
+          line-height: 1.45;
+          color: var(--muted);
+          padding: 0 6px;
         }
 
         /* === CTA === */
@@ -389,10 +415,7 @@ export default function AboutPage() {
       </section>
 
       {/* COMPLIANCE GRID */}
-      <section
-        className="grid-section"
-        ref={(el) => (revealRefs.current[0] = el)}
-      >
+      <section className="grid-section" ref={(el) => (revealRefs.current[0] = el)}>
         <h2>Registered & Compliant</h2>
 
         <div className="grid">
@@ -462,10 +485,7 @@ export default function AboutPage() {
       </div>
 
       {/* TESTIMONIALS */}
-      <section
-        className="testimonials"
-        ref={(el) => (revealRefs.current[3] = el)}
-      >
+      <section className="testimonials" ref={(el) => (revealRefs.current[3] = el)}>
         <h2>What Our Partners Say</h2>
         <div className="testimonial-grid">
           {[
