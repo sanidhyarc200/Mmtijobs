@@ -1,3 +1,4 @@
+// PART 1/3
 // src/pages/AdminDashboard.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +9,7 @@ import { useNavigate } from "react-router-dom";
  *  Companies: may be stored as single object 'registeredCompany' or array 'registeredCompanies'
  *  Students:  'users' (array from onboarding)
  *  Jobs:      'jobs' (array with {status: 'pending'|'active'|'inactive'})
+ *  Applications: 'jobApplications' -> [{ jobId, userId, appliedAt, resume? }]
  */
 
 function readJSON(key, fallback) {
@@ -59,6 +61,16 @@ function saveJobs(list) {
   writeJSON("jobs", list);
 }
 
+function getApplications() {
+  const arr = readJSON("jobApplications", []);
+  return Array.isArray(arr) ? arr : [];
+}
+
+function getUserById(id) {
+  const users = getStudents();
+  return users.find((u) => u.id === id || u.userId === id) || null;
+}
+
 function Card({ title, value, sub }) {
   return (
     <div className="analytics-card card">
@@ -84,6 +96,14 @@ export default function AdminDashboard() {
     type: null,
     item: null,
     index: -1,
+  });
+
+  // New: view company modal state (read-only company dashboard inside modal)
+  const [viewCompany, setViewCompany] = useState({
+    open: false,
+    company: null,
+    companyJobs: [],
+    companyApplicantsMap: {}, // jobId -> [app objects with user]
   });
 
   useEffect(() => {
@@ -212,6 +232,56 @@ export default function AdminDashboard() {
     closeEdit();
   }
 
+  // -----------------------
+  // New: Open company view modal
+  // -----------------------
+  function openCompanyView(company) {
+    // Determine company's email and/or name to find jobs posted by them, matching CompanyDashboard logic.
+    // CompanyDashboard used: j.companyEmail === email || j.postedBy === uid
+    const jobsList = getJobs();
+    const apps = getApplications();
+    const users = getStudents();
+
+    const email = company?.email || company?.companyEmail || "";
+    const uid = company?.id || company?.userId || company?.postedBy;
+
+    const companyJobs = jobsList.filter(
+      (j) =>
+        (j.companyEmail && j.companyEmail === email) ||
+        (j.postedBy && j.postedBy === uid) ||
+        (j.company && (j.company === company.companyName || j.company === company.name))
+    );
+
+    // Build map jobId -> applicants array with full user details
+    const map = {};
+    for (const job of companyJobs) {
+      const jobApps = apps.filter((a) => a.jobId === job.id);
+      map[job.id] = jobApps.map((a) => {
+        const user = users.find((u) => u.id === a.userId || u.userId === a.userId) || null;
+        return {
+          application: a,
+          user,
+        };
+      });
+    }
+
+    setViewCompany({
+      open: true,
+      company,
+      companyJobs,
+      companyApplicantsMap: map,
+    });
+  }
+
+  function closeCompanyView() {
+    setViewCompany({
+      open: false,
+      company: null,
+      companyJobs: [],
+      companyApplicantsMap: {},
+    });
+  }
+
   function Sidebar() {
     return (
       <aside className="admin-sidebar">
@@ -257,14 +327,14 @@ export default function AdminDashboard() {
                 <th>Email</th>
                 <th>Phone</th>
                 <th>Jobs Posted</th>
-                <th style={{ width: 220 }}>Actions</th>
+                <th style={{ width: 260 }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {companies.length ? (
                 companies.map((c, idx) => {
                   const jobsCount = jobs.filter(
-                    (j) => (j.company || "").trim() === (c.companyName || c.name || "").trim()
+                    (j) => (j.company || "").trim() === (c.companyName || c.name || "").trim() || (j.companyEmail && j.companyEmail === c.email)
                   ).length;
                   return (
                     <tr key={idx}>
@@ -274,6 +344,8 @@ export default function AdminDashboard() {
                       <td>{c.contact || c.phone || "-"}</td>
                       <td>{jobsCount}</td>
                       <td className="actions">
+                        {/* NEW: Eye view button */}
+                        <button className="btn secondary" onClick={() => openCompanyView(c)}>👁️ View</button>
                         <button className="btn secondary" onClick={() => openEdit("company", idx, c)}>Edit</button>
                         <button className="btn danger" onClick={() => handleDelete("company", idx)}>Delete</button>
                       </td>
@@ -416,136 +488,845 @@ export default function AdminDashboard() {
         </main>
       </div>
 
-      {editModal.open && (
-        <div className="modal-backdrop" onClick={closeEdit}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Edit {editModal.type}</h3>
-              <button className="icon-btn" onClick={closeEdit}>✕</button>
-            </div>
-            <div className="modal-body">
-              {editModal.type === "company" && (
-                <div className="form-grid">
-                  <label>Company Name
-                    <input value={editModal.item.companyName || editModal.item.name || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, companyName: e.target.value } }))} />
-                  </label>
-                  <label>HR Name
-                    <input value={editModal.item.hrName || editModal.item.hr || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, hrName: e.target.value } }))} />
-                  </label>
-                  <label>Email
-                    <input value={editModal.item.email || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, email: e.target.value } }))} />
-                  </label>
-                  <label>Phone
-                    <input value={editModal.item.contact || editModal.item.phone || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, contact: e.target.value } }))} />
-                  </label>
-                </div>
-              )}
-
-              {editModal.type === "student" && (
-                <div className="form-grid">
-                  <label>First Name
-                    <input value={editModal.item.firstName || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, firstName: e.target.value } }))} />
-                  </label>
-                  <label>Last Name
-                    <input value={editModal.item.lastName || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, lastName: e.target.value } }))} />
-                  </label>
-                  <label>Email
-                    <input value={editModal.item.email || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, email: e.target.value } }))} />
-                  </label>
-                  <label>Degree
-                    <input value={editModal.item.degree || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, degree: e.target.value } }))} />
-                  </label>
-                  <label>Experience
-                    <input value={editModal.item.experience || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, experience: e.target.value } }))} />
-                  </label>
-                  <label>Location
-                    <input value={editModal.item.location || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, location: e.target.value } }))} />
-                  </label>
-                </div>
-              )}
-
-              {editModal.type === "job" && (
-                <div className="form-grid">
-                  <label>Title
-                    <input value={editModal.item.title || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, title: e.target.value } }))} />
-                  </label>
-                  <label>Company
-                    <input value={editModal.item.company || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, company: e.target.value } }))} />
-                  </label>
-                  <label>Location
-                    <input value={editModal.item.location || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, location: e.target.value } }))} />
-                  </label>
-                  <label>Experience
-                    <input value={editModal.item.experienceRange || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, experienceRange: e.target.value } }))} />
-                  </label>
-                  <label>Salary
-                    <input value={editModal.item.salary || ""} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, salary: e.target.value } }))} />
-                  </label>
-                  <label>Status
-                    <select value={editModal.item.status || "pending"} onChange={(e) => setEditModal((m) => ({ ...m, item: { ...m.item, status: e.target.value } }))}>
-                      <option value="pending">Pending</option>
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                    </select>
-                  </label>
-                </div>
-              )}
-            </div>
-
-            <div className="modal-footer">
-              <button className="btn" onClick={handleEditSave}>Save</button>
-              <button className="btn secondary" onClick={closeEdit}>Cancel</button>
-            </div>
+      {/* EDIT MODAL and COMPANY VIEW MODAL will follow in PART 2 */}
+{/* ============================
+      COMPANY VIEW MODAL (READ-ONLY DASHBOARD)
+============================ */}
+{viewCompany.open && (
+  <div className="modal-backdrop" onClick={closeCompanyView}>
+    <div
+      className="company-view-modal"
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        width: "100%",
+        maxWidth: "1050px",
+        maxHeight: "90vh",
+        background: "#fff",
+        borderRadius: "16px",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        boxShadow: "0 12px 40px rgba(0,0,0,0.25)",
+      }}
+    >
+      {/* HEADER */}
+      <div
+        style={{
+          background: "linear-gradient(135deg, #0a66c2, #0047a8)",
+          color: "#fff",
+          padding: "60px 20px 80px",
+          textAlign: "center",
+          position: "relative",
+        }}
+      >
+        {/* PROFILE PIC FIXED CIRCLE */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: "-55px",
+            left: "50%",
+            transform: "translateX(-50%)",
+          }}
+        >
+          <div
+            style={{
+              width: 110,
+              height: 110,
+              borderRadius: "50%",
+              border: "4px solid #fff",
+              background: "#e5e7eb",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              overflow: "hidden",
+              boxShadow: "0 10px 20px rgba(0,0,0,0.25)",
+            }}
+          >
+            {viewCompany.company?.profilePic ? (
+              <img
+                src={viewCompany.company.profilePic}
+                alt="profile"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              <span
+                style={{
+                  color: "#6b7280",
+                  fontSize: 12,
+                  fontWeight: 700,
+                }}
+              >
+                No Image
+              </span>
+            )}
           </div>
         </div>
-      )}
 
-      <style>{`
-        .admin-layout { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
-        .cards-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; }
-        .card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 4px 14px rgba(0,0,0,0.06); }
-        .card-title { font-size: 14px; color: #3b82f6; font-weight: 600; }
-        .card-value { font-size: 28px; font-weight: 800; margin-top: 6px; }
-        .card-sub { font-size: 12px; color: #6b7280; margin-top: 4px; }
-        .content-row { display: grid; grid-template-columns: 220px 1fr; gap: 16px; }
-        .admin-sidebar { background: #ffffff; border-radius: 12px; padding: 12px; box-shadow: 0 4px 14px rgba(0,0,0,0.06); }
-        .sidebar-title { font-weight: 700; color: #1f2937; margin-bottom: 8px; }
-        .sidebar-nav { display: flex; flex-direction: column; gap: 8px; }
-        .sidebar-btn { text-align: left; padding: 10px 12px; border-radius: 10px; border: 1px solid #e5e7eb; background: #f9fafb; cursor: pointer; font-weight: 600; color: #1f2937; }
-        .sidebar-btn.active, .sidebar-btn:hover { background: #e8f0ff; border-color: #bfdbfe; color: #1d4ed8; }
-        .admin-main { display: flex; flex-direction: column; gap: 16px; }
-        .panel { background: #fff; border-radius: 12px; box-shadow: 0 4px 14px rgba(0,0,0,0.06); }
-        .panel-header { padding: 14px 16px; border-bottom: 1px solid #eef2f7; }
-        .panel-header h2 { margin: 0; font-size: 18px; color: #111827; }
-        .table-wrap { width: 100%; overflow: auto; }
-        .nice-table { width: 100%; border-collapse: collapse; }
-        .nice-table th, .nice-table td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; font-size: 14px; text-align: left; }
-        .nice-table th { font-weight: 700; color: #1f2937; background: #f8fafc; }
-        .nice-table tr:hover td { background: #f9fbff; }
-        .actions { display: flex; gap: 8px; flex-wrap: wrap; }
-        .btn { padding: 8px 12px; border: 1px solid #3b82f6; background: #3b82f6; color: #fff; border-radius: 10px; font-weight: 600; cursor: pointer; }
-        .btn.secondary { background: #fff; color: #1f2937; border-color: #d1d5db; }
-        .btn.danger { background: #ef4444; border-color: #ef4444; color: #fff; }
-        .icon-btn { background: transparent; border: none; font-size: 18px; cursor: pointer; }
-        .pill { display: inline-block; font-size: 12px; padding: 4px 8px; border-radius: 999px; border: 1px solid #e5e7eb; }
-        .pill.ok { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
-        .pill.pending { background: #fef9c3; color: #92400e; border-color: #fde68a; }
-        .pill.warn { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
-        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
-        .modal { width: 100%; max-width: 720px; background: #fff; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
-        .modal-header { padding: 12px 16px; border-bottom: 1px solid #eef2f7; display: flex; align-items: center; justify-content: space-between; }
-        .modal-body { padding: 16px; }
-        .modal-footer { padding: 12px 16px; border-top: 1px solid #eef2f7; display: flex; gap: 8px; justify-content: flex-end; }
-        .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
-        .form-grid label { display: flex; flex-direction: column; font-size: 12px; color: #374151; font-weight: 600; }
-        .form-grid input, .form-grid select { margin-top: 6px; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 10px; background: #fff; }
-        .empty { text-align: center; color: #6b7280; padding: 18px 0; }
-        @media (max-width: 980px) {
-          .cards-row { grid-template-columns: repeat(2, minmax(0,1fr)); }
-          .content-row { grid-template-columns: 1fr; }
-          .form-grid { grid-template-columns: 1fr; }
-        }
-      `}</style>
+        <h2 style={{ fontSize: 28, marginTop: 20, fontWeight: 900 }}>
+          {viewCompany.company.name ||
+            viewCompany.company.companyName ||
+            "Company"}
+        </h2>
+        <p style={{ opacity: 0.85 }}>
+          Admin view of company dashboard — read-only.
+        </p>
+      </div>
+
+      {/* BODY (scrollable) */}
+      <div
+        style={{
+          padding: "80px 30px 40px",
+          overflowY: "auto",
+          flex: 1,
+          background: "#f3f6fb",
+        }}
+      >
+        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+          {/* Company Info */}
+          <div
+            style={{
+              background: "#fff",
+              padding: 20,
+              borderRadius: 14,
+              marginBottom: 20,
+              boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+            }}
+          >
+            <h3
+              style={{
+                fontSize: 20,
+                marginTop: 0,
+                fontWeight: 800,
+                color: "#0a66c2",
+              }}
+            >
+              Company Profile
+            </h3>
+
+            <div style={{ display: "grid", gap: 10 }}>
+              <div><strong>Email:</strong> {viewCompany.company.email}</div>
+              <div><strong>Contact:</strong> {viewCompany.company.contact}</div>
+              <div><strong>Website:</strong> {viewCompany.company.website || "-"}</div>
+              <div><strong>Address:</strong> {viewCompany.company.address || "-"}</div>
+              <div><strong>Description:</strong> {viewCompany.company.description || "-"}</div>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div
+            style={{
+              background: "#fff",
+              padding: 20,
+              borderRadius: 14,
+              marginBottom: 20,
+              boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+            }}
+          >
+            <h3
+              style={{
+                fontSize: 20,
+                marginTop: 0,
+                fontWeight: 800,
+                color: "#0a66c2",
+              }}
+            >
+              Quick Stats
+            </h3>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 12,
+                textAlign: "center",
+              }}
+            >
+              <div
+                style={{
+                  background: "#f8fafc",
+                  padding: 18,
+                  borderRadius: 12,
+                  boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
+                }}
+              >
+                <div style={{ color: "#6b7280" }}>Active Jobs</div>
+                <div style={{ fontSize: 26, fontWeight: 800 }}>
+                  {viewCompany.companyJobs.length}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  background: "#f8fafc",
+                  padding: 18,
+                  borderRadius: 12,
+                  boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
+                }}
+              >
+                <div style={{ color: "#6b7280" }}>Applicants</div>
+                <div style={{ fontSize: 26, fontWeight: 800 }}>
+                  {Object.values(viewCompany.companyApplicantsMap).flat().length}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Job List */}
+          <div
+            style={{
+              background: "#fff",
+              padding: 20,
+              borderRadius: 14,
+              boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+            }}
+          >
+            <h3
+              style={{
+                fontSize: 20,
+                marginTop: 0,
+                fontWeight: 800,
+                color: "#0a66c2",
+              }}
+            >
+              Job Posts
+            </h3>
+
+            {viewCompany.companyJobs.length === 0 ? (
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: 20,
+                  color: "#6b7280",
+                }}
+              >
+                No jobs posted.
+              </div>
+            ) : (
+              viewCompany.companyJobs.map((job) => {
+                const applicants = viewCompany.companyApplicantsMap[job.id] || [];
+
+                return (
+                  <div
+                    key={job.id}
+                    style={{
+                      marginBottom: 20,
+                      background: "#f9fbff",
+                      border: "1px solid #e5e9ff",
+                      padding: 18,
+                      borderRadius: 14,
+                    }}
+                  >
+                    <h4
+                      style={{
+                        margin: 0,
+                        marginBottom: 6,
+                        color: "#0a66c2",
+                        fontWeight: 800,
+                      }}
+                    >
+                      {job.title}
+                    </h4>
+
+                    <div style={{ marginBottom: 10, color: "#6b7280" }}>
+                      {job.location} • {job.experienceRange} • {job.salary}
+                    </div>
+
+                    <div
+                      style={{
+                        fontSize: 14,
+                        marginBottom: 10,
+                      }}
+                    >
+                      Posted on{" "}
+                      {new Date(job.createdAt || Date.now()).toLocaleDateString()}
+                    </div>
+
+                    <hr style={{ opacity: 0.3, margin: "10px 0" }} />
+
+                    {/* Applicants */}
+                    <h5 style={{ margin: 0, marginBottom: 8, fontWeight: 700 }}>
+                      Applicants ({applicants.length})
+                    </h5>
+
+                    {applicants.length === 0 ? (
+                      <div
+                        style={{
+                          padding: "8px 0",
+                          fontSize: 14,
+                          color: "#9ca3af",
+                        }}
+                      >
+                        No applicants yet.
+                      </div>
+                    ) : (
+                      applicants.map(({ user, application }, i) => (
+                        <div
+                          key={i}
+                          style={{
+                            background: "#fff",
+                            padding: 12,
+                            borderRadius: 10,
+                            border: "1px solid #e5e7eb",
+                            marginBottom: 10,
+                          }}
+                        >
+                          <div style={{ fontWeight: 700 }}>
+                            {user?.firstName} {user?.lastName}
+                          </div>
+                          <div>Email: {user?.email}</div>
+                          <div>Degree: {user?.degree}</div>
+                          <div>Experience: {user?.experience}</div>
+
+                          {application.resume && (
+                            <a
+                              href={application.resume}
+                              target="_blank"
+                              style={{
+                                color: "#0a66c2",
+                                fontWeight: 700,
+                                fontSize: 14,
+                                marginTop: 6,
+                                display: "inline-block",
+                              }}
+                            >
+                              View Resume →
+                            </a>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* CLOSE BUTTON */}
+      <button
+        onClick={closeCompanyView}
+        style={{
+          position: "absolute",
+          top: 16,
+          right: 16,
+          background: "rgba(255,255,255,0.8)",
+          border: "none",
+          fontSize: 20,
+          cursor: "pointer",
+          padding: "4px 10px",
+          borderRadius: 8,
+        }}
+      >
+        ✕
+      </button>
     </div>
+  </div>
+)}
+
+{/* ============================
+      EDIT MODAL (UPDATED WITH PROFILE PIC UPLOAD)
+============================ */}
+{editModal.open && (
+  <div className="modal-backdrop" onClick={closeEdit}>
+    <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-header">
+        <h3>Edit {editModal.type}</h3>
+        <button className="icon-btn" onClick={closeEdit}>
+          ✕
+        </button>
+      </div>
+
+      <div className="modal-body">
+        {/* COMPANY EDIT */}
+        {editModal.type === "company" && (
+          <div className="form-grid">
+            <label>
+              Company Name
+              <input
+                value={editModal.item.companyName || editModal.item.name || ""}
+                onChange={(e) =>
+                  setEditModal((m) => ({
+                    ...m,
+                    item: { ...m.item, companyName: e.target.value, name: e.target.value },
+                  }))
+                }
+              />
+            </label>
+
+            <label>
+              HR Name
+              <input
+                value={editModal.item.hrName || editModal.item.hr || ""}
+                onChange={(e) =>
+                  setEditModal((m) => ({
+                    ...m,
+                    item: { ...m.item, hrName: e.target.value },
+                  }))
+                }
+              />
+            </label>
+
+            <label>
+              Email
+              <input
+                value={editModal.item.email || ""}
+                onChange={(e) =>
+                  setEditModal((m) => ({
+                    ...m,
+                    item: { ...m.item, email: e.target.value },
+                  }))
+                }
+              />
+            </label>
+
+            <label>
+              Phone
+              <input
+                value={editModal.item.contact || editModal.item.phone || ""}
+                onChange={(e) =>
+                  setEditModal((m) => ({
+                    ...m,
+                    item: { ...m.item, contact: e.target.value },
+                  }))
+                }
+              />
+            </label>
+
+            {/* NEW: PROFILE PIC UPLOAD */}
+            <label>
+              Profile Picture
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+
+                  const reader = new FileReader();
+                  reader.onload = () =>
+                    setEditModal((m) => ({
+                      ...m,
+                      item: { ...m.item, profilePic: reader.result },
+                    }));
+                  reader.readAsDataURL(file);
+                }}
+              />
+            </label>
+
+            {editModal.item.profilePic && (
+              <div>
+                <img
+                  src={editModal.item.profilePic}
+                  alt="preview"
+                  style={{
+                    width: 72,
+                    height: 72,
+                    borderRadius: "50%",
+                    marginTop: 6,
+                    objectFit: "cover",
+                    border: "2px solid #ddd",
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* STUDENT EDIT */}
+        {editModal.type === "student" && (
+          <div className="form-grid">
+            <label>First Name
+              <input
+                value={editModal.item.firstName || ""}
+                onChange={(e) =>
+                  setEditModal((m) => ({
+                    ...m,
+                    item: { ...m.item, firstName: e.target.value },
+                  }))
+                }
+              />
+            </label>
+            <label>Last Name
+              <input
+                value={editModal.item.lastName || ""}
+                onChange={(e) =>
+                  setEditModal((m) => ({
+                    ...m,
+                    item: { ...m.item, lastName: e.target.value },
+                  }))
+                }
+              />
+            </label>
+            <label>Email
+              <input
+                value={editModal.item.email || ""}
+                onChange={(e) =>
+                  setEditModal((m) => ({
+                    ...m,
+                    item: { ...m.item, email: e.target.value },
+                  }))
+                }
+              />
+            </label>
+            <label>Degree
+              <input
+                value={editModal.item.degree || ""}
+                onChange={(e) =>
+                  setEditModal((m) => ({
+                    ...m,
+                    item: { ...m.item, degree: e.target.value },
+                  }))
+                }
+              />
+            </label>
+            <label>Experience
+              <input
+                value={editModal.item.experience || ""}
+                onChange={(e) =>
+                  setEditModal((m) => ({
+                    ...m,
+                    item: { ...m.item, experience: e.target.value },
+                  }))
+                }
+              />
+            </label>
+            <label>Location
+              <input
+                value={editModal.item.location || ""}
+                onChange={(e) =>
+                  setEditModal((m) => ({
+                    ...m,
+                    item: { ...m.item, location: e.target.value },
+                  }))
+                }
+              />
+            </label>
+          </div>
+        )}
+
+        {/* JOB EDIT */}
+        {editModal.type === "job" && (
+          <div className="form-grid">
+            <label>Title
+              <input
+                value={editModal.item.title || ""}
+                onChange={(e) =>
+                  setEditModal((m) => ({
+                    ...m,
+                    item: { ...m.item, title: e.target.value },
+                  }))
+                }
+              />
+            </label>
+            <label>Company
+              <input
+                value={editModal.item.company || ""}
+                onChange={(e) =>
+                  setEditModal((m) => ({
+                    ...m,
+                    item: { ...m.item, company: e.target.value },
+                  }))
+                }
+              />
+            </label>
+            <label>Location
+              <input
+                value={editModal.item.location || ""}
+                onChange={(e) =>
+                  setEditModal((m) => ({
+                    ...m,
+                    item: { ...m.item, location: e.target.value },
+                  }))
+                }
+              />
+            </label>
+            <label>Experience
+              <input
+                value={editModal.item.experienceRange || ""}
+                onChange={(e) =>
+                  setEditModal((m) => ({
+                    ...m,
+                    item: { ...m.item, experienceRange: e.target.value },
+                  }))
+                }
+              />
+            </label>
+            <label>Salary
+              <input
+                value={editModal.item.salary || ""}
+                onChange={(e) =>
+                  setEditModal((m) => ({
+                    ...m,
+                    item: { ...m.item, salary: e.target.value },
+                  }))
+                }
+              />
+            </label>
+            <label>Status
+              <select
+                value={editModal.item.status || "pending"}
+                onChange={(e) =>
+                  setEditModal((m) => ({
+                    ...m,
+                    item: { ...m.item, status: e.target.value },
+                  }))
+                }
+              >
+                <option value="pending">Pending</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </label>
+          </div>
+        )}
+      </div>
+
+      <div className="modal-footer">
+        <button className="btn" onClick={handleEditSave}>Save</button>
+        <button className="btn secondary" onClick={closeEdit}>Cancel</button>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* ============================
+      STYLES (FULL FILE BOTTOM)
+============================ */}
+<style>{`
+  .admin-layout { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+
+  .cards-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0,1fr));
+    gap: 12px;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+  }
+
+  .card-title { font-size: 14px; color: #3b82f6; font-weight: 600; }
+  .card-value { font-size: 28px; font-weight: 800; margin-top: 6px; }
+  .card-sub { font-size: 12px; color: #6b7280; margin-top: 4px; }
+
+  .content-row {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 16px;
+  }
+
+  .admin-sidebar {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+  }
+
+  .sidebar-title { font-weight: 700; color: #1f2937; margin-bottom: 8px; }
+  .sidebar-nav { display: flex; flex-direction: column; gap: 8px; }
+
+  .sidebar-btn {
+    text-align: left;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+    cursor: pointer;
+    font-weight: 600;
+    color: #1f2937;
+    transition: 0.25s all ease;
+  }
+
+  .sidebar-btn.active, .sidebar-btn:hover {
+    background: #e8f0ff;
+    border-color: #bfdbfe;
+    color: #1d4ed8;
+  }
+
+  .admin-main { display: flex; flex-direction: column; gap: 16px; }
+
+  .panel {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+  }
+
+  .panel-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid #eef2f7;
+  }
+
+  .panel-header h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #111827;
+  }
+
+  .table-wrap { width: 100%; overflow: auto; }
+
+  .nice-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .nice-table th,
+  .nice-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 14px;
+    text-align: left;
+  }
+
+  .nice-table th {
+    font-weight: 700;
+    color: #1f2937;
+    background: #f8fafc;
+  }
+
+  .nice-table tr:hover td { background: #f9fbff; }
+
+  .actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 8px 12px;
+    border: 1px solid #3b82f6;
+    background: #3b82f6;
+    color: #fff;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .btn.secondary {
+    background: #fff;
+    color: #1f2937;
+    border-color: #d1d5db;
+  }
+
+  .btn.danger {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: #fff;
+  }
+
+  .icon-btn {
+    background: transparent;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+  }
+
+  .pill {
+    display: inline-block;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    border: 1px solid #e5e7eb;
+  }
+
+  .pill.ok {
+    background: #ecfdf5;
+    color: #065f46;
+    border-color: #a7f3d0;
+  }
+  .pill.pending {
+    background: #fef9c3;
+    color: #92400e;
+    border-color: #fde68a;
+  }
+  .pill.warn {
+    background: #fef2f2;
+    color: #991b1b;
+    border-color: #fecaca;
+  }
+
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 9999;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 720px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.20);
+    overflow: hidden;
+  }
+
+  .modal-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid #eef2f7;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .modal-body { padding: 16px; max-height: 60vh; overflow-y: auto; }
+
+  .modal-footer {
+    padding: 12px 16px;
+    border-top: 1px solid #eef2f7;
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    background: #fff;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 12px;
+  }
+
+  .form-grid label {
+    display: flex;
+    flex-direction: column;
+    font-size: 12px;
+    color: #374151;
+    font-weight: 600;
+  }
+
+  .form-grid input,
+  .form-grid select {
+    margin-top: 6px;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #fff;
+  }
+
+  .empty { text-align: center; color: #6b7280; padding: 18px 0; }
+
+  /* COMPANY VIEW MODAL STYLE */
+  .company-view-modal::-webkit-scrollbar { width: 8px; }
+  .company-view-modal::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 8px;
+  }
+
+  @media (max-width: 980px) {
+    .cards-row { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .content-row { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+  }
+`
+}</style>
+
+</div>  
   );
 }
