@@ -105,6 +105,12 @@ export default function AdminDashboard() {
     companyJobs: [],
     companyApplicantsMap: {}, // jobId -> [app objects with user]
   });
+  // New: view job modal
+  const [viewJob, setViewJob] = useState({
+    open: false,
+    job: null,
+    applicants: [],
+  });
 
   useEffect(() => {
     const user = readJSON("currentUser", null);
@@ -272,6 +278,33 @@ export default function AdminDashboard() {
       companyApplicantsMap: map,
     });
   }
+  // --- View Job Modal Open ---
+  function openJobView(job) {
+    const apps = getApplications();
+    const users = getStudents();
+
+    const applicants = apps
+      .filter((a) => a.jobId === job.id)
+      .map((a) => ({
+        application: a,
+        user: users.find((u) => u.id === a.userId || u.userId === a.userId) || null,
+      }));
+
+    setViewJob({
+      open: true,
+      job,
+      applicants,
+    });
+  }
+
+  function closeJobView() {
+    setViewJob({
+      open: false,
+      job: null,
+      applicants: [],
+    });
+  }
+
 
   function closeCompanyView() {
     setViewCompany({
@@ -446,6 +479,8 @@ export default function AdminDashboard() {
                     <td>{j.experienceRange || "-"}</td>
                     <td>{j.salary || "-"}</td>
                     <td className="actions">
+                    <button className="btn secondary" onClick={() => openJobView(j)}>👁️ View</button>
+
                       {j.status === "pending" ? (
                         <button className="btn" onClick={() => approveJob(idx)}>Approve</button>
                       ) : (
@@ -822,6 +857,7 @@ export default function AdminDashboard() {
       </button>
     </div>
   </div>
+  
 )}
 
 {/* ============================
@@ -1089,6 +1125,149 @@ export default function AdminDashboard() {
     </div>
   </div>
 )}
+{/* ============================
+      JOB VIEW MODAL
+============================ */}
+{viewJob.open && (
+  <div className="modal-backdrop" onClick={closeJobView}>
+    <div
+      className="company-view-modal"
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        width: "100%",
+        maxWidth: "850px",
+        maxHeight: "90vh",
+        background: "#fff",
+        borderRadius: "16px",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        boxShadow: "0 12px 40px rgba(0,0,0,0.25)",
+      }}
+    >
+      {/* HEADER */}
+      <div
+        style={{
+          background: "linear-gradient(135deg, #0a66c2, #0047a8)",
+          color: "#fff",
+          padding: "40px 20px",
+          textAlign: "center",
+        }}
+      >
+        <h2 style={{ margin: 0, fontSize: 26, fontWeight: 900 }}>
+          {viewJob.job.title}
+        </h2>
+        <div style={{ opacity: 0.85, fontSize: 14, marginTop: 4 }}>
+          {viewJob.job.company} • {viewJob.job.location}
+        </div>
+      </div>
+
+      {/* BODY */}
+      <div
+        style={{
+          padding: "22px",
+          overflowY: "auto",
+          flex: 1,
+          background: "#f3f6fb",
+        }}
+      >
+        {/* Job Details */}
+        <div
+          style={{
+            background: "#fff",
+            padding: 20,
+            borderRadius: 14,
+            marginBottom: 20,
+            boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+          }}
+        >
+          <h3 style={{ marginTop: 0, fontSize: 20, fontWeight: 800, color: "#0a66c2" }}>
+            Job Details
+          </h3>
+
+          <div style={{ display: "grid", gap: 10 }}>
+            <div><strong>Title:</strong> {viewJob.job.title}</div>
+            <div><strong>Company:</strong> {viewJob.job.company}</div>
+            <div><strong>Location:</strong> {viewJob.job.location}</div>
+            <div><strong>Experience:</strong> {viewJob.job.experienceRange}</div>
+            <div><strong>Salary:</strong> {viewJob.job.salary}</div>
+            <div><strong>Description:</strong> {viewJob.job.description || "-"}</div>
+          </div>
+        </div>
+
+        {/* Applicants */}
+        <div
+          style={{
+            background: "#fff",
+            padding: 20,
+            borderRadius: 14,
+            boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+          }}
+        >
+          <h3 style={{ marginTop: 0, fontSize: 20, fontWeight: 800, color: "#0a66c2" }}>
+            Applicants ({viewJob.applicants.length})
+          </h3>
+
+          {viewJob.applicants.length === 0 ? (
+            <div style={{ padding: 10, color: "#6b7280" }}>No applicants yet.</div>
+          ) : (
+            viewJob.applicants.map(({ user, application }, i) => (
+              <div
+                key={i}
+                style={{
+                  marginBottom: 14,
+                  padding: 12,
+                  borderRadius: 12,
+                  border: "1px solid #e5e7eb",
+                  background: "#f9fafb",
+                }}
+              >
+                <strong>{user?.firstName} {user?.lastName}</strong>
+                <div>Email: {user?.email}</div>
+                <div>Degree: {user?.degree}</div>
+                <div>Experience: {user?.experience}</div>
+
+                {application.resume && (
+                  <a
+                    href={application.resume}
+                    target="_blank"
+                    style={{
+                      color: "#0a66c2",
+                      fontWeight: 700,
+                      display: "inline-block",
+                      marginTop: 4,
+                    }}
+                  >
+                    View Resume →
+                  </a>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* CLOSE */}
+      <button
+        onClick={closeJobView}
+        style={{
+          position: "absolute",
+          top: 16,
+          right: 16,
+          background: "rgba(255,255,255,0.8)",
+          border: "none",
+          fontSize: 20,
+          cursor: "pointer",
+          padding: "4px 10px",
+          borderRadius: 8,
+        }}
+      >
+        ✕
+      </button>
+    </div>
+  </div>
+)}
+
 
 {/* ============================
       STYLES (FULL FILE BOTTOM)
@@ -1196,7 +1375,8 @@ export default function AdminDashboard() {
   }
 
   .btn {
-    padding: 8px 12px;
+    padding: 4px 8px;
+    font-size: 12px;
     border: 1px solid #3b82f6;
     background: #3b82f6;
     color: #fff;
