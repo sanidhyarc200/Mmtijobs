@@ -140,7 +140,8 @@ export default function AdminDashboard() {
     // --- Merge static + dynamic (static always on top)
     setCompanies([...staticClients, ...storedCompanies]);
 
-    setStudents(getStudents());
+    setStudents(getStudents().filter((u) => u.userType === "applicant"));
+
     setJobs(getJobs());
   }, [navigate]);
 
