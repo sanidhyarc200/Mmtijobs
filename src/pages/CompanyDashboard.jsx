@@ -26,32 +26,34 @@ export default function CompanyDashboard() {
     const logged = JSON.parse(localStorage.getItem("currentUser"));
     setCurrentUser(logged);
   
-    // load jobs
+    // load jobs (keep as is)
     setJobs(JSON.parse(localStorage.getItem("jobs")) || []);
   
-    // load all companies saved
-    const companyList = JSON.parse(localStorage.getItem("companies")) || [];
-  
-    // find the company linked to logged-in recruiter
     if (logged && logged.userType === "recruiter") {
-      const comp = companyList.find(
-        (c) => c.email.toLowerCase() === logged.email.toLowerCase()
-      );
+      // Build company profile from user object (correct source)
+      const comp = {
+        name: logged.company || logged.name,
+        email: logged.email,
+        contact: logged.contact,
+        description: logged.description || "",
+        address: logged.address || "",
+        website: logged.website || "",
+        profilePic: logged.profilePic || ""
+      };
   
       setCompany(comp);
   
-      if (comp) {
-        setEditData({
-          name: comp.name || "",
-          contact: comp.contact || "",
-          description: comp.description || "",
-          address: comp.address || "",
-          website: comp.website || "",
-          profilePic: comp.profilePic || "",
-        });
-      }
+      setEditData({
+        name: comp.name,
+        contact: comp.contact,
+        description: comp.description,
+        address: comp.address,
+        website: comp.website,
+        profilePic: comp.profilePic,
+      });
     }
   }, []);
+  
   
 
   const myJobs = useMemo(() => {
