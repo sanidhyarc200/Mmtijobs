@@ -480,14 +480,49 @@ export default function CompanyDashboard() {
 
             <button
               onClick={() => {
-                const updated = { ...company, ...editData };
-                localStorage.setItem(
-                  "registeredCompany",
-                  JSON.stringify(updated)
+                const logged = JSON.parse(localStorage.getItem("currentUser"));
+                let users = JSON.parse(localStorage.getItem("users")) || [];
+              
+                // update recruiter inside users[]
+                users = users.map((u) => {
+                  if (u.email.toLowerCase() === logged.email.toLowerCase()) {
+                    return {
+                      ...u,
+                      company: editData.name,
+                      name: editData.name,
+                      contact: editData.contact,
+                      description: editData.description,
+                      address: editData.address,
+                      website: editData.website,
+                      profilePic: editData.profilePic
+                    };
+                  }
+                  return u;
+                });
+              
+                // save updated users list
+                localStorage.setItem("users", JSON.stringify(users));
+              
+                // update currentUser too
+                const updatedUser = users.find(
+                  (u) => u.email.toLowerCase() === logged.email.toLowerCase()
                 );
-                setCompany(updated);
+                localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+              
+                // update dashboard UI live
+                setCompany({
+                  name: editData.name,
+                  email: logged.email,
+                  contact: editData.contact,
+                  description: editData.description,
+                  address: editData.address,
+                  website: editData.website,
+                  profilePic: editData.profilePic
+                });
+              
                 setShowEditModal(false);
               }}
+              
               style={{ ...btnPrimarySmall, background: BLUE, color: "#fff" }}
             >
               Save Changes
