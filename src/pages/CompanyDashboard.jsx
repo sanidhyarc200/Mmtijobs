@@ -21,7 +21,7 @@ export default function CompanyDashboard() {
 
   const BLUE = "#0a66c2";
 
-  uuseEffect(() => {
+  useEffect(() => {
     // load logged-in user
     const logged = JSON.parse(localStorage.getItem("currentUser"));
     setCurrentUser(logged);
