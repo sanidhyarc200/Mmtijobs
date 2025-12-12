@@ -21,26 +21,38 @@ export default function CompanyDashboard() {
 
   const BLUE = "#0a66c2";
 
-  useEffect(() => {
-    const cu = JSON.parse(localStorage.getItem("currentUser"));
-    const comp = JSON.parse(localStorage.getItem("registeredCompany"));
-
-    setCurrentUser(cu);
-    setCompany(comp);
-
-    if (comp) {
-      setEditData({
-        name: comp.name || "",
-        contact: comp.contact || "",
-        description: comp.description || "",
-        address: comp.address || "",
-        website: comp.website || "",
-        profilePic: comp.profilePic || "",
-      });
-    }
-
+  uuseEffect(() => {
+    // load logged-in user
+    const logged = JSON.parse(localStorage.getItem("currentUser"));
+    setCurrentUser(logged);
+  
+    // load jobs
     setJobs(JSON.parse(localStorage.getItem("jobs")) || []);
+  
+    // load all companies saved
+    const companyList = JSON.parse(localStorage.getItem("companies")) || [];
+  
+    // find the company linked to logged-in recruiter
+    if (logged && logged.userType === "recruiter") {
+      const comp = companyList.find(
+        (c) => c.email.toLowerCase() === logged.email.toLowerCase()
+      );
+  
+      setCompany(comp);
+  
+      if (comp) {
+        setEditData({
+          name: comp.name || "",
+          contact: comp.contact || "",
+          description: comp.description || "",
+          address: comp.address || "",
+          website: comp.website || "",
+          profilePic: comp.profilePic || "",
+        });
+      }
+    }
   }, []);
+  
 
   const myJobs = useMemo(() => {
     if (!company && !currentUser) return [];
