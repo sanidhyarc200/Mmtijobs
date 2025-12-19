@@ -81,6 +81,16 @@ function Card({ title, value, sub }) {
   );
 }
 
+const StableFilterBar = React.memo(function StableFilterBar({ children }) {
+  return (
+    <div className="admin-filter-bar">
+      <div className="admin-filter-grid">
+        {children}
+      </div>
+    </div>
+  );
+});
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
@@ -90,6 +100,23 @@ export default function AdminDashboard() {
   const [jobs, setJobs] = useState([]);
 
   const [activeSection, setActiveSection] = useState("jobs");
+  const [companyFilters, setCompanyFilters] = useState({
+    name: "",
+    email: "",
+    phone: "",
+  });
+
+  const [studentFilters, setStudentFilters] = useState({
+    name: "",
+    email: "",
+    location: "",
+  });
+
+  const [jobFilters, setJobFilters] = useState({
+    title: "",
+    company: "",
+    status: "",
+  });
 
   const [editModal, setEditModal] = useState({
     open: false,
@@ -122,16 +149,78 @@ export default function AdminDashboard() {
 
     // --- Permanent static clients ---
     const staticClients = [
-      { companyName: "Medinatridle heath IIB", email: "contact@medinitriddlehealth.com", contact: "8989954397", hrName: "HR Manager" },
-      { companyName: "Samarth Electrocare", email: "samathelectrocare@gmail.com", contact: "7755990767", hrName: "HR Manager" },
-      { companyName: "Neelanj business Solution LLP", email: "neelanjbusinesssolution@gmail.com", contact: "7998406170", hrName: "HR Manager" },
-      { companyName: "RAJRUDRA Enterprises pvt ltd", email: "rajrudraenterprises.mandeep@gmail.com", contact: "9752319442", hrName: "HR Manager" },
-      { companyName: "Orphic Solution, Bhopal", email: "hr@orphicsolution.com", contact: "9584360388", hrName: "HR Manager" },
-      { companyName: "yokohama pvt ltd engine", email: "yokohama pvt ltd engine", contact: "7697651756", hrName: "HR Manager" },
-      { companyName: "Raj Seeds Trades", email: "hr@rajseeds.co.in", contact: "626200198", hrName: "HR Manager" },
-      { companyName: "Sasthi Enterprises Pvt. Ltd.", email: "hr@harenply.com", contact: "9259538852", hrName: "HR Manager" },
-      { companyName: "GENTRIGO SOLUTIONs", email: "Info.gentrigo@gmail.com", contact: "6265389979", hrName: "HR Manager" },
-      { companyName: "Tendonifoodchemical", email: "tendonifoodchemical@gmail.com", contact: "6269990150", hrName: "HR Manager" },
+      {
+        companyName: "Medinatridle heath IIB",
+        email: "contact@medinitriddlehealth.com",
+        contact: "8989954397",
+        hrName: "HR Manager",
+      },
+      {
+        companyName: "Samarth Electrocare",
+        email: "samathelectrocare@gmail.com",
+        contact: "7755990767",
+        hrName: "HR Manager",
+      },
+      {
+        companyName: "Neelanj business Solution LLP",
+        email: "neelanjbusinesssolution@gmail.com",
+        contact: "7998406170",
+        hrName: "HR Manager",
+      },
+      {
+        companyName: "RAJRUDRA Enterprises pvt ltd",
+        email: "rajrudraenterprises.mandeep@gmail.com",
+        contact: "9752319442",
+        hrName: "HR Manager",
+      },
+      {
+        companyName: "Orphic Solution, Bhopal",
+        email: "hr@orphicsolution.com",
+        contact: "9584360388",
+        hrName: "HR Manager",
+      },
+      {
+        companyName: "yokohama pvt ltd engine",
+        email: "yokohama pvt ltd engine",
+        contact: "7697651756",
+        hrName: "HR Manager",
+      },
+      {
+        companyName: "Raj Seeds Trades",
+        email: "hr@rajseeds.co.in",
+        contact: "626200198",
+        hrName: "HR Manager",
+      },
+      {
+        companyName: "Sasthi Enterprises Pvt. Ltd.",
+        email: "hr@harenply.com",
+        contact: "9259538852",
+        hrName: "HR Manager",
+      },
+      {
+        companyName: "GENTRIGO SOLUTIONs",
+        email: "Info.gentrigo@gmail.com",
+        contact: "6265389979",
+        hrName: "HR Manager",
+      },
+      {
+        companyName: "Tendonifoodchemical",
+        email: "tendonifoodchemical@gmail.com",
+        contact: "6269990150",
+        hrName: "HR Manager",
+      },
+      {
+        companyName: "Confidential Company",
+        email: "confidential.hr@example.com",
+        contact: "9000000001",
+        hrName: "HR Manager",
+      },
+      {
+        companyName: "Fitness Tycoon",
+        email: "hr@fitnesstycoon.com",
+        contact: "9000000002",
+        hrName: "HR Manager",
+      },
     ];
 
     // --- Local companies (new signups)
@@ -143,6 +232,49 @@ export default function AdminDashboard() {
     setStudents(getStudents().filter((u) => u.userType === "applicant"));
 
     setJobs(getJobs());
+    // --- Inject static jobs for admin (one-time) ---
+const existingJobs = getJobs();
+
+const staticJobs = [
+  {
+    id: "static-1",
+    title: "HR & Operations Executive",
+    company: "Confidential Company",
+    location: "Bhopal, Madhya Pradesh",
+    experienceRange: "2+ years",
+    salary: "₹2,00,000 – ₹3,00,000 per annum",
+    tags: ["HR", "Operations", "Team Management", "MS Office"],
+    description:
+      "We are hiring an experienced HR & Operations Executive to handle HR functions and oversee daily office operations. Key responsibilities include recruitment, onboarding, attendance & payroll management, HR documentation, office coordination, supporting sales teams, creating reports, and ensuring smooth inter-department communication. Required skills: strong team management, communication, HR operations knowledge, MS Office proficiency, and basic understanding of sales processes. Documents required: Experience Certificate, last 3 months’ pay slips, previous company offer letter, Aadhaar & PAN card.",
+    status: "active",
+    createdAt: Date.now(),
+  },
+  {
+    id: "static-2",
+    title: "Nutritionist",
+    company: "Fitness Tycoon",
+    location: "Mansarover Complex, MF-12, Bhopal",
+    experienceRange: "0-3 years",
+    salary: "₹1.5 LPA – ₹3 LPA",
+    tags: ["Nutrition", "Diet Planning", "Client Handling", "Wellness"],
+    description:
+      "Fitness Tycoon is hiring a qualified Nutritionist for a full-time office role. Responsibilities include creating customized diet plans, conducting nutritional assessments, collaborating with fitness trainers, monitoring client progress, maintaining records, educating clients on nutrition, and staying updated with latest nutrition research. Required qualifications include a Bachelor’s or Master’s degree in Nutrition/Dietetics, experience in personalized diet planning, and strong understanding of macro & micronutrients. Skills: excellent communication, counseling, knowledge of Indian diets, and basic computer proficiency.",
+    status: "active",
+    createdAt: Date.now(),
+  },
+];
+
+// prevent duplicate injection
+const alreadyAdded = existingJobs.some((j) =>
+  j.id === "static-1" || j.id === "static-2"
+);
+
+if (!alreadyAdded) {
+  const updatedJobs = [...staticJobs, ...existingJobs];
+  saveJobs(updatedJobs);
+  setJobs(updatedJobs);
+}
+
   }, [navigate]);
 
   const stats = useMemo(() => {
@@ -160,6 +292,44 @@ export default function AdminDashboard() {
       pendingJobs: pending,
     };
   }, [companies, students, jobs]);
+
+  const filteredCompanies = useMemo(() => {
+    return companies.filter((c) => {
+      const name = (c.companyName || c.name || "").toLowerCase();
+      const email = (c.email || "").toLowerCase();
+      const phone = (c.contact || c.phone || "").toLowerCase();
+
+      return (
+        name.includes(companyFilters.name.toLowerCase()) &&
+        email.includes(companyFilters.email.toLowerCase()) &&
+        phone.includes(companyFilters.phone.toLowerCase())
+      );
+    });
+  }, [companies, companyFilters]);
+
+  const filteredStudents = useMemo(() => {
+    return students.filter((s) => {
+      const name = `${s.firstName || ""} ${s.lastName || ""}`.toLowerCase();
+      const email = (s.email || "").toLowerCase();
+      const location = (s.location || "").toLowerCase();
+
+      return (
+        name.includes(studentFilters.name.toLowerCase()) &&
+        email.includes(studentFilters.email.toLowerCase()) &&
+        location.includes(studentFilters.location.toLowerCase())
+      );
+    });
+  }, [students, studentFilters]);
+
+  const filteredJobs = useMemo(() => {
+    return jobs.filter((j) => {
+      return (
+        j.title?.toLowerCase().includes(jobFilters.title.toLowerCase()) &&
+        j.company?.toLowerCase().includes(jobFilters.company.toLowerCase()) &&
+        (jobFilters.status ? j.status === jobFilters.status : true)
+      );
+    });
+  }, [jobs, jobFilters]);
 
   function openEdit(type, index, item) {
     setEditModal({ open: true, type, item: { ...item }, index });
@@ -256,7 +426,8 @@ export default function AdminDashboard() {
       (j) =>
         (j.companyEmail && j.companyEmail === email) ||
         (j.postedBy && j.postedBy === uid) ||
-        (j.company && (j.company === company.companyName || j.company === company.name))
+        (j.company &&
+          (j.company === company.companyName || j.company === company.name))
     );
 
     // Build map jobId -> applicants array with full user details
@@ -264,7 +435,8 @@ export default function AdminDashboard() {
     for (const job of companyJobs) {
       const jobApps = apps.filter((a) => a.jobId === job.id);
       map[job.id] = jobApps.map((a) => {
-        const user = users.find((u) => u.id === a.userId || u.userId === a.userId) || null;
+        const user =
+          users.find((u) => u.id === a.userId || u.userId === a.userId) || null;
         return {
           application: a,
           user,
@@ -288,7 +460,8 @@ export default function AdminDashboard() {
       .filter((a) => a.jobId === job.id)
       .map((a) => ({
         application: a,
-        user: users.find((u) => u.id === a.userId || u.userId === a.userId) || null,
+        user:
+          users.find((u) => u.id === a.userId || u.userId === a.userId) || null,
       }));
 
     setViewJob({
@@ -306,7 +479,6 @@ export default function AdminDashboard() {
     });
   }
 
-
   function closeCompanyView() {
     setViewCompany({
       open: false,
@@ -321,13 +493,28 @@ export default function AdminDashboard() {
       <aside className="admin-sidebar">
         <div className="sidebar-title">Admin</div>
         <nav className="sidebar-nav">
-          <button className={`sidebar-btn ${activeSection === "recruiters" ? "active" : ""}`} onClick={() => setActiveSection("recruiters")}>
+          <button
+            className={`sidebar-btn ${
+              activeSection === "recruiters" ? "active" : ""
+            }`}
+            onClick={() => setActiveSection("recruiters")}
+          >
             Recruiters / Clients
           </button>
-          <button className={`sidebar-btn ${activeSection === "students" ? "active" : ""}`} onClick={() => setActiveSection("students")}>
+          <button
+            className={`sidebar-btn ${
+              activeSection === "students" ? "active" : ""
+            }`}
+            onClick={() => setActiveSection("students")}
+          >
             Students
           </button>
-          <button className={`sidebar-btn ${activeSection === "jobs" ? "active" : ""}`} onClick={() => setActiveSection("jobs")}>
+          <button
+            className={`sidebar-btn ${
+              activeSection === "jobs" ? "active" : ""
+            }`}
+            onClick={() => setActiveSection("jobs")}
+          >
             Jobs
           </button>
         </nav>
@@ -341,7 +528,10 @@ export default function AdminDashboard() {
         <Card title="Total Recruiters" value={stats.totalCompanies} />
         <Card title="Total Students" value={stats.totalStudents} />
         <Card title="Total Jobs" value={stats.totalJobs} />
-        <Card title="Active / Pending / Inactive" value={`${stats.activeJobs} / ${stats.pendingJobs} / ${stats.inactiveJobs}`} />
+        <Card
+          title="Active / Pending / Inactive"
+          value={`${stats.activeJobs} / ${stats.pendingJobs} / ${stats.inactiveJobs}`}
+        />
       </div>
     );
   }
@@ -352,6 +542,52 @@ export default function AdminDashboard() {
         <div className="panel-header">
           <h2>Recruiters / Clients</h2>
         </div>
+        {/* FILTERS (UI ONLY) */}
+        
+        <StableFilterBar>
+  <div className="admin-filter-field">
+    <label>Company</label>
+    <input
+      value={companyFilters.name}
+      onChange={(e) =>
+        setCompanyFilters((f) => ({ ...f, name: e.target.value }))
+      }
+    />
+  </div>
+
+  <div className="admin-filter-field">
+    <label>Email</label>
+    <input
+      value={companyFilters.email}
+      onChange={(e) =>
+        setCompanyFilters((f) => ({ ...f, email: e.target.value }))
+      }
+    />
+  </div>
+
+  <div className="admin-filter-field">
+    <label>Phone</label>
+    <input
+      value={companyFilters.phone}
+      onChange={(e) =>
+        setCompanyFilters((f) => ({ ...f, phone: e.target.value }))
+      }
+    />
+  </div>
+
+  <div className="admin-filter-actions">
+    <button
+      className="admin-filter-clear"
+      onClick={() =>
+        setCompanyFilters({ name: "", email: "", phone: "" })
+      }
+    >
+      Clear
+    </button>
+  </div>
+</StableFilterBar>
+
+
         <div className="table-wrap">
           <table className="nice-table">
             <thead>
@@ -366,9 +602,12 @@ export default function AdminDashboard() {
             </thead>
             <tbody>
               {companies.length ? (
-                companies.map((c, idx) => {
+                filteredCompanies.map((c, idx) => {
                   const jobsCount = jobs.filter(
-                    (j) => (j.company || "").trim() === (c.companyName || c.name || "").trim() || (j.companyEmail && j.companyEmail === c.email)
+                    (j) =>
+                      (j.company || "").trim() ===
+                        (c.companyName || c.name || "").trim() ||
+                      (j.companyEmail && j.companyEmail === c.email)
                   ).length;
                   return (
                     <tr key={idx}>
@@ -379,16 +618,33 @@ export default function AdminDashboard() {
                       <td>{jobsCount}</td>
                       <td className="actions">
                         {/* NEW: Eye view button */}
-                        <button className="btn secondary" onClick={() => openCompanyView(c)}>👁️ View</button>
-                        <button className="btn secondary" onClick={() => openEdit("company", idx, c)}>Edit</button>
-                        <button className="btn danger" onClick={() => handleDelete("company", idx)}>Delete</button>
+                        <button
+                          className="btn secondary"
+                          onClick={() => openCompanyView(c)}
+                        >
+                          👁️ View
+                        </button>
+                        <button
+                          className="btn secondary"
+                          onClick={() => openEdit("company", idx, c)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="btn danger"
+                          onClick={() => handleDelete("company", idx)}
+                        >
+                          Delete
+                        </button>
                       </td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan={6} className="empty">No recruiters found.</td>
+                  <td colSpan={6} className="empty">
+                    No recruiters found.
+                  </td>
                 </tr>
               )}
             </tbody>
@@ -404,6 +660,51 @@ export default function AdminDashboard() {
         <div className="panel-header">
           <h2>Students</h2>
         </div>
+        {/* FILTERS (UI ONLY) */}
+        <StableFilterBar>
+  <div className="admin-filter-field">
+    <label>Name</label>
+    <input
+      value={studentFilters.name}
+      onChange={(e) =>
+        setStudentFilters((f) => ({ ...f, name: e.target.value }))
+      }
+    />
+  </div>
+
+  <div className="admin-filter-field">
+    <label>Email</label>
+    <input
+      value={studentFilters.email}
+      onChange={(e) =>
+        setStudentFilters((f) => ({ ...f, email: e.target.value }))
+      }
+    />
+  </div>
+
+  <div className="admin-filter-field">
+    <label>Location</label>
+    <input
+      value={studentFilters.location}
+      onChange={(e) =>
+        setStudentFilters((f) => ({ ...f, location: e.target.value }))
+      }
+    />
+  </div>
+
+  <div className="admin-filter-actions">
+    <button
+      className="admin-filter-clear"
+      onClick={() =>
+        setStudentFilters({ name: "", email: "", location: "" })
+      }
+    >
+      Clear
+    </button>
+  </div>
+</StableFilterBar>
+
+
         <div className="table-wrap">
           <table className="nice-table">
             <thead>
@@ -418,8 +719,13 @@ export default function AdminDashboard() {
             </thead>
             <tbody>
               {students.length ? (
-                students.map((s, idx) => {
-                  const name = [s.firstName, s.middleName, s.lastName].filter(Boolean).join(" ") || s.name || "-";
+                filteredStudents.map((s, idx) => {
+                  const name =
+                    [s.firstName, s.middleName, s.lastName]
+                      .filter(Boolean)
+                      .join(" ") ||
+                    s.name ||
+                    "-";
                   return (
                     <tr key={idx}>
                       <td>{name}</td>
@@ -428,15 +734,27 @@ export default function AdminDashboard() {
                       <td>{s.experience || "-"}</td>
                       <td>{s.location || "-"}</td>
                       <td className="actions">
-                        <button className="btn secondary" onClick={() => openEdit("student", idx, s)}>Edit</button>
-                        <button className="btn danger" onClick={() => handleDelete("student", idx)}>Delete</button>
+                        <button
+                          className="btn secondary"
+                          onClick={() => openEdit("student", idx, s)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="btn danger"
+                          onClick={() => handleDelete("student", idx)}
+                        >
+                          Delete
+                        </button>
                       </td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan={6} className="empty">No students found.</td>
+                  <td colSpan={6} className="empty">
+                    No students found.
+                  </td>
                 </tr>
               )}
             </tbody>
@@ -452,6 +770,56 @@ export default function AdminDashboard() {
         <div className="panel-header">
           <h2>Jobs</h2>
         </div>
+        {/* FILTERS (UI ONLY) */}
+        <StableFilterBar>
+  <div className="admin-filter-field">
+    <label>Job Title</label>
+    <input
+      value={jobFilters.title}
+      onChange={(e) =>
+        setJobFilters((f) => ({ ...f, title: e.target.value }))
+      }
+    />
+  </div>
+
+  <div className="admin-filter-field">
+    <label>Company</label>
+    <input
+      value={jobFilters.company}
+      onChange={(e) =>
+        setJobFilters((f) => ({ ...f, company: e.target.value }))
+      }
+    />
+  </div>
+
+  <div className="admin-filter-field">
+    <label>Status</label>
+    <select
+      value={jobFilters.status}
+      onChange={(e) =>
+        setJobFilters((f) => ({ ...f, status: e.target.value }))
+      }
+    >
+      <option value="">Any</option>
+      <option value="active">Active</option>
+      <option value="pending">Pending</option>
+      <option value="inactive">Inactive</option>
+    </select>
+  </div>
+
+  <div className="admin-filter-actions">
+    <button
+      className="admin-filter-clear"
+      onClick={() =>
+        setJobFilters({ title: "", company: "", status: "" })
+      }
+    >
+      Clear
+    </button>
+  </div>
+</StableFilterBar>
+
+
         <div className="table-wrap">
           <table className="nice-table">
             <thead>
@@ -467,36 +835,70 @@ export default function AdminDashboard() {
             </thead>
             <tbody>
               {jobs.length ? (
-                jobs.map((j, idx) => (
+                filteredJobs.map((j, idx) => (
                   <tr key={j.id || idx}>
                     <td>{j.title || "-"}</td>
                     <td>{j.company || "-"}</td>
                     <td>
-                      <span className={`pill ${j.status === "active" ? "ok" : j.status === "pending" ? "pending" : "warn"}`}>
-                        {j.status === "active" ? "Active" : j.status === "pending" ? "Pending" : "Inactive"}
+                      <span
+                        className={`pill ${
+                          j.status === "active"
+                            ? "ok"
+                            : j.status === "pending"
+                            ? "pending"
+                            : "warn"
+                        }`}
+                      >
+                        {j.status === "active"
+                          ? "Active"
+                          : j.status === "pending"
+                          ? "Pending"
+                          : "Inactive"}
                       </span>
                     </td>
                     <td>{j.location || "-"}</td>
                     <td>{j.experienceRange || "-"}</td>
                     <td>{j.salary || "-"}</td>
                     <td className="actions">
-                    <button className="btn secondary" onClick={() => openJobView(j)}>👁️ View</button>
+                      <button
+                        className="btn secondary"
+                        onClick={() => openJobView(j)}
+                      >
+                        👁️ View
+                      </button>
 
                       {j.status === "pending" ? (
-                        <button className="btn" onClick={() => approveJob(idx)}>Approve</button>
+                        <button className="btn" onClick={() => approveJob(idx)}>
+                          Approve
+                        </button>
                       ) : (
-                        <button className="btn" onClick={() => handleToggleJobStatus(idx)}>
+                        <button
+                          className="btn"
+                          onClick={() => handleToggleJobStatus(idx)}
+                        >
                           {j.status === "active" ? "Deactivate" : "Activate"}
                         </button>
                       )}
-                      <button className="btn secondary" onClick={() => openEdit("job", idx, j)}>Edit</button>
-                      <button className="btn danger" onClick={() => handleDelete("job", idx)}>Delete</button>
+                      <button
+                        className="btn secondary"
+                        onClick={() => openEdit("job", idx, j)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="btn danger"
+                        onClick={() => handleDelete("job", idx)}
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="empty">No jobs found.</td>
+                  <td colSpan={7} className="empty">
+                    No jobs found.
+                  </td>
                 </tr>
               )}
             </tbody>
@@ -509,8 +911,19 @@ export default function AdminDashboard() {
   return (
     <div className="admin-layout">
       {jobs.some((j) => j.status === "pending") && (
-        <div style={{ background: "#fff8e1", border: "1px solid #fcd34d", padding: "12px 16px", borderRadius: "10px", color: "#92400e", fontWeight: 600, marginBottom: "12px" }}>
-          ⚠️ {jobs.filter((j) => j.status === "pending").length} job(s) pending approval
+        <div
+          style={{
+            background: "#fff8e1",
+            border: "1px solid #fcd34d",
+            padding: "12px 16px",
+            borderRadius: "10px",
+            color: "#92400e",
+            fontWeight: 600,
+            marginBottom: "12px",
+          }}
+        >
+          ⚠️ {jobs.filter((j) => j.status === "pending").length} job(s) pending
+          approval
         </div>
       )}
 
@@ -525,755 +938,888 @@ export default function AdminDashboard() {
       </div>
 
       {/* EDIT MODAL and COMPANY VIEW MODAL will follow in PART 2 */}
-{/* ============================
+      {/* ============================
       COMPANY VIEW MODAL (READ-ONLY DASHBOARD)
 ============================ */}
-{viewCompany.open && (
-  <div className="modal-backdrop" onClick={closeCompanyView}>
-    <div
-      className="company-view-modal"
-      onClick={(e) => e.stopPropagation()}
-      style={{
-        width: "100%",
-        maxWidth: "1050px",
-        maxHeight: "90vh",
-        background: "#fff",
-        borderRadius: "16px",
-        overflow: "hidden",
-        display: "flex",
-        flexDirection: "column",
-        boxShadow: "0 12px 40px rgba(0,0,0,0.25)",
-      }}
-    >
-      {/* HEADER */}
-      <div
-        style={{
-          background: "linear-gradient(135deg, #0a66c2, #0047a8)",
-          color: "#fff",
-          padding: "60px 20px 80px",
-          textAlign: "center",
-          position: "relative",
-        }}
-      >
-        {/* PROFILE PIC FIXED CIRCLE */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: "-55px",
-            left: "50%",
-            transform: "translateX(-50%)",
-          }}
-        >
+      {viewCompany.open && (
+        <div className="modal-backdrop" onClick={closeCompanyView}>
           <div
+            className="company-view-modal"
+            onClick={(e) => e.stopPropagation()}
             style={{
-              width: 110,
-              height: 110,
-              borderRadius: "50%",
-              border: "4px solid #fff",
-              background: "#e5e7eb",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
+              width: "100%",
+              maxWidth: "1050px",
+              maxHeight: "90vh",
+              background: "#fff",
+              borderRadius: "16px",
               overflow: "hidden",
-              boxShadow: "0 10px 20px rgba(0,0,0,0.25)",
+              display: "flex",
+              flexDirection: "column",
+              boxShadow: "0 12px 40px rgba(0,0,0,0.25)",
             }}
           >
-            {viewCompany.company?.profilePic ? (
-              <img
-                src={viewCompany.company.profilePic}
-                alt="profile"
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            ) : (
-              <span
-                style={{
-                  color: "#6b7280",
-                  fontSize: 12,
-                  fontWeight: 700,
-                }}
-              >
-                No Image
-              </span>
-            )}
-          </div>
-        </div>
-
-        <h2 style={{ fontSize: 28, marginTop: 20, fontWeight: 900 }}>
-          {viewCompany.company.name ||
-            viewCompany.company.companyName ||
-            "Company"}
-        </h2>
-        <p style={{ opacity: 0.85 }}>
-          Admin view of company dashboard — read-only.
-        </p>
-      </div>
-
-      {/* BODY (scrollable) */}
-      <div
-        style={{
-          padding: "80px 30px 40px",
-          overflowY: "auto",
-          flex: 1,
-          background: "#f3f6fb",
-        }}
-      >
-        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-          {/* Company Info */}
-          <div
-            style={{
-              background: "#fff",
-              padding: 20,
-              borderRadius: 14,
-              marginBottom: 20,
-              boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
-            }}
-          >
-            <h3
-              style={{
-                fontSize: 20,
-                marginTop: 0,
-                fontWeight: 800,
-                color: "#0a66c2",
-              }}
-            >
-              Company Profile
-            </h3>
-
-            <div style={{ display: "grid", gap: 10 }}>
-              <div><strong>Email:</strong> {viewCompany.company.email}</div>
-              <div><strong>Contact:</strong> {viewCompany.company.contact}</div>
-              <div><strong>Website:</strong> {viewCompany.company.website || "-"}</div>
-              <div><strong>Address:</strong> {viewCompany.company.address || "-"}</div>
-              <div><strong>Description:</strong> {viewCompany.company.description || "-"}</div>
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div
-            style={{
-              background: "#fff",
-              padding: 20,
-              borderRadius: 14,
-              marginBottom: 20,
-              boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
-            }}
-          >
-            <h3
-              style={{
-                fontSize: 20,
-                marginTop: 0,
-                fontWeight: 800,
-                color: "#0a66c2",
-              }}
-            >
-              Quick Stats
-            </h3>
-
+            {/* HEADER */}
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 12,
+                background: "linear-gradient(135deg, #0a66c2, #0047a8)",
+                color: "#fff",
+                padding: "60px 20px 80px",
                 textAlign: "center",
+                position: "relative",
               }}
             >
+              {/* PROFILE PIC FIXED CIRCLE */}
               <div
                 style={{
-                  background: "#f8fafc",
-                  padding: 18,
-                  borderRadius: 12,
-                  boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
+                  position: "absolute",
+                  bottom: "-55px",
+                  left: "50%",
+                  transform: "translateX(-50%)",
                 }}
               >
-                <div style={{ color: "#6b7280" }}>Active Jobs</div>
-                <div style={{ fontSize: 26, fontWeight: 800 }}>
-                  {viewCompany.companyJobs.length}
-                </div>
-              </div>
-
-              <div
-                style={{
-                  background: "#f8fafc",
-                  padding: 18,
-                  borderRadius: 12,
-                  boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
-                }}
-              >
-                <div style={{ color: "#6b7280" }}>Applicants</div>
-                <div style={{ fontSize: 26, fontWeight: 800 }}>
-                  {Object.values(viewCompany.companyApplicantsMap).flat().length}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Job List */}
-          <div
-            style={{
-              background: "#fff",
-              padding: 20,
-              borderRadius: 14,
-              boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
-            }}
-          >
-            <h3
-              style={{
-                fontSize: 20,
-                marginTop: 0,
-                fontWeight: 800,
-                color: "#0a66c2",
-              }}
-            >
-              Job Posts
-            </h3>
-
-            {viewCompany.companyJobs.length === 0 ? (
-              <div
-                style={{
-                  textAlign: "center",
-                  padding: 20,
-                  color: "#6b7280",
-                }}
-              >
-                No jobs posted.
-              </div>
-            ) : (
-              viewCompany.companyJobs.map((job) => {
-                const applicants = viewCompany.companyApplicantsMap[job.id] || [];
-
-                return (
-                  <div
-                    key={job.id}
-                    style={{
-                      marginBottom: 20,
-                      background: "#f9fbff",
-                      border: "1px solid #e5e9ff",
-                      padding: 18,
-                      borderRadius: 14,
-                    }}
-                  >
-                    <h4
+                <div
+                  style={{
+                    width: 110,
+                    height: 110,
+                    borderRadius: "50%",
+                    border: "4px solid #fff",
+                    background: "#e5e7eb",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    overflow: "hidden",
+                    boxShadow: "0 10px 20px rgba(0,0,0,0.25)",
+                  }}
+                >
+                  {viewCompany.company?.profilePic ? (
+                    <img
+                      src={viewCompany.company.profilePic}
+                      alt="profile"
                       style={{
-                        margin: 0,
-                        marginBottom: 6,
-                        color: "#0a66c2",
-                        fontWeight: 800,
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  ) : (
+                    <span
+                      style={{
+                        color: "#6b7280",
+                        fontSize: 12,
+                        fontWeight: 700,
                       }}
                     >
-                      {job.title}
-                    </h4>
+                      No Image
+                    </span>
+                  )}
+                </div>
+              </div>
 
-                    <div style={{ marginBottom: 10, color: "#6b7280" }}>
-                      {job.location} • {job.experienceRange} • {job.salary}
+              <h2 style={{ fontSize: 28, marginTop: 20, fontWeight: 900 }}>
+                {viewCompany.company.name ||
+                  viewCompany.company.companyName ||
+                  "Company"}
+              </h2>
+              <p style={{ opacity: 0.85 }}>
+                Admin view of company dashboard — read-only.
+              </p>
+            </div>
+
+            {/* BODY (scrollable) */}
+            <div
+              style={{
+                padding: "80px 30px 40px",
+                overflowY: "auto",
+                flex: 1,
+                background: "#f3f6fb",
+              }}
+            >
+              <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+                {/* Company Info */}
+                <div
+                  style={{
+                    background: "#fff",
+                    padding: 20,
+                    borderRadius: 14,
+                    marginBottom: 20,
+                    boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+                  }}
+                >
+                  <h3
+                    style={{
+                      fontSize: 20,
+                      marginTop: 0,
+                      fontWeight: 800,
+                      color: "#0a66c2",
+                    }}
+                  >
+                    Company Profile
+                  </h3>
+
+                  <div style={{ display: "grid", gap: 10 }}>
+                    <div>
+                      <strong>Email:</strong> {viewCompany.company.email}
+                    </div>
+                    <div>
+                      <strong>Contact:</strong> {viewCompany.company.contact}
+                    </div>
+                    <div>
+                      <strong>Website:</strong>{" "}
+                      {viewCompany.company.website || "-"}
+                    </div>
+                    <div>
+                      <strong>Address:</strong>{" "}
+                      {viewCompany.company.address || "-"}
+                    </div>
+                    <div>
+                      <strong>Description:</strong>{" "}
+                      {viewCompany.company.description || "-"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stats */}
+                <div
+                  style={{
+                    background: "#fff",
+                    padding: 20,
+                    borderRadius: 14,
+                    marginBottom: 20,
+                    boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+                  }}
+                >
+                  <h3
+                    style={{
+                      fontSize: 20,
+                      marginTop: 0,
+                      fontWeight: 800,
+                      color: "#0a66c2",
+                    }}
+                  >
+                    Quick Stats
+                  </h3>
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: 12,
+                      textAlign: "center",
+                    }}
+                  >
+                    <div
+                      style={{
+                        background: "#f8fafc",
+                        padding: 18,
+                        borderRadius: 12,
+                        boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
+                      }}
+                    >
+                      <div style={{ color: "#6b7280" }}>Active Jobs</div>
+                      <div style={{ fontSize: 26, fontWeight: 800 }}>
+                        {viewCompany.companyJobs.length}
+                      </div>
                     </div>
 
                     <div
                       style={{
-                        fontSize: 14,
-                        marginBottom: 10,
+                        background: "#f8fafc",
+                        padding: 18,
+                        borderRadius: 12,
+                        boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
                       }}
                     >
-                      Posted on{" "}
-                      {new Date(job.createdAt || Date.now()).toLocaleDateString()}
-                    </div>
-
-                    <hr style={{ opacity: 0.3, margin: "10px 0" }} />
-
-                    {/* Applicants */}
-                    <h5 style={{ margin: 0, marginBottom: 8, fontWeight: 700 }}>
-                      Applicants ({applicants.length})
-                    </h5>
-
-                    {applicants.length === 0 ? (
-                      <div
-                        style={{
-                          padding: "8px 0",
-                          fontSize: 14,
-                          color: "#9ca3af",
-                        }}
-                      >
-                        No applicants yet.
+                      <div style={{ color: "#6b7280" }}>Applicants</div>
+                      <div style={{ fontSize: 26, fontWeight: 800 }}>
+                        {
+                          Object.values(viewCompany.companyApplicantsMap).flat()
+                            .length
+                        }
                       </div>
-                    ) : (
-                      applicants.map(({ user, application }, i) => (
-                        <div
-                          key={i}
-                          style={{
-                            background: "#fff",
-                            padding: 12,
-                            borderRadius: 10,
-                            border: "1px solid #e5e7eb",
-                            marginBottom: 10,
-                          }}
-                        >
-                          <div style={{ fontWeight: 700 }}>
-                            {user?.firstName} {user?.lastName}
-                          </div>
-                          <div>Email: {user?.email}</div>
-                          <div>Degree: {user?.degree}</div>
-                          <div>Experience: {user?.experience}</div>
-
-                          {application.resume && (
-                            <a
-                              href={application.resume}
-                              target="_blank"
-                              style={{
-                                color: "#0a66c2",
-                                fontWeight: 700,
-                                fontSize: 14,
-                                marginTop: 6,
-                                display: "inline-block",
-                              }}
-                            >
-                              View Resume →
-                            </a>
-                          )}
-                        </div>
-                      ))
-                    )}
+                    </div>
                   </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-      </div>
+                </div>
 
-      {/* CLOSE BUTTON */}
-      <button
-        onClick={closeCompanyView}
-        style={{
-          position: "absolute",
-          top: 16,
-          right: 16,
-          background: "rgba(255,255,255,0.8)",
-          border: "none",
-          fontSize: 20,
-          cursor: "pointer",
-          padding: "4px 10px",
-          borderRadius: 8,
-        }}
-      >
-        ✕
-      </button>
-    </div>
-  </div>
-  
-)}
-
-{/* ============================
-      EDIT MODAL (UPDATED WITH PROFILE PIC UPLOAD)
-============================ */}
-{editModal.open && (
-  <div className="modal-backdrop" onClick={closeEdit}>
-    <div className="modal" onClick={(e) => e.stopPropagation()}>
-      <div className="modal-header">
-        <h3>Edit {editModal.type}</h3>
-        <button className="icon-btn" onClick={closeEdit}>
-          ✕
-        </button>
-      </div>
-
-      <div className="modal-body">
-        {/* COMPANY EDIT */}
-        {editModal.type === "company" && (
-          <div className="form-grid">
-            <label>
-              Company Name
-              <input
-                value={editModal.item.companyName || editModal.item.name || ""}
-                onChange={(e) =>
-                  setEditModal((m) => ({
-                    ...m,
-                    item: { ...m.item, companyName: e.target.value, name: e.target.value },
-                  }))
-                }
-              />
-            </label>
-
-            <label>
-              HR Name
-              <input
-                value={editModal.item.hrName || editModal.item.hr || ""}
-                onChange={(e) =>
-                  setEditModal((m) => ({
-                    ...m,
-                    item: { ...m.item, hrName: e.target.value },
-                  }))
-                }
-              />
-            </label>
-
-            <label>
-              Email
-              <input
-                value={editModal.item.email || ""}
-                onChange={(e) =>
-                  setEditModal((m) => ({
-                    ...m,
-                    item: { ...m.item, email: e.target.value },
-                  }))
-                }
-              />
-            </label>
-
-            <label>
-              Phone
-              <input
-                value={editModal.item.contact || editModal.item.phone || ""}
-                onChange={(e) =>
-                  setEditModal((m) => ({
-                    ...m,
-                    item: { ...m.item, contact: e.target.value },
-                  }))
-                }
-              />
-            </label>
-
-            {/* NEW: PROFILE PIC UPLOAD */}
-            <label>
-              Profile Picture
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-
-                  const reader = new FileReader();
-                  reader.onload = () =>
-                    setEditModal((m) => ({
-                      ...m,
-                      item: { ...m.item, profilePic: reader.result },
-                    }));
-                  reader.readAsDataURL(file);
-                }}
-              />
-            </label>
-
-            {editModal.item.profilePic && (
-              <div>
-                <img
-                  src={editModal.item.profilePic}
-                  alt="preview"
+                {/* Job List */}
+                <div
                   style={{
-                    width: 72,
-                    height: 72,
-                    borderRadius: "50%",
-                    marginTop: 6,
-                    objectFit: "cover",
-                    border: "2px solid #ddd",
+                    background: "#fff",
+                    padding: 20,
+                    borderRadius: 14,
+                    boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
                   }}
-                />
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* STUDENT EDIT */}
-        {editModal.type === "student" && (
-          <div className="form-grid">
-            <label>First Name
-              <input
-                value={editModal.item.firstName || ""}
-                onChange={(e) =>
-                  setEditModal((m) => ({
-                    ...m,
-                    item: { ...m.item, firstName: e.target.value },
-                  }))
-                }
-              />
-            </label>
-            <label>Last Name
-              <input
-                value={editModal.item.lastName || ""}
-                onChange={(e) =>
-                  setEditModal((m) => ({
-                    ...m,
-                    item: { ...m.item, lastName: e.target.value },
-                  }))
-                }
-              />
-            </label>
-            <label>Email
-              <input
-                value={editModal.item.email || ""}
-                onChange={(e) =>
-                  setEditModal((m) => ({
-                    ...m,
-                    item: { ...m.item, email: e.target.value },
-                  }))
-                }
-              />
-            </label>
-            <label>Degree
-              <input
-                value={editModal.item.degree || ""}
-                onChange={(e) =>
-                  setEditModal((m) => ({
-                    ...m,
-                    item: { ...m.item, degree: e.target.value },
-                  }))
-                }
-              />
-            </label>
-            <label>Experience
-              <input
-                value={editModal.item.experience || ""}
-                onChange={(e) =>
-                  setEditModal((m) => ({
-                    ...m,
-                    item: { ...m.item, experience: e.target.value },
-                  }))
-                }
-              />
-            </label>
-            <label>Location
-              <input
-                value={editModal.item.location || ""}
-                onChange={(e) =>
-                  setEditModal((m) => ({
-                    ...m,
-                    item: { ...m.item, location: e.target.value },
-                  }))
-                }
-              />
-            </label>
-          </div>
-        )}
-
-        {/* JOB EDIT */}
-        {editModal.type === "job" && (
-          <div className="form-grid">
-            <label>Title
-              <input
-                value={editModal.item.title || ""}
-                onChange={(e) =>
-                  setEditModal((m) => ({
-                    ...m,
-                    item: { ...m.item, title: e.target.value },
-                  }))
-                }
-              />
-            </label>
-            <label>Company
-              <input
-                value={editModal.item.company || ""}
-                onChange={(e) =>
-                  setEditModal((m) => ({
-                    ...m,
-                    item: { ...m.item, company: e.target.value },
-                  }))
-                }
-              />
-            </label>
-            <label>Location
-              <input
-                value={editModal.item.location || ""}
-                onChange={(e) =>
-                  setEditModal((m) => ({
-                    ...m,
-                    item: { ...m.item, location: e.target.value },
-                  }))
-                }
-              />
-            </label>
-            <label>Experience
-              <input
-                value={editModal.item.experienceRange || ""}
-                onChange={(e) =>
-                  setEditModal((m) => ({
-                    ...m,
-                    item: { ...m.item, experienceRange: e.target.value },
-                  }))
-                }
-              />
-            </label>
-            <label>Salary
-              <input
-                value={editModal.item.salary || ""}
-                onChange={(e) =>
-                  setEditModal((m) => ({
-                    ...m,
-                    item: { ...m.item, salary: e.target.value },
-                  }))
-                }
-              />
-            </label>
-            <label>Status
-              <select
-                value={editModal.item.status || "pending"}
-                onChange={(e) =>
-                  setEditModal((m) => ({
-                    ...m,
-                    item: { ...m.item, status: e.target.value },
-                  }))
-                }
-              >
-                <option value="pending">Pending</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-            </label>
-          </div>
-        )}
-      </div>
-
-      <div className="modal-footer">
-        <button className="btn" onClick={handleEditSave}>Save</button>
-        <button className="btn secondary" onClick={closeEdit}>Cancel</button>
-      </div>
-    </div>
-  </div>
-)}
-{/* ============================
-      JOB VIEW MODAL
-============================ */}
-{viewJob.open && (
-  <div className="modal-backdrop" onClick={closeJobView}>
-    <div
-      className="company-view-modal"
-      onClick={(e) => e.stopPropagation()}
-      style={{
-        width: "100%",
-        maxWidth: "850px",
-        maxHeight: "90vh",
-        background: "#fff",
-        borderRadius: "16px",
-        overflow: "hidden",
-        display: "flex",
-        flexDirection: "column",
-        boxShadow: "0 12px 40px rgba(0,0,0,0.25)",
-      }}
-    >
-      {/* HEADER */}
-      <div
-        style={{
-          background: "linear-gradient(135deg, #0a66c2, #0047a8)",
-          color: "#fff",
-          padding: "40px 20px",
-          textAlign: "center",
-        }}
-      >
-        <h2 style={{ margin: 0, fontSize: 26, fontWeight: 900 }}>
-          {viewJob.job.title}
-        </h2>
-        <div style={{ opacity: 0.85, fontSize: 14, marginTop: 4 }}>
-          {viewJob.job.company} • {viewJob.job.location}
-        </div>
-      </div>
-
-      {/* BODY */}
-      <div
-        style={{
-          padding: "22px",
-          overflowY: "auto",
-          flex: 1,
-          background: "#f3f6fb",
-        }}
-      >
-        {/* Job Details */}
-        <div
-          style={{
-            background: "#fff",
-            padding: 20,
-            borderRadius: 14,
-            marginBottom: 20,
-            boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
-          }}
-        >
-          <h3 style={{ marginTop: 0, fontSize: 20, fontWeight: 800, color: "#0a66c2" }}>
-            Job Details
-          </h3>
-
-          <div style={{ display: "grid", gap: 10 }}>
-            <div><strong>Title:</strong> {viewJob.job.title}</div>
-            <div><strong>Company:</strong> {viewJob.job.company}</div>
-            <div><strong>Location:</strong> {viewJob.job.location}</div>
-            <div><strong>Experience:</strong> {viewJob.job.experienceRange}</div>
-            <div><strong>Salary:</strong> {viewJob.job.salary}</div>
-            <div><strong>Description:</strong> {viewJob.job.description || "-"}</div>
-          </div>
-        </div>
-
-        {/* Applicants */}
-        <div
-          style={{
-            background: "#fff",
-            padding: 20,
-            borderRadius: 14,
-            boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
-          }}
-        >
-          <h3 style={{ marginTop: 0, fontSize: 20, fontWeight: 800, color: "#0a66c2" }}>
-            Applicants ({viewJob.applicants.length})
-          </h3>
-
-          {viewJob.applicants.length === 0 ? (
-            <div style={{ padding: 10, color: "#6b7280" }}>No applicants yet.</div>
-          ) : (
-            viewJob.applicants.map(({ user, application }, i) => (
-              <div
-                key={i}
-                style={{
-                  marginBottom: 14,
-                  padding: 12,
-                  borderRadius: 12,
-                  border: "1px solid #e5e7eb",
-                  background: "#f9fafb",
-                }}
-              >
-                <strong>{user?.firstName} {user?.lastName}</strong>
-                <div>Email: {user?.email}</div>
-                <div>Degree: {user?.degree}</div>
-                <div>Experience: {user?.experience}</div>
-
-                {application.resume && (
-                  <a
-                    href={application.resume}
-                    target="_blank"
+                >
+                  <h3
                     style={{
+                      fontSize: 20,
+                      marginTop: 0,
+                      fontWeight: 800,
                       color: "#0a66c2",
-                      fontWeight: 700,
-                      display: "inline-block",
-                      marginTop: 4,
                     }}
                   >
-                    View Resume →
-                  </a>
+                    Job Posts
+                  </h3>
+
+                  {viewCompany.companyJobs.length === 0 ? (
+                    <div
+                      style={{
+                        textAlign: "center",
+                        padding: 20,
+                        color: "#6b7280",
+                      }}
+                    >
+                      No jobs posted.
+                    </div>
+                  ) : (
+                    viewCompany.companyJobs.map((job) => {
+                      const applicants =
+                        viewCompany.companyApplicantsMap[job.id] || [];
+
+                      return (
+                        <div
+                          key={job.id}
+                          style={{
+                            marginBottom: 20,
+                            background: "#f9fbff",
+                            border: "1px solid #e5e9ff",
+                            padding: 18,
+                            borderRadius: 14,
+                          }}
+                        >
+                          <h4
+                            style={{
+                              margin: 0,
+                              marginBottom: 6,
+                              color: "#0a66c2",
+                              fontWeight: 800,
+                            }}
+                          >
+                            {job.title}
+                          </h4>
+
+                          <div style={{ marginBottom: 10, color: "#6b7280" }}>
+                            {job.location} • {job.experienceRange} •{" "}
+                            {job.salary}
+                          </div>
+
+                          <div
+                            style={{
+                              fontSize: 14,
+                              marginBottom: 10,
+                            }}
+                          >
+                            Posted on{" "}
+                            {new Date(
+                              job.createdAt || Date.now()
+                            ).toLocaleDateString()}
+                          </div>
+
+                          <hr style={{ opacity: 0.3, margin: "10px 0" }} />
+
+                          {/* Applicants */}
+                          <h5
+                            style={{
+                              margin: 0,
+                              marginBottom: 8,
+                              fontWeight: 700,
+                            }}
+                          >
+                            Applicants ({applicants.length})
+                          </h5>
+
+                          {applicants.length === 0 ? (
+                            <div
+                              style={{
+                                padding: "8px 0",
+                                fontSize: 14,
+                                color: "#9ca3af",
+                              }}
+                            >
+                              No applicants yet.
+                            </div>
+                          ) : (
+                            applicants.map(({ user, application }, i) => (
+                              <div
+                                key={i}
+                                style={{
+                                  background: "#fff",
+                                  padding: 12,
+                                  borderRadius: 10,
+                                  border: "1px solid #e5e7eb",
+                                  marginBottom: 10,
+                                }}
+                              >
+                                <div style={{ fontWeight: 700 }}>
+                                  {user?.firstName} {user?.lastName}
+                                </div>
+                                <div>Email: {user?.email}</div>
+                                <div>Degree: {user?.degree}</div>
+                                <div>Experience: {user?.experience}</div>
+
+                                {application.resume && (
+                                  <a
+                                    href={application.resume}
+                                    target="_blank"
+                                    style={{
+                                      color: "#0a66c2",
+                                      fontWeight: 700,
+                                      fontSize: 14,
+                                      marginTop: 6,
+                                      display: "inline-block",
+                                    }}
+                                  >
+                                    View Resume →
+                                  </a>
+                                )}
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* CLOSE BUTTON */}
+            <button
+              onClick={closeCompanyView}
+              style={{
+                position: "absolute",
+                top: 16,
+                right: 16,
+                background: "rgba(255,255,255,0.8)",
+                border: "none",
+                fontSize: 20,
+                cursor: "pointer",
+                padding: "4px 10px",
+                borderRadius: 8,
+              }}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ============================
+      EDIT MODAL (UPDATED WITH PROFILE PIC UPLOAD)
+============================ */}
+      {editModal.open && (
+        <div className="modal-backdrop" onClick={closeEdit}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Edit {editModal.type}</h3>
+              <button className="icon-btn" onClick={closeEdit}>
+                ✕
+              </button>
+            </div>
+
+            <div className="modal-body">
+              {/* COMPANY EDIT */}
+              {editModal.type === "company" && (
+                <div className="form-grid">
+                  <label>
+                    Company Name
+                    <input
+                      value={
+                        editModal.item.companyName || editModal.item.name || ""
+                      }
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: {
+                            ...m.item,
+                            companyName: e.target.value,
+                            name: e.target.value,
+                          },
+                        }))
+                      }
+                    />
+                  </label>
+
+                  <label>
+                    HR Name
+                    <input
+                      value={editModal.item.hrName || editModal.item.hr || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, hrName: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+
+                  <label>
+                    Email
+                    <input
+                      value={editModal.item.email || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, email: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+
+                  <label>
+                    Phone
+                    <input
+                      value={
+                        editModal.item.contact || editModal.item.phone || ""
+                      }
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, contact: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+
+                  {/* NEW: PROFILE PIC UPLOAD */}
+                  <label>
+                    Profile Picture
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+
+                        const reader = new FileReader();
+                        reader.onload = () =>
+                          setEditModal((m) => ({
+                            ...m,
+                            item: { ...m.item, profilePic: reader.result },
+                          }));
+                        reader.readAsDataURL(file);
+                      }}
+                    />
+                  </label>
+
+                  {editModal.item.profilePic && (
+                    <div>
+                      <img
+                        src={editModal.item.profilePic}
+                        alt="preview"
+                        style={{
+                          width: 72,
+                          height: 72,
+                          borderRadius: "50%",
+                          marginTop: 6,
+                          objectFit: "cover",
+                          border: "2px solid #ddd",
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* STUDENT EDIT */}
+              {editModal.type === "student" && (
+                <div className="form-grid">
+                  <label>
+                    First Name
+                    <input
+                      value={editModal.item.firstName || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, firstName: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    Last Name
+                    <input
+                      value={editModal.item.lastName || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, lastName: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    Email
+                    <input
+                      value={editModal.item.email || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, email: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    Degree
+                    <input
+                      value={editModal.item.degree || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, degree: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    Experience
+                    <input
+                      value={editModal.item.experience || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, experience: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    Location
+                    <input
+                      value={editModal.item.location || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, location: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                </div>
+              )}
+
+              {/* JOB EDIT */}
+              {editModal.type === "job" && (
+                <div className="form-grid">
+                  <label>
+                    Title
+                    <input
+                      value={editModal.item.title || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, title: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    Company
+                    <input
+                      value={editModal.item.company || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, company: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    Location
+                    <input
+                      value={editModal.item.location || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, location: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    Experience
+                    <input
+                      value={editModal.item.experienceRange || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, experienceRange: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    Salary
+                    <input
+                      value={editModal.item.salary || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, salary: e.target.value },
+                        }))
+                      }
+                    />
+                  </label>
+                  <label>
+                    Status
+                    <select
+                      value={editModal.item.status || "pending"}
+                      onChange={(e) =>
+                        setEditModal((m) => ({
+                          ...m,
+                          item: { ...m.item, status: e.target.value },
+                        }))
+                      }
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                  </label>
+                </div>
+              )}
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn" onClick={handleEditSave}>
+                Save
+              </button>
+              <button className="btn secondary" onClick={closeEdit}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ============================
+      JOB VIEW MODAL
+============================ */}
+      {viewJob.open && (
+        <div className="modal-backdrop" onClick={closeJobView}>
+          <div
+            className="company-view-modal"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "100%",
+              maxWidth: "850px",
+              maxHeight: "90vh",
+              background: "#fff",
+              borderRadius: "16px",
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+              boxShadow: "0 12px 40px rgba(0,0,0,0.25)",
+            }}
+          >
+            {/* HEADER */}
+            <div
+              style={{
+                background: "linear-gradient(135deg, #0a66c2, #0047a8)",
+                color: "#fff",
+                padding: "40px 20px",
+                textAlign: "center",
+              }}
+            >
+              <h2 style={{ margin: 0, fontSize: 26, fontWeight: 900 }}>
+                {viewJob.job.title}
+              </h2>
+              <div style={{ opacity: 0.85, fontSize: 14, marginTop: 4 }}>
+                {viewJob.job.company} • {viewJob.job.location}
+              </div>
+            </div>
+
+            {/* BODY */}
+            <div
+              style={{
+                padding: "22px",
+                overflowY: "auto",
+                flex: 1,
+                background: "#f3f6fb",
+              }}
+            >
+              {/* Job Details */}
+              <div
+                style={{
+                  background: "#fff",
+                  padding: 20,
+                  borderRadius: 14,
+                  marginBottom: 20,
+                  boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+                }}
+              >
+                <h3
+                  style={{
+                    marginTop: 0,
+                    fontSize: 20,
+                    fontWeight: 800,
+                    color: "#0a66c2",
+                  }}
+                >
+                  Job Details
+                </h3>
+
+                <div style={{ display: "grid", gap: 10 }}>
+                  <div>
+                    <strong>Title:</strong> {viewJob.job.title}
+                  </div>
+                  <div>
+                    <strong>Company:</strong> {viewJob.job.company}
+                  </div>
+                  <div>
+                    <strong>Location:</strong> {viewJob.job.location}
+                  </div>
+                  <div>
+                    <strong>Experience:</strong> {viewJob.job.experienceRange}
+                  </div>
+                  <div>
+                    <strong>Salary:</strong> {viewJob.job.salary}
+                  </div>
+                  <div>
+                    <strong>Description:</strong>{" "}
+                    {viewJob.job.description || "-"}
+                  </div>
+                </div>
+              </div>
+
+              {/* Applicants */}
+              <div
+                style={{
+                  background: "#fff",
+                  padding: 20,
+                  borderRadius: 14,
+                  boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
+                }}
+              >
+                <h3
+                  style={{
+                    marginTop: 0,
+                    fontSize: 20,
+                    fontWeight: 800,
+                    color: "#0a66c2",
+                  }}
+                >
+                  Applicants ({viewJob.applicants.length})
+                </h3>
+
+                {viewJob.applicants.length === 0 ? (
+                  <div style={{ padding: 10, color: "#6b7280" }}>
+                    No applicants yet.
+                  </div>
+                ) : (
+                  viewJob.applicants.map(({ user, application }, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        marginBottom: 14,
+                        padding: 12,
+                        borderRadius: 12,
+                        border: "1px solid #e5e7eb",
+                        background: "#f9fafb",
+                      }}
+                    >
+                      <strong>
+                        {user?.firstName} {user?.lastName}
+                      </strong>
+                      <div>Email: {user?.email}</div>
+                      <div>Degree: {user?.degree}</div>
+                      <div>Experience: {user?.experience}</div>
+
+                      {application.resume && (
+                        <a
+                          href={application.resume}
+                          target="_blank"
+                          style={{
+                            color: "#0a66c2",
+                            fontWeight: 700,
+                            display: "inline-block",
+                            marginTop: 4,
+                          }}
+                        >
+                          View Resume →
+                        </a>
+                      )}
+                    </div>
+                  ))
                 )}
               </div>
-            ))
-          )}
+            </div>
+
+            {/* CLOSE */}
+            <button
+              onClick={closeJobView}
+              style={{
+                position: "absolute",
+                top: 16,
+                right: 16,
+                background: "rgba(255,255,255,0.8)",
+                border: "none",
+                fontSize: 20,
+                cursor: "pointer",
+                padding: "4px 10px",
+                borderRadius: 8,
+              }}
+            >
+              ✕
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* CLOSE */}
-      <button
-        onClick={closeJobView}
-        style={{
-          position: "absolute",
-          top: 16,
-          right: 16,
-          background: "rgba(255,255,255,0.8)",
-          border: "none",
-          fontSize: 20,
-          cursor: "pointer",
-          padding: "4px 10px",
-          borderRadius: 8,
-        }}
-      >
-        ✕
-      </button>
-    </div>
-  </div>
-)}
-
-
-{/* ============================
+      {/* ============================
       STYLES (FULL FILE BOTTOM)
 ============================ */}
-<style>{`
+      <style>{`
+.admin-filter-bar {
+  padding: 14px 16px;
+  background: #f8fafc;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.admin-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.admin-filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-filter-field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.admin-filter-field input,
+.admin-filter-field select {
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  font-size: 14px;
+}
+
+.admin-filter-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-filter-clear {
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
   .admin-layout { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
 
   .cards-row {
@@ -1505,9 +2051,7 @@ export default function AdminDashboard() {
     .content-row { grid-template-columns: 1fr; }
     .form-grid { grid-template-columns: 1fr; }
   }
-`
-}</style>
-
-</div>  
+`}</style>
+    </div>
   );
 }
