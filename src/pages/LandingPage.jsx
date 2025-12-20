@@ -32,6 +32,34 @@ const defaultJobs = [
     tags: ['Nutrition', 'Diet Planning', 'Client Handling', 'Wellness'],
     description:
       'Fitness Tycoon is hiring a qualified Nutritionist for a full-time office role. Responsibilities include creating customized diet plans, conducting nutritional assessments, collaborating with fitness trainers, monitoring client progress, maintaining records, educating clients on nutrition, and staying updated with latest nutrition research. Required qualifications include a Bachelor’s or Master’s degree in Nutrition/Dietetics, experience in personalized diet planning, and strong understanding of macro & micronutrients. Skills: excellent communication, counseling, knowledge of Indian diets, and basic computer proficiency.',
+  },
+  {
+    id: 910001,
+    title: "Graphic Designer",
+    company: "Paraglider Media Private Limited",
+    companyEmail: "jobs@paraglider.in",
+    location: "Bhopal",
+    experience: "0–2 years",
+    salary: "As per industry standards",
+    status: "active",
+    description:
+      "Create high-quality graphics, illustrations, social media creatives, banners, posters, and marketing materials using Adobe Photoshop and Illustrator.",
+    tags: ["Photoshop", "Illustrator", "Graphic Design"],
+    createdAt: Date.now(),
+  },
+  {
+    id: 910002,
+    title: "Motion Graphics Designer (After Effects)",
+    company: "Paraglider Media Private Limited",
+    companyEmail: "jobs@paraglider.in",
+    location: "Bhopal / Indore",
+    experience: "1–3 years",
+    salary: "As per industry standards",
+    status: "active",
+    description:
+      "Create motion graphics, animations, explainer videos, logo animations, and visual assets using Adobe After Effects and Premiere Pro.",
+    tags: ["After Effects", "Motion Graphics", "Animation"],
+    createdAt: Date.now(),
   },  
   {
     id: 3,
