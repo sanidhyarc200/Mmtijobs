@@ -281,7 +281,7 @@ const staticJobs = [
     description:
       "Create high-quality graphics, illustrations, social media creatives, banners, posters, and marketing materials using Adobe Photoshop and Illustrator.",
     tags: ["Photoshop", "Illustrator", "Graphic Design"],
-    createdAt: new Date().toISOString(),
+    createdAt: Date.now(),
   },
   {
     id: 910002,
@@ -295,14 +295,18 @@ const staticJobs = [
     description:
       "Create motion graphics, animations, explainer videos, logo animations, and visual assets using Adobe After Effects and Premiere Pro.",
     tags: ["After Effects", "Motion Graphics", "Animation"],
-    createdAt: new Date().toISOString(),
+    createdAt: Date.now(),
   },
+  
 ];
 
 // prevent duplicate injection
+const STATIC_JOB_IDS = [910001, 910002, 900001, 900002];
+
 const alreadyAdded = existingJobs.some((j) =>
-  j.id === "static-1" || j.id === "static-2"
+  STATIC_JOB_IDS.includes(j.id)
 );
+
 
 if (!alreadyAdded) {
   const updatedJobs = [...staticJobs, ...existingJobs];
