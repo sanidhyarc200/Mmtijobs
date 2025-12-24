@@ -237,6 +237,19 @@ export default function JobsPage() {
     applyToJob(job, me);
   };
 
+  const handleShare = async (job) => {
+    const url = `${window.location.origin}/jobs?jobId=${job.id}`;
+  
+    try {
+      await navigator.clipboard.writeText(url);
+      alert("Job link copied to clipboard 🔗");
+    } catch (err) {
+      console.error("Copy failed", err);
+      prompt("Copy this link:", url);
+    }
+  };
+  
+
   const handleLoginSubmit = (e) => {
     e.preventDefault();
     setLoginError('');
@@ -379,22 +392,34 @@ export default function JobsPage() {
                     </div>
 
                     <div style={styles.buttonContainer}>
-                      <button style={styles.viewBtn} onClick={() => openView(job)} aria-label={`View ${job.title}`}>View</button>
+  <button
+    style={styles.shareBtn}
+    onClick={() => handleShare(job)}
+    title="Share job"
+  >
+    🔗
+  </button>
 
-                      <button
-                        style={{
-                          ...styles.applyBtn,
-                          ...(applyDisabled ? disabledBtn : {}),
-                          ...(alreadyApplied ? appliedBtn : {}),
-                        }}
-                        disabled={applyDisabled}
-                        onClick={() => handleApply(job)}
-                        title={isRecruiter ? 'Recruiters cannot apply to jobs' : ''}
-                        aria-label={alreadyApplied ? `Already applied to ${job.title}` : `Apply to ${job.title}`}
-                      >
-                        {alreadyApplied ? 'Applied' : 'Apply'}
-                      </button>
-                    </div>
+  <button
+    style={styles.viewBtn}
+    onClick={() => openView(job)}
+  >
+    View
+  </button>
+
+  <button
+    style={{
+      ...styles.applyBtn,
+      ...(applyDisabled ? disabledBtn : {}),
+      ...(alreadyApplied ? appliedBtn : {}),
+    }}
+    disabled={applyDisabled}
+    onClick={() => handleApply(job)}
+  >
+    {alreadyApplied ? 'Applied' : 'Apply'}
+  </button>
+</div>
+
                   </div>
 
                   <div style={styles.divider} />
@@ -698,6 +723,18 @@ const styles = {
   details: { paddingTop: 2, color: '#4b5563', lineHeight: 1.55 },
 
   buttonContainer: { display: 'flex', gap: 8, flexShrink: 0 },
+  shareBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: '50%',
+    border: '1px solid #d1d5db',
+    background: '#ffffff',
+    cursor: 'pointer',
+    display: 'grid',
+    placeItems: 'center',
+    fontSize: 16,
+  },
+  
   viewBtn: {
     background: '#e5e7eb', color: '#374151', padding: '10px 16px', borderRadius: 10,
     border: '1px solid #d1d5db', cursor: 'pointer', fontWeight: 800, transition: 'transform .1s ease, box-shadow .1s ease',
