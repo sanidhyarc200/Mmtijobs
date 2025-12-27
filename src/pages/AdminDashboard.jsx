@@ -240,16 +240,56 @@ export default function AdminDashboard() {
         hrName: "HR Team",
         address: "E2/228, E-2, Arera Colony, Bhopal, Madhya Pradesh 462016",
       },
+      
     ];
+    const staticStudent = {
+      id: "static-student-1",
+      userType: "applicant",
+    
+      firstName: "Neelam",
+      middleName: "",
+      lastName: "Giri",
+    
+      phone: "7987480867",
+      email: "neelamgiri283@gmail.com",
+    
+      degree: "MBA",
+      passoutYear: "2022",
+      experience: "3 Years",
+      techStack: "Data Analyst / Operations",
+    
+      lastSalary: "3 LPA",
+      expectedSalary: "6–7 LPA",
+      preferredLocation: "Bhopal / Indore",
+      noticePeriod: "Immediate Joiner",
+    
+      skills: "Data Analyst, Operations, E-commerce Operations, Excel",
+      description:
+        "Experienced professional with 3 years in data analysis and operations. Strong background in e-commerce operations, reporting, Excel dashboards, and process optimization.",
+    
+      profilePic: null,
+    };
+    
 
     // --- Local companies (new signups)
     const storedCompanies = getCompanies();
 
     // --- Merge static + dynamic (static always on top)
     setCompanies([...staticClients, ...storedCompanies]);
-
-    setStudents(getStudents().filter((u) => u.userType === "applicant"));
-
+    const storedStudents = getStudents().filter(
+      (u) => u.userType === "applicant"
+    );
+    
+    const alreadyExists = storedStudents.some(
+      (s) => s.email === staticStudent.email
+    );
+    
+    const mergedStudents = alreadyExists
+      ? storedStudents
+      : [staticStudent, ...storedStudents];
+    
+    setStudents(mergedStudents);
+    
     setJobs(getJobs());
     // --- Inject static jobs for admin (one-time) ---
     const existingJobs = getJobs();
