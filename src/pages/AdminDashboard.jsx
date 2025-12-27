@@ -2,6 +2,7 @@
 // src/pages/AdminDashboard.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import * as XLSX from "xlsx";
 
 /** -------------------------
  *  LocalStorage helpers
@@ -84,12 +85,23 @@ function Card({ title, value, sub }) {
 const StableFilterBar = React.memo(function StableFilterBar({ children }) {
   return (
     <div className="admin-filter-bar">
-      <div className="admin-filter-grid">
-        {children}
-      </div>
+      <div className="admin-filter-grid">{children}</div>
     </div>
   );
 });
+
+function downloadExcel(data, fileName) {
+  if (!data || !data.length) {
+    alert("No data available to download");
+    return;
+  }
+
+  const worksheet = XLSX.utils.json_to_sheet(data);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Data");
+
+  XLSX.writeFile(workbook, `${fileName}.xlsx`);
+}
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -227,7 +239,7 @@ export default function AdminDashboard() {
         contact: "8269893693",
         hrName: "HR Team",
         address: "E2/228, E-2, Arera Colony, Bhopal, Madhya Pradesh 462016",
-      }
+      },
     ];
 
     // --- Local companies (new signups)
@@ -240,80 +252,77 @@ export default function AdminDashboard() {
 
     setJobs(getJobs());
     // --- Inject static jobs for admin (one-time) ---
-const existingJobs = getJobs();
+    const existingJobs = getJobs();
 
-const staticJobs = [
-  {
-    id: "static-1",
-    title: "HR & Operations Executive",
-    company: "Confidential Company",
-    location: "Bhopal, Madhya Pradesh",
-    experienceRange: "2+ years",
-    salary: "₹2,00,000 – ₹3,00,000 per annum",
-    tags: ["HR", "Operations", "Team Management", "MS Office"],
-    description:
-      "We are hiring an experienced HR & Operations Executive to handle HR functions and oversee daily office operations. Key responsibilities include recruitment, onboarding, attendance & payroll management, HR documentation, office coordination, supporting sales teams, creating reports, and ensuring smooth inter-department communication. Required skills: strong team management, communication, HR operations knowledge, MS Office proficiency, and basic understanding of sales processes. Documents required: Experience Certificate, last 3 months’ pay slips, previous company offer letter, Aadhaar & PAN card.",
-    status: "active",
-    createdAt: Date.now(),
-  },
-  {
-    id: "static-2",
-    title: "Nutritionist",
-    company: "Fitness Tycoon",
-    location: "Mansarover Complex, MF-12, Bhopal",
-    experienceRange: "0-3 years",
-    salary: "₹1.5 LPA – ₹3 LPA",
-    tags: ["Nutrition", "Diet Planning", "Client Handling", "Wellness"],
-    description:
-      "Fitness Tycoon is hiring a qualified Nutritionist for a full-time office role. Responsibilities include creating customized diet plans, conducting nutritional assessments, collaborating with fitness trainers, monitoring client progress, maintaining records, educating clients on nutrition, and staying updated with latest nutrition research. Required qualifications include a Bachelor’s or Master’s degree in Nutrition/Dietetics, experience in personalized diet planning, and strong understanding of macro & micronutrients. Skills: excellent communication, counseling, knowledge of Indian diets, and basic computer proficiency.",
-    status: "active",
-    createdAt: Date.now(),
-  },
-  {
-    id: 910001,
-    title: "Graphic Designer",
-    company: "Paraglider Media Private Limited",
-    companyEmail: "jobs@paraglider.in",
-    location: "Bhopal",
-    experienceRange: "0–2 years",
-    salary: "As per industry standards",
-    status: "active",
-    description:
-      "Create high-quality graphics, illustrations, social media creatives, banners, posters, and marketing materials using Adobe Photoshop and Illustrator.",
-    tags: ["Photoshop", "Illustrator", "Graphic Design"],
-    createdAt: Date.now(),
-  },
-  {
-    id: 910002,
-    title: "Motion Graphics Designer (After Effects)",
-    company: "Paraglider Media Private Limited",
-    companyEmail: "jobs@paraglider.in",
-    location: "Bhopal / Indore",
-    experienceRange: "1–3 years",
-    salary: "As per industry standards",
-    status: "active",
-    description:
-      "Create motion graphics, animations, explainer videos, logo animations, and visual assets using Adobe After Effects and Premiere Pro.",
-    tags: ["After Effects", "Motion Graphics", "Animation"],
-    createdAt: Date.now(),
-  },
-  
-];
+    const staticJobs = [
+      {
+        id: "static-1",
+        title: "HR & Operations Executive",
+        company: "Confidential Company",
+        location: "Bhopal, Madhya Pradesh",
+        experienceRange: "2+ years",
+        salary: "₹2,00,000 – ₹3,00,000 per annum",
+        tags: ["HR", "Operations", "Team Management", "MS Office"],
+        description:
+          "We are hiring an experienced HR & Operations Executive to handle HR functions and oversee daily office operations. Key responsibilities include recruitment, onboarding, attendance & payroll management, HR documentation, office coordination, supporting sales teams, creating reports, and ensuring smooth inter-department communication. Required skills: strong team management, communication, HR operations knowledge, MS Office proficiency, and basic understanding of sales processes. Documents required: Experience Certificate, last 3 months’ pay slips, previous company offer letter, Aadhaar & PAN card.",
+        status: "active",
+        createdAt: Date.now(),
+      },
+      {
+        id: "static-2",
+        title: "Nutritionist",
+        company: "Fitness Tycoon",
+        location: "Mansarover Complex, MF-12, Bhopal",
+        experienceRange: "0-3 years",
+        salary: "₹1.5 LPA – ₹3 LPA",
+        tags: ["Nutrition", "Diet Planning", "Client Handling", "Wellness"],
+        description:
+          "Fitness Tycoon is hiring a qualified Nutritionist for a full-time office role. Responsibilities include creating customized diet plans, conducting nutritional assessments, collaborating with fitness trainers, monitoring client progress, maintaining records, educating clients on nutrition, and staying updated with latest nutrition research. Required qualifications include a Bachelor’s or Master’s degree in Nutrition/Dietetics, experience in personalized diet planning, and strong understanding of macro & micronutrients. Skills: excellent communication, counseling, knowledge of Indian diets, and basic computer proficiency.",
+        status: "active",
+        createdAt: Date.now(),
+      },
+      {
+        id: 910001,
+        title: "Graphic Designer",
+        company: "Paraglider Media Private Limited",
+        companyEmail: "jobs@paraglider.in",
+        location: "Bhopal",
+        experienceRange: "0–2 years",
+        salary: "As per industry standards",
+        status: "active",
+        description:
+          "Create high-quality graphics, illustrations, social media creatives, banners, posters, and marketing materials using Adobe Photoshop and Illustrator.",
+        tags: ["Photoshop", "Illustrator", "Graphic Design"],
+        createdAt: Date.now(),
+      },
+      {
+        id: 910002,
+        title: "Motion Graphics Designer (After Effects)",
+        company: "Paraglider Media Private Limited",
+        companyEmail: "jobs@paraglider.in",
+        location: "Bhopal / Indore",
+        experienceRange: "1–3 years",
+        salary: "As per industry standards",
+        status: "active",
+        description:
+          "Create motion graphics, animations, explainer videos, logo animations, and visual assets using Adobe After Effects and Premiere Pro.",
+        tags: ["After Effects", "Motion Graphics", "Animation"],
+        createdAt: Date.now(),
+      },
+    ];
 
-// prevent duplicate injection
-const STATIC_JOB_IDS = [910001, 910002, 900001, 900002];
+    // prevent duplicate injection
+    const STATIC_JOB_IDS = [910001, 910002, 900001, 900002];
 
-const alreadyAdded = existingJobs.some((j) =>
-  STATIC_JOB_IDS.includes(j.id)
-);
+    const alreadyAdded = existingJobs.some((j) =>
+      STATIC_JOB_IDS.includes(j.id)
+    );
 
-
-if (!alreadyAdded) {
-  const updatedJobs = [...staticJobs, ...existingJobs];
-  saveJobs(updatedJobs);
-  setJobs(updatedJobs);
-}
-
+    if (!alreadyAdded) {
+      const updatedJobs = [...staticJobs, ...existingJobs];
+      saveJobs(updatedJobs);
+      setJobs(updatedJobs);
+    }
   }, [navigate]);
 
   const stats = useMemo(() => {
@@ -578,54 +587,78 @@ if (!alreadyAdded) {
   function CompaniesTable() {
     return (
       <div className="panel">
-        <div className="panel-header">
+        <div
+          className="panel-header"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <h2>Recruiters / Clients</h2>
+          <button
+            className="btn secondary"
+            onClick={() =>
+              downloadExcel(
+                filteredCompanies.map((c) => ({
+                  Company: c.companyName || c.name || "",
+                  HR: c.hrName || "",
+                  Email: c.email || "",
+                  Phone: c.contact || "",
+                  Address: c.address || "",
+                })),
+                "recruiters"
+              )
+            }
+          >
+            ⬇ Download
+          </button>
         </div>
+
         {/* FILTERS (UI ONLY) */}
-        
+
         <StableFilterBar>
-  <div className="admin-filter-field">
-    <label>Company</label>
-    <input
-      value={companyFilters.name}
-      onChange={(e) =>
-        setCompanyFilters((f) => ({ ...f, name: e.target.value }))
-      }
-    />
-  </div>
+          <div className="admin-filter-field">
+            <label>Company</label>
+            <input
+              value={companyFilters.name}
+              onChange={(e) =>
+                setCompanyFilters((f) => ({ ...f, name: e.target.value }))
+              }
+            />
+          </div>
 
-  <div className="admin-filter-field">
-    <label>Email</label>
-    <input
-      value={companyFilters.email}
-      onChange={(e) =>
-        setCompanyFilters((f) => ({ ...f, email: e.target.value }))
-      }
-    />
-  </div>
+          <div className="admin-filter-field">
+            <label>Email</label>
+            <input
+              value={companyFilters.email}
+              onChange={(e) =>
+                setCompanyFilters((f) => ({ ...f, email: e.target.value }))
+              }
+            />
+          </div>
 
-  <div className="admin-filter-field">
-    <label>Phone</label>
-    <input
-      value={companyFilters.phone}
-      onChange={(e) =>
-        setCompanyFilters((f) => ({ ...f, phone: e.target.value }))
-      }
-    />
-  </div>
+          <div className="admin-filter-field">
+            <label>Phone</label>
+            <input
+              value={companyFilters.phone}
+              onChange={(e) =>
+                setCompanyFilters((f) => ({ ...f, phone: e.target.value }))
+              }
+            />
+          </div>
 
-  <div className="admin-filter-actions">
-    <button
-      className="admin-filter-clear"
-      onClick={() =>
-        setCompanyFilters({ name: "", email: "", phone: "" })
-      }
-    >
-      Clear
-    </button>
-  </div>
-</StableFilterBar>
-
+          <div className="admin-filter-actions">
+            <button
+              className="admin-filter-clear"
+              onClick={() =>
+                setCompanyFilters({ name: "", email: "", phone: "" })
+              }
+            >
+              Clear
+            </button>
+          </div>
+        </StableFilterBar>
 
         <div className="table-wrap">
           <table className="nice-table">
@@ -696,53 +729,77 @@ if (!alreadyAdded) {
   function StudentsTable() {
     return (
       <div className="panel">
-        <div className="panel-header">
+        <div
+          className="panel-header"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <h2>Students</h2>
+          <button
+            className="btn secondary"
+            onClick={() =>
+              downloadExcel(
+                filteredStudents.map((s) => ({
+                  Name: `${s.firstName || ""} ${s.lastName || ""}`,
+                  Email: s.email || "",
+                  Degree: s.degree || "",
+                  Experience: s.experience || "",
+                  Location: s.location || "",
+                })),
+                "students"
+              )
+            }
+          >
+            ⬇ Download
+          </button>
         </div>
+
         {/* FILTERS (UI ONLY) */}
         <StableFilterBar>
-  <div className="admin-filter-field">
-    <label>Name</label>
-    <input
-      value={studentFilters.name}
-      onChange={(e) =>
-        setStudentFilters((f) => ({ ...f, name: e.target.value }))
-      }
-    />
-  </div>
+          <div className="admin-filter-field">
+            <label>Name</label>
+            <input
+              value={studentFilters.name}
+              onChange={(e) =>
+                setStudentFilters((f) => ({ ...f, name: e.target.value }))
+              }
+            />
+          </div>
 
-  <div className="admin-filter-field">
-    <label>Email</label>
-    <input
-      value={studentFilters.email}
-      onChange={(e) =>
-        setStudentFilters((f) => ({ ...f, email: e.target.value }))
-      }
-    />
-  </div>
+          <div className="admin-filter-field">
+            <label>Email</label>
+            <input
+              value={studentFilters.email}
+              onChange={(e) =>
+                setStudentFilters((f) => ({ ...f, email: e.target.value }))
+              }
+            />
+          </div>
 
-  <div className="admin-filter-field">
-    <label>Location</label>
-    <input
-      value={studentFilters.location}
-      onChange={(e) =>
-        setStudentFilters((f) => ({ ...f, location: e.target.value }))
-      }
-    />
-  </div>
+          <div className="admin-filter-field">
+            <label>Location</label>
+            <input
+              value={studentFilters.location}
+              onChange={(e) =>
+                setStudentFilters((f) => ({ ...f, location: e.target.value }))
+              }
+            />
+          </div>
 
-  <div className="admin-filter-actions">
-    <button
-      className="admin-filter-clear"
-      onClick={() =>
-        setStudentFilters({ name: "", email: "", location: "" })
-      }
-    >
-      Clear
-    </button>
-  </div>
-</StableFilterBar>
-
+          <div className="admin-filter-actions">
+            <button
+              className="admin-filter-clear"
+              onClick={() =>
+                setStudentFilters({ name: "", email: "", location: "" })
+              }
+            >
+              Clear
+            </button>
+          </div>
+        </StableFilterBar>
 
         <div className="table-wrap">
           <table className="nice-table">
@@ -806,58 +863,83 @@ if (!alreadyAdded) {
   function JobsTable() {
     return (
       <div className="panel">
-        <div className="panel-header">
+        <div
+          className="panel-header"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <h2>Jobs</h2>
+          <button
+            className="btn secondary"
+            onClick={() =>
+              downloadExcel(
+                filteredJobs.map((j) => ({
+                  Title: j.title,
+                  Company: j.company,
+                  Status: j.status,
+                  Location: j.location,
+                  Experience: j.experienceRange,
+                  Salary: j.salary,
+                })),
+                "jobs"
+              )
+            }
+          >
+            ⬇ Download
+          </button>
         </div>
+
         {/* FILTERS (UI ONLY) */}
         <StableFilterBar>
-  <div className="admin-filter-field">
-    <label>Job Title</label>
-    <input
-      value={jobFilters.title}
-      onChange={(e) =>
-        setJobFilters((f) => ({ ...f, title: e.target.value }))
-      }
-    />
-  </div>
+          <div className="admin-filter-field">
+            <label>Job Title</label>
+            <input
+              value={jobFilters.title}
+              onChange={(e) =>
+                setJobFilters((f) => ({ ...f, title: e.target.value }))
+              }
+            />
+          </div>
 
-  <div className="admin-filter-field">
-    <label>Company</label>
-    <input
-      value={jobFilters.company}
-      onChange={(e) =>
-        setJobFilters((f) => ({ ...f, company: e.target.value }))
-      }
-    />
-  </div>
+          <div className="admin-filter-field">
+            <label>Company</label>
+            <input
+              value={jobFilters.company}
+              onChange={(e) =>
+                setJobFilters((f) => ({ ...f, company: e.target.value }))
+              }
+            />
+          </div>
 
-  <div className="admin-filter-field">
-    <label>Status</label>
-    <select
-      value={jobFilters.status}
-      onChange={(e) =>
-        setJobFilters((f) => ({ ...f, status: e.target.value }))
-      }
-    >
-      <option value="">Any</option>
-      <option value="active">Active</option>
-      <option value="pending">Pending</option>
-      <option value="inactive">Inactive</option>
-    </select>
-  </div>
+          <div className="admin-filter-field">
+            <label>Status</label>
+            <select
+              value={jobFilters.status}
+              onChange={(e) =>
+                setJobFilters((f) => ({ ...f, status: e.target.value }))
+              }
+            >
+              <option value="">Any</option>
+              <option value="active">Active</option>
+              <option value="pending">Pending</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
 
-  <div className="admin-filter-actions">
-    <button
-      className="admin-filter-clear"
-      onClick={() =>
-        setJobFilters({ title: "", company: "", status: "" })
-      }
-    >
-      Clear
-    </button>
-  </div>
-</StableFilterBar>
-
+          <div className="admin-filter-actions">
+            <button
+              className="admin-filter-clear"
+              onClick={() =>
+                setJobFilters({ title: "", company: "", status: "" })
+              }
+            >
+              Clear
+            </button>
+          </div>
+        </StableFilterBar>
 
         <div className="table-wrap">
           <table className="nice-table">
