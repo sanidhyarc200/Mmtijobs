@@ -142,6 +142,13 @@ export default function Header({ onPostJobClick }) {
 
   {/* Right: Login / Signup or User Actions */}
   <div className="nav-right">
+  <button
+      className="mobile-menu-btn"
+      onClick={() => setIsMenuOpen(!isMenuOpen)}
+      aria-label="Open menu"
+    >
+      ☰
+    </button>
     {isLoggedIn ? (
       <>
         <Link to={dashboardPath} className="nav-link">Dashboard</Link>
@@ -474,7 +481,7 @@ export default function Header({ onPostJobClick }) {
     .logo {
       display: flex;
       align-items: center;
-      height: 50px;          /* lock header height */
+      height: 20px;          /* lock header height */
     }
     .logo-img {
       height: 98px;   /* 👈 keeps header same height */
@@ -742,12 +749,113 @@ export default function Header({ onPostJobClick }) {
     .hint { margin-top: 12px; text-align: center; color: var(--muted); font-size: 13px; }
 
     /* ======= Responsive ======= */
-    @media (max-width: 768px) {
-      .desktop-nav { display: none; }
-      .mobile-menu-btn { display: block; }
-      .mobile-menu { display: flex; }
-      .role-grid { grid-template-columns: 1fr; gap: 12px; }
-    }
+@media (max-width: 768px) {
+
+ html {
+    font-size: 75%;
+  }
+
+  /* ===== Header layout ===== */
+  .nav-layout {
+    grid-template-columns: auto 1fr auto;
+    padding: 8px 14px;
+  }
+
+  /* ===== Logo ===== */
+  .logo-img {
+    height: 56px; /* logo bigger than buttons */
+  }
+
+  /* ===== Hide desktop center nav ===== */
+  .desktop-nav {
+    display: none;
+  }
+
+  /* ===== Hamburger ===== */
+  .mobile-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--ink);
+  }
+
+  .mobile-menu-btn:hover {
+    background: rgba(10,102,194,0.08);
+  }
+
+  /* ===== Hide desktop actions on mobile ===== */
+  .nav-right > .login-btn,
+  .nav-right > .signup-btn,
+  .nav-right > .post-job-btn,
+  .nav-right > .logout-btn,
+  .nav-right > .recruiter-link,
+  .nav-right > .nav-link {
+    display: none;
+  }
+
+  /* ===== Mobile menu panel ===== */
+  .mobile-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px 16px 18px;
+    background: var(--bg);
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .mobile-link {
+    font-size: 15px;
+    font-weight: 600;
+    padding: 12px 0;
+  }
+
+  /* ===== Mobile buttons ===== */
+  .mobile-login-btn,
+  .mobile-signup-btn,
+  .mobile-post-job-btn,
+  .mobile-logout-btn {
+    font-size: 14px;
+    padding: 10px;
+    border-radius: 8px;
+  }
+
+  /* ===== Modals ===== */
+  .modal-box {
+    width: 94%;
+    padding: 16px;
+  }
+
+  .modal-title {
+    font-size: 18px;
+  }
+
+  .modal-subtitle {
+    font-size: 13px;
+  }
+
+  /* ===== Forms ===== */
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions button {
+    width: 100%;
+  }
+
+  /* ===== Role grid ===== */
+  .role-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
 
     /* ======= Reduced motion ======= */
     @media (prefers-reduced-motion: reduce) {
