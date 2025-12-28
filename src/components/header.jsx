@@ -7,6 +7,9 @@ export default function Header({ onPostJobClick }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotSubmitted, setForgotSubmitted] = useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
@@ -283,21 +286,116 @@ export default function Header({ onPostJobClick }) {
               </div>
             </form>
 
-            <div className="modal-footer">
-              <span>Don’t have an account?</span>
-              <button
-                className="link-button"
-                onClick={() => {
-                  setShowLoginModal(false);
-                  setShowRoleModal(true);
-                }}
-              >
-                Sign up
-              </button>
-            </div>
+            <div className="modal-footer" style={{ flexDirection: 'column', gap: '6px' }}>
+  <button
+    type="button"
+    className="link-button"
+    onClick={() => {
+      setShowLoginModal(false);
+      setForgotEmail('');
+      setForgotSubmitted(false);
+      setShowForgotModal(true);
+    }}
+  >
+    Forgot password?
+  </button>
+
+  <div>
+    <span>Don’t have an account?</span>{' '}
+    <button
+      className="link-button"
+      onClick={() => {
+        setShowLoginModal(false);
+        setShowRoleModal(true);
+      }}
+    >
+      Sign up
+    </button>
+  </div>
+</div>
+
           </div>
         </div>
       )}
+      {showForgotModal && (
+  <div
+    className="modal-overlay"
+    onClick={(e) => {
+      if (e.target.classList.contains('modal-overlay')) {
+        setShowForgotModal(false);
+      }
+    }}
+  >
+    <div className="modal-box">
+      <div className="modal-header">
+        <div className="brand-circle">M</div>
+        <div>
+          <h2 className="modal-title">Forgot Password</h2>
+          <p className="modal-subtitle">Enter your registered email</p>
+        </div>
+        <button
+          className="modal-close"
+          onClick={() => setShowForgotModal(false)}
+        >
+          ✕
+        </button>
+      </div>
+
+      {!forgotSubmitted ? (
+        <form
+          className="form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setForgotSubmitted(true);
+          }}
+        >
+          <div className="form-field">
+            <label>Email</label>
+            <input
+              type="email"
+              required
+              placeholder="you@company.com"
+              value={forgotEmail}
+              onChange={(e) => setForgotEmail(e.target.value)}
+            />
+          </div>
+
+          <div className="form-actions">
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => setShowForgotModal(false)}
+            >
+              Cancel
+            </button>
+            <button type="submit" className="btn-primary">
+              Send Reset Email
+            </button>
+          </div>
+        </form>
+      ) : (
+        <div style={{ textAlign: 'center', padding: '12px 6px' }}>
+          <p style={{ fontWeight: 700, marginBottom: 8 }}>
+            Check your inbox 📩
+          </p>
+          <p style={{ color: '#6b7280', fontSize: 14 }}>
+            If this email is registered, we’ve sent you a password reset link.
+          </p>
+
+          <div className="form-actions" style={{ justifyContent: 'center' }}>
+            <button
+              className="btn-primary"
+              onClick={() => setShowForgotModal(false)}
+            >
+              Back to Login
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+)}
+
 
       {/* Role Select (Sign Up) Modal */}
       {showRoleModal && (
