@@ -40,24 +40,25 @@ export default function Header({ onPostJobClick }) {
     const password = loginData.password;
 
     // 👉 Admin hardcoded credentials
-    if (email === 'sanidhyakoranne123@gmail.com' && password === 'Mmti@help49') {
-      const adminUser = {
-        id: 'admin-1',
-        name: 'Administrator',
-        email,
-        role: 'admin',
-        userType: 'admin',
-        loggedInAt: new Date().toISOString(),
-      };
-      localStorage.setItem('currentUser', JSON.stringify(adminUser));
-      try { window.dispatchEvent(new Event('authChanged')); } catch {}
-      setIsLoggedIn(true);
-      setCurrentUser(adminUser);
-      setShowLoginModal(false);
-      navigate('/admin-dashboard');
-      return;
-    }
-    // 👉 HR credentials
+if (email === 'sanidhyakoranne123@gmail.com' && password === 'Mmti@help49') {
+  const adminUser = {
+    id: 'admin-1',
+    name: 'Administrator',
+    email,
+    role: 'admin',
+    userType: 'admin',
+    loggedInAt: new Date().toISOString(),
+  };
+  localStorage.setItem('currentUser', JSON.stringify(adminUser));
+  try { window.dispatchEvent(new Event('authChanged')); } catch {}
+  setIsLoggedIn(true);
+  setCurrentUser(adminUser);
+  setShowLoginModal(false);
+  navigate('/admin-dashboard');
+  return;
+}
+
+// 👉 HR hardcoded credentials
 if (email === 'hrmmti@gmail.com' && password === 'Hr@123') {
   const hrUser = {
     id: 'hr-1',
@@ -68,12 +69,15 @@ if (email === 'hrmmti@gmail.com' && password === 'Hr@123') {
     loggedInAt: new Date().toISOString(),
   };
   localStorage.setItem('currentUser', JSON.stringify(hrUser));
-  window.dispatchEvent(new Event('authChanged'));
+  try { window.dispatchEvent(new Event('authChanged')); } catch {}
+  setIsLoggedIn(true);
+  setCurrentUser(hrUser);
+  setShowLoginModal(false);
   navigate('/hr-dashboard');
   return;
 }
 
-// 👉 HR Recruiter credentials
+// 👉 HR Recruiter hardcoded credentials
 if (email === 'hrrecruiter@gmail.com' && password === 'Recruiter@123') {
   const recruiterUser = {
     id: 'hr-recruiter-1',
@@ -84,10 +88,14 @@ if (email === 'hrrecruiter@gmail.com' && password === 'Recruiter@123') {
     loggedInAt: new Date().toISOString(),
   };
   localStorage.setItem('currentUser', JSON.stringify(recruiterUser));
-  window.dispatchEvent(new Event('authChanged'));
+  try { window.dispatchEvent(new Event('authChanged')); } catch {}
+  setIsLoggedIn(true);
+  setCurrentUser(recruiterUser);
+  setShowLoginModal(false);
   navigate('/hr-recruiter-dashboard');
   return;
 }
+
 
     // 👉 Normal users (students/candidates)
     const users = JSON.parse(localStorage.getItem('users')) || [];
