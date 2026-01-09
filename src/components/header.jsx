@@ -76,6 +76,23 @@ if (email === 'hrmmti@gmail.com' && password === 'Hr@123') {
   navigate('/hr-dashboard');
   return;
 }
+if (email === 'hrmanagermmti@gmail.com' && password === 'HrManager@123') {
+  const hrManagerUser = {
+    id: 'hr-manager-1',
+    name: 'HR Manager',
+    email,
+    role: 'admin',              // 👈 IMPORTANT
+    userType: 'admin',          // 👈 IMPORTANT
+    loggedInAt: new Date().toISOString(),
+  };
+  localStorage.setItem('currentUser', JSON.stringify(hrManagerUser));
+  try { window.dispatchEvent(new Event('authChanged')); } catch {}
+  setIsLoggedIn(true);
+  setCurrentUser(hrManagerUser);
+  setShowLoginModal(false);
+  navigate('/admin-dashboard');
+  return;
+}
 
 // 👉 HR Recruiter hardcoded credentials
 if (email === 'hrrecruiter@gmail.com' && password === 'Recruiter@123') {
