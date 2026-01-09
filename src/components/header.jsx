@@ -57,6 +57,37 @@ export default function Header({ onPostJobClick }) {
       navigate('/admin-dashboard');
       return;
     }
+    // 👉 HR credentials
+if (email === 'hrmmti@gmail.com' && password === 'Hr@123') {
+  const hrUser = {
+    id: 'hr-1',
+    name: 'HR',
+    email,
+    role: 'hr',
+    userType: 'hr',
+    loggedInAt: new Date().toISOString(),
+  };
+  localStorage.setItem('currentUser', JSON.stringify(hrUser));
+  window.dispatchEvent(new Event('authChanged'));
+  navigate('/hr-dashboard');
+  return;
+}
+
+// 👉 HR Recruiter credentials
+if (email === 'hrrecruiter@gmail.com' && password === 'Recruiter@123') {
+  const recruiterUser = {
+    id: 'hr-recruiter-1',
+    name: 'HR Recruiter',
+    email,
+    role: 'hr_recruiter',
+    userType: 'hr_recruiter',
+    loggedInAt: new Date().toISOString(),
+  };
+  localStorage.setItem('currentUser', JSON.stringify(recruiterUser));
+  window.dispatchEvent(new Event('authChanged'));
+  navigate('/hr-recruiter-dashboard');
+  return;
+}
 
     // 👉 Normal users (students/candidates)
     const users = JSON.parse(localStorage.getItem('users')) || [];

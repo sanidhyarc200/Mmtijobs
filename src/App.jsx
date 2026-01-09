@@ -96,6 +96,8 @@ import JobApplicants from './pages/JobApplicants';
 import EditProfile from './pages/EditProfile'; // ✅ added
 import AdminDashboard from './pages/AdminDashboard';
 import ResumeBuilder from './pages/ResumeBilder';
+import HRDashboard from './pages/HRDashboard';
+import HRRecruiterDashboard from './pages/HRRecruiterDashboard'; 
 
 
 // Dummy PostJobPage placeholder for now (unused, safe to keep)
@@ -220,6 +222,9 @@ export default function App() {
         <Route path="/company-dashboard" element={<CompanyDashboard />} /> {/* ✅ added */}
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/resume-builder/start" element={<ResumeBuilder />} />
+        <Route path="/hr-dashboard" element={<HRDashboard />} />
+        <Route path="/hr-recruiter-dashboard" element={<HRRecruiterDashboard />} />
+
 
 
       </Routes>
