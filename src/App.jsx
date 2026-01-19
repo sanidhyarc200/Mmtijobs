@@ -98,6 +98,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import ResumeBuilder from './pages/ResumeBilder';
 import HRDashboard from './pages/HRDashboard';
 import HRRecruiterDashboard from './pages/HRRecruiterDashboard'; 
+import AdminLogin from './pages/auth/AdminLogin';
 
 
 // Dummy PostJobPage placeholder for now (unused, safe to keep)
@@ -224,6 +225,8 @@ export default function App() {
         <Route path="/resume-builder/start" element={<ResumeBuilder />} />
         <Route path="/hr-dashboard" element={<HRDashboard />} />
         <Route path="/hr-recruiter-dashboard" element={<HRRecruiterDashboard />} />
+        <Route path="/auth/admin" element={<AdminLogin />} />
+
 
 
 

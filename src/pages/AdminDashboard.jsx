@@ -22,6 +22,9 @@ function readJSON(key, fallback) {
   }
 }
 
+
+
+
 function writeJSON(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
@@ -105,6 +108,12 @@ function downloadExcel(data, fileName) {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    if (!user || user.userType !== 'admin') {
+      navigate('/');
+    }
+  }, []);
   const [currentUser, setCurrentUser] = useState(null);
 
   const [companies, setCompanies] = useState([]);

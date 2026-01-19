@@ -59,23 +59,23 @@ export default function Header({ onPostJobClick }) {
     const password = loginData.password;
 
     // 👉 Admin hardcoded credentials
-if (email === 'sanidhyakoranne123@gmail.com' && password === 'Mmti@help49') {
-  const adminUser = {
-    id: 'admin-1',
-    name: 'Administrator',
-    email,
-    role: 'admin',
-    userType: 'admin',
-    loggedInAt: new Date().toISOString(),
-  };
-  localStorage.setItem('currentUser', JSON.stringify(adminUser));
-  try { window.dispatchEvent(new Event('authChanged')); } catch {}
-  setIsLoggedIn(true);
-  setCurrentUser(adminUser);
-  setShowLoginModal(false);
-  navigate('/admin-dashboard');
-  return;
-}
+// if (email === 'sanidhyakoranne123@gmail.com' && password === 'Mmti@help49') {
+//   const adminUser = {
+//     id: 'admin-1',
+//     name: 'Administrator',
+//     email,
+//     role: 'admin',
+//     userType: 'admin',
+//     loggedInAt: new Date().toISOString(),
+//   };
+//   localStorage.setItem('currentUser', JSON.stringify(adminUser));
+//   try { window.dispatchEvent(new Event('authChanged')); } catch {}
+//   setIsLoggedIn(true);
+//   setCurrentUser(adminUser);
+//   setShowLoginModal(false);
+//   navigate('/admin-dashboard');
+//   return;
+// }
 
 // 👉 HR hardcoded credentials
 if (email === 'hrmmti@gmail.com' && password === 'Hr@123') {
