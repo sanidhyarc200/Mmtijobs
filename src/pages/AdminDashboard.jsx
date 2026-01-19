@@ -151,6 +151,12 @@ export default function AdminDashboard() {
     applicants: [],
   });
 
+  const [viewStudent, setViewStudent] = useState({
+    open: false,
+    student: null,
+    applications: [],
+  });
+
   useEffect(() => {
     const user = readJSON("currentUser", null);
     setCurrentUser(user);
@@ -559,6 +565,35 @@ export default function AdminDashboard() {
     });
   }
 
+  function openStudentView(student) {
+    const apps = getApplications();
+    const jobsList = getJobs();
+  
+    const studentApps = apps
+      .filter(
+        (a) => a.userId === student.id || a.userId === student.userId
+      )
+      .map((a) => ({
+        application: a,
+        job: jobsList.find((j) => j.id === a.jobId),
+      }));
+  
+    setViewStudent({
+      open: true,
+      student,
+      applications: studentApps,
+    });
+  }
+  
+  function closeStudentView() {
+    setViewStudent({
+      open: false,
+      student: null,
+      applications: [],
+    });
+  }
+  
+
   function closeJobView() {
     setViewJob({
       open: false,
@@ -575,6 +610,8 @@ export default function AdminDashboard() {
       companyApplicantsMap: {},
     });
   }
+
+
 
   function Sidebar() {
     return (

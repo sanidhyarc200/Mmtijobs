@@ -13,6 +13,24 @@ export default function Header({ onPostJobClick }) {
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
+  const [showRecruiterHelp, setShowRecruiterHelp] = useState(false);
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [showChatBot, setShowChatBot] = useState(false);
+  const [contactSubmitted, setContactSubmitted] = useState(false);
+  const [contactData, setContactData] = useState({
+    name: '',
+    company: '',
+    email: '',
+    phone: '',
+    message: '',
+  });
+  
+  const [chatMessages, setChatMessages] = useState([
+    { from: 'bot', text: '👋 Hi! How can we help you today?' },
+    { from: 'bot', text: 'You can ask about hiring, pricing, or demos.' },
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [botTyping, setBotTyping] = useState(false);
   const navigate = useNavigate();
 
   const readUser = () => {
@@ -37,6 +55,7 @@ export default function Header({ onPostJobClick }) {
     setLoginError('');
 
     const email = loginData.email.trim();
+
     const password = loginData.password;
 
     // 👉 Admin hardcoded credentials
@@ -236,9 +255,13 @@ if (email === 'hrrecruiter@gmail.com' && password === 'Recruiter@123') {
           Sign Up
         </button>
 
-        <Link to="/register-company" className="recruiter-link">
+        <button
+          className="recruiter-link"
+          onClick={() => setShowRecruiterHelp(true)}
+        >
           Recruiter Sign In
-        </Link>
+        </button>
+
       </>
     )}
   </div>
@@ -479,7 +502,13 @@ if (email === 'hrrecruiter@gmail.com' && password === 'Recruiter@123') {
             </div>
 
             <div className="role-grid">
-              <button className="role-card" onClick={() => handleChooseRole('recruiter')}>
+            <button
+                  className="role-card"
+                  onClick={() => {
+                    setShowRoleModal(false);
+                    setShowRecruiterHelp(true);
+                  }}
+                >
                 <div className="role-icon" aria-hidden>🏢</div>
                 <h3>Recruiter</h3>
                 <p>Post jobs, manage applicants, and hire faster.</p>
@@ -499,6 +528,311 @@ if (email === 'hrrecruiter@gmail.com' && password === 'Recruiter@123') {
           </div>
         </div>
       )}
+
+{showRecruiterHelp && (
+  <div
+    className="modal-overlay"
+    onClick={(e) => {
+      if (e.target.classList.contains('modal-overlay')) {
+        setShowRecruiterHelp(false);
+      }
+    }}
+  >
+    <div className="modal-box">
+      <div className="modal-header">
+        <div className="brand-circle">M</div>
+        <div>
+          <h2 className="modal-title">Recruiter Support</h2>
+          <p className="modal-subtitle">
+            Choose how you’d like to connect with us
+          </p>
+        </div>
+        <button
+          className="modal-close"
+          onClick={() => setShowRecruiterHelp(false)}
+        >
+          ✕
+        </button>
+      </div>
+
+      <div className="role-grid">
+        <button
+          className="role-card"
+          onClick={() => {
+            setShowRecruiterHelp(false);
+            setShowContactForm(true);
+          }}
+        >
+          <div className="role-icon">📩</div>
+          <h3>Contact Us</h3>
+          <p>Share your details and our team will reach out.</p>
+          <span className="choose-cta">Request callback →</span>
+        </button>
+
+        <button
+          className="role-card"
+          onClick={() => {
+            setShowRecruiterHelp(false);
+            setShowChatBot(true);
+          }}
+        >
+          <div className="role-icon">💬</div>
+          <h3>Chat With Us</h3>
+          <p>Instant answers from our virtual assistant.</p>
+          <span className="choose-cta">Start chat →</span>
+        </button>
+
+        <a
+          href="https://wa.me/919516422456?text=Hello%20I%20need%20help"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="role-card"
+        >
+          <div className="role-icon">📱</div>
+          <h3>WhatsApp Us</h3>
+          <p>Talk directly with our support team.</p>
+          <span className="choose-cta">Open WhatsApp →</span>
+        </a>
+      </div>
+    </div>
+  </div>
+)}
+
+
+{showContactForm && (
+  <div className="modal-overlay">
+    <div className="modal-box">
+      <div className="modal-header">
+        <div className="brand-circle">M</div>
+        <div>
+          <h2 className="modal-title">Contact Us</h2>
+          <p className="modal-subtitle">
+            Tell us what you’re hiring for
+          </p>
+        </div>
+        <button
+          className="modal-close"
+          onClick={() => {
+            setShowContactForm(false);
+            setContactSubmitted(false);
+          }}
+        >
+          ✕
+        </button>
+      </div>
+
+      {!contactSubmitted ? (
+        <form
+          className="form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setContactSubmitted(true);
+          }}
+        >
+          <div className="form-field">
+            <label>Your Name</label>
+            <input
+              required
+              placeholder="John Doe"
+              value={contactData.name}
+              onChange={(e) =>
+                setContactData({ ...contactData, name: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="form-field">
+            <label>Company</label>
+            <input
+              required
+              placeholder="Acme Corp"
+              value={contactData.company}
+              onChange={(e) =>
+                setContactData({ ...contactData, company: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="form-field">
+            <label>Email</label>
+            <input
+              type="email"
+              required
+              placeholder="you@company.com"
+              value={contactData.email}
+              onChange={(e) =>
+                setContactData({ ...contactData, email: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="form-field">
+            <label>Phone</label>
+            <input
+              required
+              placeholder="+91 XXXXX XXXXX"
+              value={contactData.phone}
+              onChange={(e) =>
+                setContactData({ ...contactData, phone: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="form-field">
+            <label>Message</label>
+            <input
+              required
+              placeholder="We’re hiring frontend developers..."
+              value={contactData.message}
+              onChange={(e) =>
+                setContactData({ ...contactData, message: e.target.value })
+              }
+            />
+          </div>
+
+          <p style={{ fontSize: 13, color: '#6b7280' }}>
+            🔒 Your information is safe. We usually respond within 24 hours.
+          </p>
+
+          <div className="form-actions">
+            <button className="btn-primary wfull">
+              Request a Callback
+            </button>
+          </div>
+        </form>
+      ) : (
+        <div style={{ textAlign: 'center', padding: 16 }}>
+          <h3>✅ Request Sent</h3>
+          <p style={{ color: '#6b7280' }}>
+            Thanks! Our team will contact you shortly.
+          </p>
+          <button
+            className="btn-primary"
+            onClick={() => setShowContactForm(false)}
+          >
+            Close
+          </button>
+        </div>
+      )}
+    </div>
+  </div>
+)}
+
+
+{showChatBot && (
+  <div className="modal-overlay">
+    <div className="modal-box" style={{ maxWidth: 420 }}>
+      <div className="modal-header">
+        <div className="brand-circle">M</div>
+        <div>
+          <h2 className="modal-title">MMTI Assistant</h2>
+          <p className="modal-subtitle">
+            We’re here to help you
+          </p>
+        </div>
+        <button
+          className="modal-close"
+          onClick={() => setShowChatBot(false)}
+        >
+          ✕
+        </button>
+      </div>
+
+      <div
+        style={{
+          maxHeight: 260,
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 8,
+          marginBottom: 10,
+        }}
+      >
+        {chatMessages.map((m, i) => (
+          <div
+            key={i}
+            style={{
+              alignSelf: m.from === 'bot' ? 'flex-start' : 'flex-end',
+              background:
+                m.from === 'bot'
+                  ? '#f3f4f6'
+                  : 'linear-gradient(135deg,#0a66c2,#004182)',
+              color: m.from === 'bot' ? '#111' : '#fff',
+              padding: '10px 12px',
+              borderRadius: 14,
+              maxWidth: '80%',
+              fontSize: 14,
+            }}
+          >
+            {m.text}
+          </div>
+        ))}
+
+        {botTyping && (
+          <div
+            style={{
+              background: '#f3f4f6',
+              padding: '8px 12px',
+              borderRadius: 14,
+              fontSize: 13,
+            }}
+          >
+            MMTI is typing…
+          </div>
+        )}
+      </div>
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!chatInput.trim()) return;
+
+          setChatMessages((m) => [...m, { from: 'user', text: chatInput }]);
+          setChatInput('');
+          setBotTyping(true);
+
+          setTimeout(() => {
+            setChatMessages((m) => [
+              ...m,
+              {
+                from: 'bot',
+                text:
+                  'Got it 👍 For instant support, you can also reach us on WhatsApp below.',
+              },
+            ]);
+            setBotTyping(false);
+          }, 900);
+        }}
+        style={{ display: 'flex', gap: 6 }}
+      >
+        <input
+          value={chatInput}
+          onChange={(e) => setChatInput(e.target.value)}
+          placeholder="Type your message…"
+          style={{
+            flex: 1,
+            border: '1px solid #e5e7eb',
+            borderRadius: 10,
+            padding: '10px 12px',
+          }}
+        />
+        <button className="btn-primary">Send</button>
+      </form>
+
+      <a
+        href="https://wa.me/919516422456?text=Hello%20I%20need%20help"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="btn-secondary wfull"
+        style={{ marginTop: 8, textAlign: 'center' }}
+      >
+        Continue on WhatsApp
+      </a>
+    </div>
+  </div>
+)}
+
+
 
         {/* keep your existing CSS below */}
         <style jsx>{`
