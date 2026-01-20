@@ -1,6 +1,55 @@
 // src/App.jsx
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useNavigate,
+  useLocation,
+} from 'react-router-dom';
+
+import Header from './components/header';
+import JobsPage from './pages/JobsPage';
+import LandingPage from './pages/LandingPage';
+import MaintenancePage from './pages/Maintenance';
+import RegisterCompany from './pages/RegisterCompany';
+import AboutPage from './pages/AboutPage';
+import PostJob from './pages/PostJob';
+import UserOnboarding from './pages/UserOnboarding';
+import MapPage from './pages/Mappage';
+import Dashboard from './pages/Dasboard';
+import CompanyDashboard from './pages/CompanyDashboard';
+import JobApplicants from './pages/JobApplicants';
+import EditProfile from './pages/EditProfile';
+import AdminDashboard from './pages/AdminDashboard';
+import ResumeBuilder from './pages/ResumeBilder';
+import HRDashboard from './pages/HRDashboard';
+import HRRecruiterDashboard from './pages/HRRecruiterDashboard';
+import AdminLogin from './pages/auth/AdminLogin';
+
+/* ------------------------------------------------------------------ */
+/* -------------------------- Layout Wrapper ------------------------- */
+/* ------------------------------------------------------------------ */
+
+function Layout({ onPostJobClick, children }) {
+  const location = useLocation();
+
+  // 🔒 Routes where header must NOT appear
+  const headerHiddenRoutes = ['/auth/admin'];
+
+  const hideHeader = headerHiddenRoutes.includes(location.pathname);
+
+  return (
+    <>
+      {!hideHeader && <Header onPostJobClick={onPostJobClick} />}
+      {children}
+    </>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* -------------------------- Modals Logic --------------------------- */
+/* ------------------------------------------------------------------ */
 
 const styles = {
   overlay: {
@@ -81,32 +130,6 @@ const styles = {
   }
 };
 
-import Header from './components/header';
-import JobsPage from './pages/JobsPage';
-import LandingPage from './pages/LandingPage';
-import MaintenancePage from './pages/Maintenance';
-import RegisterCompany from './pages/RegisterCompany';
-import AboutPage from './pages/AboutPage';
-import PostJob from './pages/PostJob';
-import UserOnboarding from './pages/UserOnboarding';
-import MapPage from './pages/Mappage';
-import Dashboard from './pages/Dasboard';
-import CompanyDashboard from './pages/CompanyDashboard'; // ✅ added
-import JobApplicants from './pages/JobApplicants';
-import EditProfile from './pages/EditProfile'; // ✅ added
-import AdminDashboard from './pages/AdminDashboard';
-import ResumeBuilder from './pages/ResumeBilder';
-import HRDashboard from './pages/HRDashboard';
-import HRRecruiterDashboard from './pages/HRRecruiterDashboard'; 
-import AdminLogin from './pages/auth/AdminLogin';
-
-
-// Dummy PostJobPage placeholder for now (unused, safe to keep)
-function PostJobPage() {
-  return <h1 style={{ padding: 30 }}>This is Post a Job page (UI coming soon)</h1>;
-}
-
-// Modal component (simplified) to ask: "Are you registered? Yes/No"
 function PostJobModal({ onClose }) {
   const [registered, setRegistered] = useState(null);
   const navigate = useNavigate();
@@ -141,16 +164,15 @@ function CompanyLoginModal({ onClose }) {
 
   const handleLogin = () => {
     const savedCompany = JSON.parse(localStorage.getItem('registeredCompany'));
+
     if (
       savedCompany &&
       savedCompany.email.toLowerCase() === email.toLowerCase() &&
       savedCompany.password === password
     ) {
-      // upsert recruiter into users
       const users = JSON.parse(localStorage.getItem('users')) || [];
-      const idx = users.findIndex(u => u.email?.toLowerCase() === savedCompany.email.toLowerCase());
       const recruiter = {
-        id: idx >= 0 ? users[idx].id : Date.now(),
+        id: Date.now(),
         userType: 'recruiter',
         email: savedCompany.email,
         password: savedCompany.password,
@@ -159,12 +181,11 @@ function CompanyLoginModal({ onClose }) {
         contact: savedCompany.contact,
         createdAt: new Date().toISOString(),
       };
-      if (idx >= 0) users[idx] = recruiter; else users.push(recruiter);
-      localStorage.setItem('users', JSON.stringify(users));
 
-      // set current user + notify header
+      users.push(recruiter);
+      localStorage.setItem('users', JSON.stringify(users));
       localStorage.setItem('currentUser', JSON.stringify(recruiter));
-      try { window.dispatchEvent(new Event('authChanged')); } catch {}
+      window.dispatchEvent(new Event('authChanged'));
 
       onClose();
       navigate('/post-job');
@@ -177,7 +198,6 @@ function CompanyLoginModal({ onClose }) {
     <div style={styles.overlay}>
       <div style={styles.modal}>
         <h2 style={styles.title}>Company Login</h2>
-
         <input
           type="email"
           placeholder="Company Email"
@@ -193,7 +213,6 @@ function CompanyLoginModal({ onClose }) {
           style={styles.input}
         />
         {error && <p style={styles.error}>{error}</p>}
-
         <button onClick={handleLogin} style={styles.primaryBtn}>Login</button>
         <button onClick={onClose} style={styles.cancelBtn}>Cancel</button>
       </div>
@@ -201,40 +220,40 @@ function CompanyLoginModal({ onClose }) {
   );
 }
 
+/* ------------------------------------------------------------------ */
+/* ------------------------------ App -------------------------------- */
+/* ------------------------------------------------------------------ */
+
 export default function App() {
-  const [showPostJobModal, setShowPostJobModal] = React.useState(false);
+  const [showPostJobModal, setShowPostJobModal] = useState(false);
 
   return (
     <Router>
-      <Header onPostJobClick={() => setShowPostJobModal(true)} />
-      <Routes>
-        <Route path="/" element={<LandingPage onPostJobClick={() => setShowPostJobModal(true)} />} />
-        <Route path="/jobs" element={<JobsPage />} />
-        <Route path="/maintenance" element={<MaintenancePage />} />
-        <Route path="/register-company" element={<RegisterCompany />} />
-        <Route path="/onboarding" element={<UserOnboarding />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/mappage" element={<MapPage />} />
-        <Route path="/post-job" element={<PostJob />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/edit-profile" element={<EditProfile />} /> {/* ✅ added */}
-        {/* <Route path="/company-profile" element={<CompanyProfile />} /> */}
-        <Route path="/job-applicants/:jobId" element={<JobApplicants />} />
-        <Route path="/company-dashboard" element={<CompanyDashboard />} /> {/* ✅ added */}
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
-        <Route path="/resume-builder/start" element={<ResumeBuilder />} />
-        <Route path="/hr-dashboard" element={<HRDashboard />} />
-        <Route path="/hr-recruiter-dashboard" element={<HRRecruiterDashboard />} />
-        <Route path="/auth/admin" element={<AdminLogin />} />
+      <Layout onPostJobClick={() => setShowPostJobModal(true)}>
+        <Routes>
+          <Route path="/" element={<LandingPage onPostJobClick={() => setShowPostJobModal(true)} />} />
+          <Route path="/jobs" element={<JobsPage />} />
+          <Route path="/maintenance" element={<MaintenancePage />} />
+          <Route path="/register-company" element={<RegisterCompany />} />
+          <Route path="/onboarding" element={<UserOnboarding />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/mappage" element={<MapPage />} />
+          <Route path="/post-job" element={<PostJob />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/edit-profile" element={<EditProfile />} />
+          <Route path="/job-applicants/:jobId" element={<JobApplicants />} />
+          <Route path="/company-dashboard" element={<CompanyDashboard />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/resume-builder/start" element={<ResumeBuilder />} />
+          <Route path="/hr-dashboard" element={<HRDashboard />} />
+          <Route path="/hr-recruiter-dashboard" element={<HRRecruiterDashboard />} />
+          <Route path="/auth/admin" element={<AdminLogin />} />
+        </Routes>
 
-
-
-
-      </Routes>
-
-      {showPostJobModal && (
-        <PostJobModal onClose={() => setShowPostJobModal(false)} />
-      )}
+        {showPostJobModal && (
+          <PostJobModal onClose={() => setShowPostJobModal(false)} />
+        )}
+      </Layout>
     </Router>
   );
 }
