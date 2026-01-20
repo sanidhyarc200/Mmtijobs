@@ -78,59 +78,59 @@ export default function Header({ onPostJobClick }) {
 // }
 
 // 👉 HR hardcoded credentials
-if (email === 'hrmmti@gmail.com' && password === 'Hr@123') {
-  const hrUser = {
-    id: 'hr-1',
-    name: 'HR',
-    email,
-    role: 'hr',
-    userType: 'hr',
-    loggedInAt: new Date().toISOString(),
-  };
-  localStorage.setItem('currentUser', JSON.stringify(hrUser));
-  try { window.dispatchEvent(new Event('authChanged')); } catch {}
-  setIsLoggedIn(true);
-  setCurrentUser(hrUser);
-  setShowLoginModal(false);
-  navigate('/hr-dashboard');
-  return;
-}
-if (email === 'hrmanagermmti@gmail.com' && password === 'HrManager@123') {
-  const hrManagerUser = {
-    id: 'hr-manager-1',
-    name: 'HR Manager',
-    email,
-    role: 'admin',              // 👈 IMPORTANT
-    userType: 'admin',          // 👈 IMPORTANT
-    loggedInAt: new Date().toISOString(),
-  };
-  localStorage.setItem('currentUser', JSON.stringify(hrManagerUser));
-  try { window.dispatchEvent(new Event('authChanged')); } catch {}
-  setIsLoggedIn(true);
-  setCurrentUser(hrManagerUser);
-  setShowLoginModal(false);
-  navigate('/admin-dashboard');
-  return;
-}
+// if (email === 'hrmmti@gmail.com' && password === 'Hr@123') {
+//   const hrUser = {
+//     id: 'hr-1',
+//     name: 'HR',
+//     email,
+//     role: 'hr',
+//     userType: 'hr',
+//     loggedInAt: new Date().toISOString(),
+//   };
+//   localStorage.setItem('currentUser', JSON.stringify(hrUser));
+//   try { window.dispatchEvent(new Event('authChanged')); } catch {}
+//   setIsLoggedIn(true);
+//   setCurrentUser(hrUser);
+//   setShowLoginModal(false);
+//   navigate('/hr-dashboard');
+//   return;
+// }
+// if (email === 'hrmanagermmti@gmail.com' && password === 'HrManager@123') {
+//   const hrManagerUser = {
+//     id: 'hr-manager-1',
+//     name: 'HR Manager',
+//     email,
+//     role: 'admin',              // 👈 IMPORTANT
+//     userType: 'admin',          // 👈 IMPORTANT
+//     loggedInAt: new Date().toISOString(),
+//   };
+//   localStorage.setItem('currentUser', JSON.stringify(hrManagerUser));
+//   try { window.dispatchEvent(new Event('authChanged')); } catch {}
+//   setIsLoggedIn(true);
+//   setCurrentUser(hrManagerUser);
+//   setShowLoginModal(false);
+//   navigate('/admin-dashboard');
+//   return;
+// }
 
-// 👉 HR Recruiter hardcoded credentials
-if (email === 'hrrecruiter@gmail.com' && password === 'Recruiter@123') {
-  const recruiterUser = {
-    id: 'hr-recruiter-1',
-    name: 'HR Recruiter',
-    email,
-    role: 'hr_recruiter',
-    userType: 'hr_recruiter',
-    loggedInAt: new Date().toISOString(),
-  };
-  localStorage.setItem('currentUser', JSON.stringify(recruiterUser));
-  try { window.dispatchEvent(new Event('authChanged')); } catch {}
-  setIsLoggedIn(true);
-  setCurrentUser(recruiterUser);
-  setShowLoginModal(false);
-  navigate('/hr-recruiter-dashboard');
-  return;
-}
+// // 👉 HR Recruiter hardcoded credentials
+// if (email === 'hrrecruiter@gmail.com' && password === 'Recruiter@123') {
+//   const recruiterUser = {
+//     id: 'hr-recruiter-1',
+//     name: 'HR Recruiter',
+//     email,
+//     role: 'hr_recruiter',
+//     userType: 'hr_recruiter',
+//     loggedInAt: new Date().toISOString(),
+//   };
+//   localStorage.setItem('currentUser', JSON.stringify(recruiterUser));
+//   try { window.dispatchEvent(new Event('authChanged')); } catch {}
+//   setIsLoggedIn(true);
+//   setCurrentUser(recruiterUser);
+//   setShowLoginModal(false);
+//   navigate('/hr-recruiter-dashboard');
+//   return;
+// }
 
 
     // 👉 Normal users (students/candidates)

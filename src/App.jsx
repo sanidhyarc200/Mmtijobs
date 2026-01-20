@@ -26,6 +26,9 @@ import ResumeBuilder from './pages/ResumeBilder';
 import HRDashboard from './pages/HRDashboard';
 import HRRecruiterDashboard from './pages/HRRecruiterDashboard';
 import AdminLogin from './pages/auth/AdminLogin';
+import HRManagerLogin from './pages/auth/HRManagerLogin';
+import HRLogin from './pages/auth/HRLogin';
+import HRRecruiterLogin from './pages/auth/HRRecruiterLogin'; 
 
 /* ------------------------------------------------------------------ */
 /* -------------------------- Layout Wrapper ------------------------- */
@@ -35,8 +38,13 @@ function Layout({ onPostJobClick, children }) {
   const location = useLocation();
 
   // 🔒 Routes where header must NOT appear
-  const headerHiddenRoutes = ['/auth/admin'];
-
+  const headerHiddenRoutes = [
+    '/auth/admin',
+    '/auth/hr-manager',
+    '/auth/hr',
+    '/auth/hr-recruiter',
+  ];
+  
   const hideHeader = headerHiddenRoutes.includes(location.pathname);
 
   return (
@@ -248,6 +256,9 @@ export default function App() {
           <Route path="/hr-dashboard" element={<HRDashboard />} />
           <Route path="/hr-recruiter-dashboard" element={<HRRecruiterDashboard />} />
           <Route path="/auth/admin" element={<AdminLogin />} />
+          <Route path="/auth/hr-manager" element={<HRManagerLogin />} />
+          <Route path="/auth/hr" element={<HRLogin />} />
+          <Route path="/auth/hr-recruiter" element={<HRRecruiterLogin />} />
         </Routes>
 
         {showPostJobModal && (
