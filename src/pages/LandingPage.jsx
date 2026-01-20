@@ -187,6 +187,27 @@ export default function LandingPage() {
   const [requireRecruiter, setRequireRecruiter] = useState(false);
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
+  // Recruiter support modals (same as Header)
+  const [showRecruiterHelp, setShowRecruiterHelp] = useState(false);
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [showChatBot, setShowChatBot] = useState(false);
+  const [contactSubmitted, setContactSubmitted] = useState(false);
+
+  const [contactData, setContactData] = useState({
+    name: '',
+    company: '',
+    email: '',
+    phone: '',
+    message: '',
+  });
+
+  const [chatMessages, setChatMessages] = useState([
+    { from: 'bot', text: '👋 Hi! How can we help you today?' },
+    { from: 'bot', text: 'Ask about hiring, pricing, or demos.' },
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [botTyping, setBotTyping] = useState(false);
+
 
   // compute "isRecruiter" fast
   const isRecruiter = useMemo(() => currentUser?.userType === 'recruiter', [currentUser]);
@@ -318,16 +339,7 @@ export default function LandingPage() {
 
   // ---------- recruiter CTA ----------
   const handleRecruiterCTA = () => {
-    const user = JSON.parse(localStorage.getItem('currentUser'));
-    if (user?.userType === 'recruiter') {
-      // per your instruction, we won’t show a button here anymore,
-      // but just in case someone calls this:
-      navigate('/post-job');
-      return;
-    }
-    setCurrentRoleAtPrompt(user?.userType || null);
-    setRequireRecruiter(true);
-    setShowRecruiterPrompt(true);
+    setShowRecruiterHelp(true);
   };
 
   // ---------- login from this page ----------
@@ -854,6 +866,175 @@ export default function LandingPage() {
           </div>
         </div>
       )}
+
+      {showRecruiterHelp && (
+  <div className="modal-overlay" onClick={(e) => {
+    if (e.target.classList.contains('modal-overlay')) {
+      setShowRecruiterHelp(false);
+    }
+  }}>
+    <div className="modal-box">
+      <div className="modal-header">
+        <div className="brand-circle">M</div>
+        <div>
+          <h2 className="modal-title">Recruiter Support</h2>
+          <p className="modal-subtitle">
+            Choose how you’d like to connect with us
+          </p>
+        </div>
+        <button className="modal-close" onClick={() => setShowRecruiterHelp(false)}>✕</button>
+      </div>
+
+      <div className="role-grid">
+        <button
+          className="role-card"
+          onClick={() => {
+            setShowRecruiterHelp(false);
+            setShowContactForm(true);
+          }}
+        >
+          <div className="role-icon">📩</div>
+          <h3>Contact Us</h3>
+          <p>Share your hiring needs and we’ll reach out.</p>
+          <span className="choose-cta">Request callback →</span>
+        </button>
+
+        <button
+          className="role-card"
+          onClick={() => {
+            setShowRecruiterHelp(false);
+            setShowChatBot(true);
+          }}
+        >
+          <div className="role-icon">💬</div>
+          <h3>Chat With Us</h3>
+          <p>Instant answers from our assistant.</p>
+          <span className="choose-cta">Start chat →</span>
+        </button>
+
+        <a
+          href="https://wa.me/919516422456?text=Hello%20I%20need%20help"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="role-card"
+        >
+          <div className="role-icon">📱</div>
+          <h3>WhatsApp Us</h3>
+          <p>Talk directly with our team.</p>
+          <span className="choose-cta">Open WhatsApp →</span>
+        </a>
+      </div>
+    </div>
+  </div>
+)}
+{showContactForm && (
+  <div className="modal-overlay">
+    <div className="modal-box">
+      <div className="modal-header">
+        <div className="brand-circle">M</div>
+        <div>
+          <h2 className="modal-title">Contact Us</h2>
+          <p className="modal-subtitle">Tell us what you’re hiring for</p>
+        </div>
+        <button className="modal-close" onClick={() => {
+          setShowContactForm(false);
+          setContactSubmitted(false);
+        }}>✕</button>
+      </div>
+
+      {!contactSubmitted ? (
+        <form className="form" onSubmit={(e) => {
+          e.preventDefault();
+          setContactSubmitted(true);
+        }}>
+          {['name','company','email','phone','message'].map((field) => (
+            <div className="form-field" key={field}>
+              <label>{field.charAt(0).toUpperCase() + field.slice(1)}</label>
+              <input
+                required
+                placeholder={field}
+                value={contactData[field]}
+                onChange={(e) =>
+                  setContactData({ ...contactData, [field]: e.target.value })
+                }
+              />
+            </div>
+          ))}
+
+          <button className="btn-primary wfull">Request Callback</button>
+        </form>
+      ) : (
+        <div style={{ textAlign: 'center', padding: 16 }}>
+          <h3>✅ Request Sent</h3>
+          <p style={{ color: '#6b7280' }}>
+            Our team will contact you shortly.
+          </p>
+          <button className="btn-primary" onClick={() => setShowContactForm(false)}>
+            Close
+          </button>
+        </div>
+      )}
+    </div>
+  </div>
+)}
+
+{showChatBot && (
+  <div className="modal-overlay">
+    <div className="modal-box" style={{ maxWidth: 420 }}>
+      <div className="modal-header">
+        <div className="brand-circle">M</div>
+        <div>
+          <h2 className="modal-title">MMTI Assistant</h2>
+          <p className="modal-subtitle">We’re here to help</p>
+        </div>
+        <button className="modal-close" onClick={() => setShowChatBot(false)}>✕</button>
+      </div>
+
+      <div style={{ maxHeight: 260, overflowY: 'auto', marginBottom: 10 }}>
+        {chatMessages.map((m, i) => (
+          <div key={i} style={{
+            alignSelf: m.from === 'bot' ? 'flex-start' : 'flex-end',
+            background: m.from === 'bot' ? '#f3f4f6' : '#0a66c2',
+            color: m.from === 'bot' ? '#111' : '#fff',
+            padding: '10px 12px',
+            borderRadius: 14,
+            marginBottom: 6,
+            maxWidth: '80%',
+          }}>
+            {m.text}
+          </div>
+        ))}
+      </div>
+
+      <form onSubmit={(e) => {
+        e.preventDefault();
+        if (!chatInput.trim()) return;
+        setChatMessages(m => [...m, { from: 'user', text: chatInput }]);
+        setChatInput('');
+      }} style={{ display: 'flex', gap: 6 }}>
+        <input
+          value={chatInput}
+          onChange={(e) => setChatInput(e.target.value)}
+          placeholder="Type your message…"
+          style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid #e5e7eb' }}
+        />
+        <button className="btn-primary">Send</button>
+      </form>
+
+      <a
+        href="https://wa.me/919516422456?text=Hello%20I%20need%20help"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="btn-secondary wfull"
+        style={{ marginTop: 8 }}
+      >
+        Continue on WhatsApp
+      </a>
+    </div>
+  </div>
+)}
+
+
       <FloatingResumeCTA />
     </div>
     
