@@ -155,6 +155,49 @@ export default function AuthShell({ title, subtitle, children }) {
               padding: 36px 26px 30px;
             }
           }
+            /* Password field */
+            .password-field {
+            margin-bottom: 14px;
+            }
+
+            .password-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            }
+
+            .password-input-wrapper input {
+            width: 100%;
+            padding-right: 46px; /* space for icon */
+            }
+
+            /* Eye button */
+            .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            padding: 4px;
+            cursor: pointer;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: background 0.15s ease, color 0.15s ease;
+            }
+
+            .password-toggle:hover {
+            background: rgba(10, 102, 194, 0.08);
+            color: #0a66c2;
+            }
+
+            .password-toggle:active {
+            transform: translateY(-50%) scale(0.96);
+            }
+
         `}</style>
       </div>
     );
