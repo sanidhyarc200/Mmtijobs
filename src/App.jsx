@@ -29,6 +29,7 @@ import AdminLogin from './pages/auth/AdminLogin';
 import HRManagerLogin from './pages/auth/HRManagerLogin';
 import HRLogin from './pages/auth/HRLogin';
 import HRRecruiterLogin from './pages/auth/HRRecruiterLogin'; 
+import HRManagerDashboard from './pages/HRManagerDashboard';
 
 /* ------------------------------------------------------------------ */
 /* -------------------------- Layout Wrapper ------------------------- */
@@ -255,6 +256,7 @@ export default function App() {
           <Route path="/resume-builder/start" element={<ResumeBuilder />} />
           <Route path="/hr-dashboard" element={<HRDashboard />} />
           <Route path="/hr-recruiter-dashboard" element={<HRRecruiterDashboard />} />
+          <Route path="/hr-manager-dashboard" element={<HRManagerDashboard />} />
           <Route path="/auth/admin" element={<AdminLogin />} />
           <Route path="/auth/hr-manager" element={<HRManagerLogin />} />
           <Route path="/auth/hr" element={<HRLogin />} />

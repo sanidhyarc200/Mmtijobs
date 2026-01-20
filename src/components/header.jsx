@@ -178,11 +178,17 @@ export default function Header({ onPostJobClick }) {
   };
 
   const dashboardPath =
-    currentUser?.userType === 'recruiter'
-      ? '/company-dashboard'
-      : currentUser?.userType === 'admin'
-      ? '/admin-dashboard'
-      : '/dashboard';
+  currentUser?.userType === 'admin'
+    ? '/admin-dashboard'
+    : currentUser?.userType === 'hr_manager'
+    ? '/hr-manager-dashboard'
+    : currentUser?.userType === 'hr'
+    ? '/hr-dashboard'
+    : currentUser?.userType === 'hr_recruiter'
+    ? '/hr-recruiter-dashboard'
+    : currentUser?.userType === 'recruiter'
+    ? '/company-dashboard'
+    : '/dashboard';
 
   useEffect(() => {
     const onKey = (e) => {
