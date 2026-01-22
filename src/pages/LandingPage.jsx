@@ -646,7 +646,36 @@ export default function LandingPage() {
         ) : (
           <>
             <p>Want to post a job? Use the button below. We’ll ask you to log in or sign up as a recruiter if you aren’t already.</p>
-            <button className="post-cta-btn" onClick={handleRecruiterCTA}>Post a Job</button>
+            <button
+  className="post-cta-btn"
+  onClick={handleRecruiterCTA}
+  style={{
+    padding: "10px 18px",
+    fontSize: "14px",
+    fontWeight: "600",
+    color: "#1e40af",
+    backgroundColor: "#ffffff",
+    border: "1px solid rgba(255, 255, 255, 0.7)",
+    borderRadius: "6px",
+    cursor: "pointer",
+    boxShadow: "0 6px 16px rgba(0, 0, 0, 0.15)",
+    transition: "all 0.25s ease",
+    letterSpacing: "0.3px",
+  }}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.backgroundColor = "#f1f5f9";
+    e.currentTarget.style.transform = "translateY(-1px)";
+    e.currentTarget.style.boxShadow = "0 10px 22px rgba(0, 0, 0, 0.2)";
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.backgroundColor = "#ffffff";
+    e.currentTarget.style.transform = "translateY(0)";
+    e.currentTarget.style.boxShadow = "0 6px 16px rgba(0, 0, 0, 0.15)";
+  }}
+>
+  Post a Job
+</button>
+
           </>
         )}
       </section>
