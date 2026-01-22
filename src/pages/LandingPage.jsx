@@ -673,7 +673,7 @@ export default function LandingPage() {
     e.currentTarget.style.boxShadow = "0 6px 16px rgba(0, 0, 0, 0.15)";
   }}
 >
-  Post a Job
+  contact us 
 </button>
 
           </>
