@@ -264,27 +264,27 @@ export default function Header({ onPostJobClick }) {
         <button
   onClick={() => setShowRecruiterHelp(true)}
   style={{
-    padding: "12px 22px",
-    fontSize: "15px",
+    padding: "8px 16px",
+    fontSize: "13px",
     fontWeight: "600",
     color: "#fff",
     background: "linear-gradient(135deg, #2563eb, #1e40af)",
     border: "none",
     borderRadius: "999px",
     cursor: "pointer",
-    boxShadow: "0 8px 20px rgba(37, 99, 235, 0.35)",
-    transition: "all 0.3s ease",
-    letterSpacing: "0.4px",
+    boxShadow: "0 5px 14px rgba(37, 99, 235, 0.3)",
+    transition: "all 0.25s ease",
+    letterSpacing: "0.3px",
   }}
   onMouseEnter={(e) => {
-    e.currentTarget.style.transform = "translateY(-2px)";
+    e.currentTarget.style.transform = "translateY(-1px)";
     e.currentTarget.style.boxShadow =
-      "0 12px 28px rgba(37, 99, 235, 0.45)";
+      "0 8px 18px rgba(37, 99, 235, 0.4)";
   }}
   onMouseLeave={(e) => {
     e.currentTarget.style.transform = "translateY(0)";
     e.currentTarget.style.boxShadow =
-      "0 8px 20px rgba(37, 99, 235, 0.35)";
+      "0 5px 14px rgba(37, 99, 235, 0.3)";
   }}
 >
   Contact Us
