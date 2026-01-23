@@ -1,19 +1,19 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import * as XLSX from "xlsx";
 
-/* ===============================
-   STORAGE HELPERS (ADMIN-LEVEL)
-================================ */
-const readJSON = (k, f) => {
+/* =========================================================
+   LOCAL STORAGE HELPERS
+========================================================= */
+const readJSON = (key, fallback) => {
   try {
-    const r = localStorage.getItem(k);
-    return r ? JSON.parse(r) : f;
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
   } catch {
-    return f;
+    return fallback;
   }
 };
-const writeJSON = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+const writeJSON = (key, value) =>
+  localStorage.setItem(key, JSON.stringify(value));
 
 const getCompanies = () => {
   const single = readJSON("registeredCompany", null);
@@ -22,23 +22,23 @@ const getCompanies = () => {
   return single ? [single] : [];
 };
 const getStudents = () =>
-  (readJSON("users", []) || []).filter((u) => u.userType === "applicant");
+  (readJSON("users", []) || []).filter(u => u.userType === "applicant");
 const getJobs = () => readJSON("jobs", []);
 const getApplications = () => readJSON("jobApplications", []);
 
-/* ===============================
+/* =========================================================
    UI ATOMS
-================================ */
-const StatCard = ({ label, value }) => (
-  <div className="gm-stat">
-    <div className="gm-stat-label">{label}</div>
-    <div className="gm-stat-value">{value}</div>
+========================================================= */
+const StatCard = ({ label, value, accent }) => (
+  <div className={`hr-stat-card ${accent}`}>
+    <div className="hr-stat-label">{label}</div>
+    <div className="hr-stat-value">{value}</div>
   </div>
 );
 
-/* ===============================
-   HR MANAGER DASHBOARD (GOD MODE)
-================================ */
+/* =========================================================
+   HR MANAGER DASHBOARD (FINAL FORM)
+========================================================= */
 export default function HRManagerDashboard() {
   const navigate = useNavigate();
 
@@ -46,203 +46,299 @@ export default function HRManagerDashboard() {
   const [companies, setCompanies] = useState([]);
   const [students, setStudents] = useState([]);
   const [jobs, setJobs] = useState([]);
-  const [edit, setEdit] = useState(null);
+  const [applications, setApplications] = useState([]);
+  const [viewJob, setViewJob] = useState(null);
 
-  /* AUTH */
+  /* =========================================================
+     AUTH + STATIC DATA INJECTION (ADMIN PARITY)
+  ========================================================= */
   useEffect(() => {
     const user = readJSON("currentUser", null);
     if (!user || user.role !== "hr_manager") {
       navigate("/");
       return;
     }
-    setCompanies(getCompanies());
-    setStudents(getStudents());
-    setJobs(getJobs());
+
+    /* ---------- STATIC COMPANIES ---------- */
+    const staticCompanies = [
+      { companyName:"Medinatridle heath IIB", email:"contact@medinitriddlehealth.com", contact:"8989954397" },
+      { companyName:"Samarth Electrocare", email:"samathelectrocare@gmail.com", contact:"7755990767" },
+      { companyName:"Neelanj business Solution LLP", email:"neelanjbusinesssolution@gmail.com", contact:"7998406170" },
+      { companyName:"RAJRUDRA Enterprises pvt ltd", email:"rajrudraenterprises.mandeep@gmail.com", contact:"9752319442" },
+      { companyName:"Orphic Solution, Bhopal", email:"hr@orphicsolution.com", contact:"9584360388" },
+      { companyName:"yokohama pvt ltd engine", email:"yokohama pvt ltd engine", contact:"7697651756" },
+      { companyName:"Raj Seeds Trades", email:"hr@rajseeds.co.in", contact:"626200198" },
+      { companyName:"Sasthi Enterprises Pvt. Ltd.", email:"hr@harenply.com", contact:"9259538852" },
+      { companyName:"GENTRIGO SOLUTIONs", email:"Info.gentrigo@gmail.com", contact:"6265389979" },
+      { companyName:"Tendonifoodchemical", email:"tendonifoodchemical@gmail.com", contact:"6269990150" },
+      { companyName:"Confidential Company", email:"confidential.hr@example.com", contact:"9000000001" },
+      { companyName:"Fitness Tycoon", email:"hr@fitnesstycoon.com", contact:"9000000002" },
+      { companyName:"Paraglider Media Private Limited", email:"jobs@paraglider.in", contact:"8269893693" }
+    ];
+    setCompanies([...staticCompanies, ...getCompanies()]);
+
+    /* ---------- STATIC STUDENT ---------- */
+    const staticStudent = {
+      id:"static-student-1",
+      userType:"applicant",
+      firstName:"Neelam",
+      lastName:"Giri",
+      email:"neelamgiri283@gmail.com",
+      degree:"MBA",
+      experience:"3 Years",
+      skills:"Data Analyst, Operations, Excel",
+    };
+    const storedStudents = getStudents();
+    setStudents(
+      storedStudents.some(s => s.email === staticStudent.email)
+        ? storedStudents
+        : [staticStudent, ...storedStudents]
+    );
+
+    /* ---------- STATIC JOBS ---------- */
+    const staticJobs = [
+      { id:"static-1", title:"HR & Operations Executive", company:"Confidential Company", location:"Bhopal", experienceRange:"2+ years", salary:"₹2–3 LPA", status:"active" },
+      { id:"static-2", title:"Nutritionist", company:"Fitness Tycoon", location:"Bhopal", experienceRange:"0–3 years", salary:"₹1.5–3 LPA", status:"active" },
+      { id:910001, title:"Graphic Designer", company:"Paraglider Media Private Limited", location:"Bhopal", experienceRange:"0–2 years", salary:"As per industry", status:"active" },
+      { id:910002, title:"Motion Graphics Designer", company:"Paraglider Media Private Limited", location:"Bhopal / Indore", experienceRange:"1–3 years", salary:"As per industry", status:"active" },
+    ];
+
+    const existingJobs = getJobs();
+    const hasStatic = existingJobs.some(j => staticJobs.some(sj => sj.id === j.id));
+    const mergedJobs = hasStatic ? existingJobs : [...staticJobs, ...existingJobs];
+    if (!hasStatic) writeJSON("jobs", mergedJobs);
+
+    setJobs(mergedJobs);
+    setApplications(getApplications());
   }, [navigate]);
 
-  /* STATS */
+  /* =========================================================
+     STATS
+  ========================================================= */
   const stats = useMemo(() => ({
-    companies: companies.length,
-    students: students.length,
-    jobs: jobs.length,
-    pending: jobs.filter(j => j.status === "pending").length,
+    recruiters: companies.length,
+    applicants: students.length,
+    totalJobs: jobs.length,
+    activeJobs: jobs.filter(j => j.status === "active").length,
+    pendingJobs: jobs.filter(j => j.status === "pending").length,
   }), [companies, students, jobs]);
 
-  /* ACTIONS */
-  const saveEdit = () => {
-    if (edit.type === "job") {
-      const list = [...jobs];
-      list[edit.index] = edit.data;
-      setJobs(list);
-      writeJSON("jobs", list);
-    }
-    if (edit.type === "company") {
-      const list = [...companies];
-      list[edit.index] = edit.data;
-      setCompanies(list);
-      writeJSON("registeredCompanies", list);
-    }
-    if (edit.type === "student") {
-      const list = [...students];
-      list[edit.index] = edit.data;
-      setStudents(list);
-      writeJSON("users", list);
-    }
-    setEdit(null);
+  /* =========================================================
+     JOB ACTIONS
+  ========================================================= */
+  const approveJob = (idx) => {
+    const list = [...jobs];
+    list[idx].status = "active";
+    setJobs(list);
+    writeJSON("jobs", list);
+  };
+  const deactivateJob = (idx) => {
+    const list = [...jobs];
+    list[idx].status = "inactive";
+    setJobs(list);
+    writeJSON("jobs", list);
   };
 
-  /* ===============================
-     SECTIONS
-================================ */
-  const Jobs = () => (
-    <div className="gm-panel">
-      <h2>Jobs Control Center</h2>
-      <table className="gm-table">
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Company</th>
-            <th>Status</th>
-            <th>Location</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {jobs.map((j, i) => (
-            <tr key={i}>
-              <td>{j.title}</td>
-              <td>{j.company}</td>
-              <td><span className={`gm-pill ${j.status}`}>{j.status}</span></td>
-              <td>{j.location}</td>
-              <td className="gm-actions">
-                <button onClick={() => setEdit({ type:"job", index:i, data:{...j} })}>Edit</button>
-                <button onClick={() => {
-                  const l=[...jobs]; l[i].status="active"; setJobs(l); writeJSON("jobs",l);
-                }}>Approve</button>
-                <button className="danger" onClick={() => {
-                  const l=[...jobs]; l[i].status="inactive"; setJobs(l); writeJSON("jobs",l);
-                }}>Deactivate</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
+  /* =========================================================
+     DERIVED MODAL DATA
+  ========================================================= */
+  const jobApplicants = viewJob
+    ? applications
+        .filter(a => a.jobId === viewJob.id)
+        .map(a => ({
+          ...a,
+          user: students.find(s => s.id === a.userId || s.userId === a.userId),
+        }))
+    : [];
 
-  const Companies = () => (
-    <div className="gm-panel">
-      <h2>Recruiters</h2>
-      <table className="gm-table">
-        <thead>
-          <tr><th>Name</th><th>Email</th><th>Contact</th><th>Actions</th></tr>
-        </thead>
-        <tbody>
-          {companies.map((c,i)=>(
-            <tr key={i}>
-              <td>{c.companyName||c.name}</td>
-              <td>{c.email}</td>
-              <td>{c.contact}</td>
-              <td>
-                <button onClick={()=>setEdit({type:"company",index:i,data:{...c}})}>Edit</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-
-  const Students = () => (
-    <div className="gm-panel">
-      <h2>Students</h2>
-      <table className="gm-table">
-        <thead>
-          <tr><th>Name</th><th>Email</th><th>Degree</th><th>Actions</th></tr>
-        </thead>
-        <tbody>
-          {students.map((s,i)=>(
-            <tr key={i}>
-              <td>{s.firstName} {s.lastName}</td>
-              <td>{s.email}</td>
-              <td>{s.degree}</td>
-              <td>
-                <button onClick={()=>setEdit({type:"student",index:i,data:{...s}})}>Edit</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-
+  /* =========================================================
+     RENDER
+  ========================================================= */
   return (
-    <div className="gm-layout">
-      <header className="gm-top">
-        <h1>HR Operations Dashboard</h1>
-      </header>
-
-      <div className="gm-stats">
-        <StatCard label="Recruiters" value={stats.companies} />
-        <StatCard label="Students" value={stats.students} />
-        <StatCard label="Jobs" value={stats.jobs} />
-        <StatCard label="Pending Jobs" value={stats.pending} />
-      </div>
-
-      <div className="gm-body">
-        <aside className="gm-sidebar">
-          <button onClick={()=>setSection("jobs")} className={section==="jobs"?"active":""}>Jobs</button>
-          <button onClick={()=>setSection("companies")} className={section==="companies"?"active":""}>Companies</button>
-          <button onClick={()=>setSection("students")} className={section==="students"?"active":""}>Students</button>
+    <div className="hr-layout">
+      <div className="hr-content">
+        {/* SIDEBAR (ADMIN STYLE) */}
+        <aside className="hr-sidebar">
+          <div className="sidebar-title">HR</div>
+          <button className={section==="jobs"?"active":""} onClick={()=>setSection("jobs")}>Jobs</button>
+          <button className={section==="companies"?"active":""} onClick={()=>setSection("companies")}>Recruiters</button>
+          <button className={section==="students"?"active":""} onClick={()=>setSection("students")}>Applicants</button>
         </aside>
 
-        <main className="gm-main">
-          {section==="jobs" && <Jobs/>}
-          {section==="companies" && <Companies/>}
-          {section==="students" && <Students/>}
+        {/* MAIN */}
+        <main className="hr-main">
+          <header className="hr-header">
+            <h1>HR Operations Dashboard</h1>
+            <p>Admin visibility · HR authority</p>
+          </header>
+
+          {/* STATS */}
+          <div className="hr-stats">
+            <StatCard label="Recruiters" value={stats.recruiters} accent="blue" />
+            <StatCard label="Applicants" value={stats.applicants} accent="green" />
+            <StatCard label="Total Jobs" value={stats.totalJobs} accent="indigo" />
+            <StatCard label="Active Jobs" value={stats.activeJobs} accent="emerald" />
+            <StatCard label="Pending Jobs" value={stats.pendingJobs} accent="amber" />
+          </div>
+
+          {/* JOBS */}
+          {section==="jobs" && (
+            <div className="panel">
+              <h2>Jobs</h2>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Title</th><th>Company</th><th>Status</th><th>Applicants</th><th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {jobs.map((j,i)=>(
+                    <tr key={j.id || i}>
+                      <td>{j.title}</td>
+                      <td>{j.company}</td>
+                      <td><span className={`pill ${j.status}`}>{j.status}</span></td>
+                      <td>{applications.filter(a=>a.jobId===j.id).length}</td>
+                      <td className="actions">
+                        <button className="btn ghost" onClick={()=>setViewJob(j)}>View</button>
+                        {j.status==="pending" && <button className="btn" onClick={()=>approveJob(i)}>Approve</button>}
+                        {j.status==="active" && <button className="btn warn" onClick={()=>deactivateJob(i)}>Deactivate</button>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* COMPANIES */}
+          {section==="companies" && (
+            <div className="panel">
+              <h2>Recruiters</h2>
+              <table className="table">
+                <thead><tr><th>Company</th><th>Email</th><th>Contact</th></tr></thead>
+                <tbody>
+                  {companies.map((c,i)=>(
+                    <tr key={i}>
+                      <td>{c.companyName}</td>
+                      <td>{c.email}</td>
+                      <td>{c.contact}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* STUDENTS */}
+          {section==="students" && (
+            <div className="panel">
+              <h2>Applicants</h2>
+              <table className="table">
+                <thead><tr><th>Name</th><th>Email</th><th>Degree</th><th>Experience</th></tr></thead>
+                <tbody>
+                  {students.map((s,i)=>(
+                    <tr key={i}>
+                      <td>{s.firstName} {s.lastName}</td>
+                      <td>{s.email}</td>
+                      <td>{s.degree}</td>
+                      <td>{s.experience}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </main>
       </div>
 
-      {edit && (
-        <div className="gm-modal-bg" onClick={()=>setEdit(null)}>
-          <div className="gm-modal" onClick={e=>e.stopPropagation()}>
-            <h3>Edit {edit.type}</h3>
-            {Object.keys(edit.data).map(k=>(
-              typeof edit.data[k]==="string" &&
-              <input key={k} value={edit.data[k]} onChange={e=>{
-                setEdit({...edit,data:{...edit.data,[k]:e.target.value}});
-              }} placeholder={k}/>
-            ))}
-            <button onClick={saveEdit}>Save</button>
+      {/* ================= JOB VIEW MODAL (PREMIUM) ================= */}
+      {viewJob && (
+        <div className="modal-bg" onClick={()=>setViewJob(null)}>
+          <div className="job-modal" onClick={e=>e.stopPropagation()}>
+            <div className="job-modal-header">
+              <h2>{viewJob.title}</h2>
+              <p>{viewJob.company} • {viewJob.location}</p>
+            </div>
+
+            <div className="job-modal-body">
+              <div className="job-meta">
+                <div><strong>Experience</strong><span>{viewJob.experienceRange}</span></div>
+                <div><strong>Salary</strong><span>{viewJob.salary}</span></div>
+                <div><strong>Status</strong><span className={`pill ${viewJob.status}`}>{viewJob.status}</span></div>
+              </div>
+
+              <h3>Applicants ({jobApplicants.length})</h3>
+              {jobApplicants.length===0 && <p className="muted">No applicants yet.</p>}
+
+              {jobApplicants.map((a,i)=>(
+                <div key={i} className="applicant-card">
+                  <div className="name">{a.user?.firstName} {a.user?.lastName}</div>
+                  <div className="email">{a.user?.email}</div>
+                  <div className="meta">{a.user?.degree} · {a.user?.experience}</div>
+                </div>
+              ))}
+            </div>
+
+            <button className="close-btn" onClick={()=>setViewJob(null)}>✕</button>
           </div>
         </div>
       )}
 
+      {/* ================= FULL CSS ================= */}
       <style>{`
-/* GOD MODE CSS */
-.gm-layout{min-height:100vh;background:#0f172a;color:#fff;padding:24px}
-.gm-top h1{margin:0;font-size:26px}
-.gm-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:20px 0}
-.gm-stat{background:#111827;padding:20px;border-radius:14px}
-.gm-stat-label{opacity:.7}
-.gm-stat-value{font-size:34px;font-weight:800}
-.gm-body{display:grid;grid-template-columns:240px 1fr;gap:20px}
-.gm-sidebar{background:#020617;padding:16px;border-radius:14px;display:flex;flex-direction:column;gap:10px}
-.gm-sidebar button{all:unset;padding:12px;border-radius:10px;cursor:pointer}
-.gm-sidebar .active{background:#4f46e5}
-.gm-panel{background:#020617;padding:20px;border-radius:16px}
-.gm-table{width:100%;border-collapse:collapse}
-.gm-table th,.gm-table td{padding:14px;border-bottom:1px solid #1e293b}
-.gm-actions button{margin-right:6px}
-.gm-pill.active{color:#22c55e}
-.gm-pill.pending{color:#facc15}
-.gm-pill.inactive{color:#ef4444}
-.gm-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center}
-.gm-modal{background:#020617;padding:20px;border-radius:14px;width:420px}
-.gm-modal input{width:100%;margin-bottom:8px;padding:10px}
-@media(max-width:900px){
-  .gm-body{grid-template-columns:1fr}
-  .gm-stats{grid-template-columns:repeat(2,1fr)}
+.hr-layout{background:#f3f6fb;min-height:100vh;padding:16px}
+.hr-content{display:grid;grid-template-columns:220px 1fr;gap:16px}
+.hr-sidebar{background:#fff;border-radius:12px;padding:12px;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.sidebar-title{font-weight:700;margin-bottom:8px}
+.hr-sidebar button{width:100%;padding:10px;border-radius:10px;border:1px solid #e5e7eb;background:#f9fafb;cursor:pointer;font-weight:600}
+.hr-sidebar button.active,.hr-sidebar button:hover{background:#e8f0ff;border-color:#bfdbfe;color:#1d4ed8}
+
+.hr-main{display:flex;flex-direction:column;gap:16px}
+.hr-header h1{margin:0;font-size:26px}
+.hr-header p{margin:4px 0 0;color:#64748b}
+
+.hr-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.hr-stat-card{background:#fff;border-radius:12px;padding:16px;box-shadow:0 4px 14px rgba(0,0,0,.06);border-left:6px solid}
+.hr-stat-card.blue{border-color:#3b82f6}
+.hr-stat-card.green{border-color:#22c55e}
+.hr-stat-card.indigo{border-color:#6366f1}
+.hr-stat-card.emerald{border-color:#10b981}
+.hr-stat-card.amber{border-color:#f59e0b}
+.hr-stat-label{font-size:13px;color:#64748b}
+.hr-stat-value{font-size:28px;font-weight:800}
+
+.panel{background:#fff;border-radius:12px;padding:16px;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.panel h2{margin:0 0 12px}
+
+.table{width:100%;border-collapse:collapse}
+.table th{font-size:12px;color:#64748b;text-transform:uppercase;padding:12px;border-bottom:1px solid #e5e7eb}
+.table td{padding:12px;border-bottom:1px solid #f1f5f9}
+
+.actions{display:flex;gap:8px}
+.btn{padding:6px 12px;border-radius:8px;border:none;font-weight:600;cursor:pointer;background:#0a66c2;color:#fff}
+.btn.warn{background:#fee2e2;color:#991b1b}
+.btn.ghost{background:#eff6ff;color:#0a66c2}
+
+.pill.active{color:#16a34a;font-weight:700}
+.pill.pending{color:#ca8a04;font-weight:700}
+.pill.inactive{color:#dc2626;font-weight:700}
+
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:50}
+.job-modal{background:#fff;width:720px;max-height:90vh;border-radius:16px;overflow:hidden;position:relative}
+.job-modal-header{background:linear-gradient(135deg,#0a66c2,#0047a8);color:#fff;padding:24px}
+.job-modal-body{padding:24px}
+.job-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.job-meta div{background:#f8fafc;padding:12px;border-radius:10px}
+.job-meta strong{display:block;font-size:12px;color:#64748b}
+.applicant-card{border:1px solid #e5e7eb;border-radius:10px;padding:12px;margin-bottom:10px}
+.applicant-card .name{font-weight:700}
+.applicant-card .email{color:#2563eb;font-size:13px}
+.applicant-card .meta{font-size:13px;color:#64748b}
+.close-btn{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.9);border:none;border-radius:8px;padding:4px 8px;cursor:pointer}
+
+@media(max-width:1000px){
+  .hr-content{grid-template-columns:1fr}
+  .hr-stats{grid-template-columns:repeat(2,1fr)}
 }
       `}</style>
     </div>
