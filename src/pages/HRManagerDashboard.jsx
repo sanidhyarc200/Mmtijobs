@@ -167,10 +167,10 @@ export default function HRManagerDashboard() {
 
         {/* MAIN */}
         <main className="hr-main">
-          <header className="hr-header">
-            <h1>HR Operations Dashboard</h1>
-            <p>Admin visibility · HR authority</p>
-          </header>
+        <div class="hr-dashboard-header">
+          <h1>HR Operations Dashboard</h1>
+          <p>Admin visibility · HR authority</p>
+        </div>
 
           {/* STATS */}
           <div className="hr-stats">
@@ -288,10 +288,100 @@ export default function HRManagerDashboard() {
       <style>{`
 .hr-layout{background:#f3f6fb;min-height:100vh;padding:16px}
 .hr-content{display:grid;grid-template-columns:220px 1fr;gap:16px}
-.hr-sidebar{background:#fff;border-radius:12px;padding:12px;box-shadow:0 4px 14px rgba(0,0,0,.06)}
-.sidebar-title{font-weight:700;margin-bottom:8px}
-.hr-sidebar button{width:100%;padding:10px;border-radius:10px;border:1px solid #e5e7eb;background:#f9fafb;cursor:pointer;font-weight:600}
-.hr-sidebar button.active,.hr-sidebar button:hover{background:#e8f0ff;border-color:#bfdbfe;color:#1d4ed8}
+/* ===== PREMIUM SIDEBAR ===== */
+.hr-sidebar{
+  background:linear-gradient(180deg,#ffffff,#f8fafc);
+  border-radius:16px;
+  padding:16px 12px;
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.08),
+    inset 0 1px 0 rgba(255,255,255,.6);
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.sidebar-title{
+  font-weight:800;
+  font-size:14px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:#475569;
+  padding:8px 10px 14px;
+  border-bottom:1px solid #e5e7eb;
+  margin-bottom:6px;
+}
+
+/* Sidebar buttons */
+.hr-sidebar button{
+  all:unset;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:12px 14px;
+  border-radius:12px;
+  font-weight:600;
+  font-size:14px;
+  color:#334155;
+  cursor:pointer;
+  transition:all .2s ease;
+  position:relative;
+}
+
+/* Hover */
+.hr-sidebar button:hover{
+  background:#f1f5ff;
+  color:#1d4ed8;
+}
+
+/* Active */
+.hr-sidebar button.active{
+  background:linear-gradient(135deg,#2563eb,#1d4ed8);
+  color:#ffffff;
+  box-shadow:
+    0 8px 20px rgba(37,99,235,.35);
+}
+
+/* Active left indicator */
+.hr-sidebar button.active::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:8px;
+  bottom:8px;
+  width:4px;
+  border-radius:4px;
+  background:#ffffff;
+}
+
+.hr-dashboard-header {
+  padding: 20px 28px;
+  background: linear-gradient(135deg, #f8fafc, #eef2f7);
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 24px;
+}
+
+.hr-dashboard-header h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: #0f172a; /* dark slate */
+  letter-spacing: 0.2px;
+}
+
+.hr-dashboard-header p {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569; /* muted authority */
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.hr-dashboard-header {
+  border-left: 4px solid #2563eb; /* calm admin blue */
+}
 
 .hr-main{display:flex;flex-direction:column;gap:16px}
 .hr-header h1{margin:0;font-size:26px}
