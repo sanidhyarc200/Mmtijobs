@@ -48,6 +48,11 @@ export default function HRManagerDashboard() {
   const [jobs, setJobs] = useState([]);
   const [applications, setApplications] = useState([]);
   const [viewJob, setViewJob] = useState(null);
+  const [editModal, setEditModal] = useState({
+    type: null,  
+    data: null,
+    index: null,
+  });
 
   /* =========================================================
      AUTH + STATIC DATA INJECTION (ADMIN PARITY)
@@ -167,7 +172,7 @@ export default function HRManagerDashboard() {
 
         {/* MAIN */}
         <main className="hr-main">
-        <div class="hr-dashboard-header">
+        <div className="hr-dashboard-header">
           <h1>HR Operations Dashboard</h1>
           <p>Admin visibility · HR authority</p>
         </div>
@@ -200,6 +205,15 @@ export default function HRManagerDashboard() {
                       <td>{applications.filter(a=>a.jobId===j.id).length}</td>
                       <td className="actions">
                         <button className="btn ghost" onClick={()=>setViewJob(j)}>View</button>
+                        <button
+                          className="btn ghost"
+                          onClick={() =>
+                            setEditModal({ type: "job", data: { ...j }, index: i })
+                          }
+                        >
+                          Edit
+                        </button>
+
                         {j.status==="pending" && <button className="btn" onClick={()=>approveJob(i)}>Approve</button>}
                         {j.status==="active" && <button className="btn warn" onClick={()=>deactivateJob(i)}>Deactivate</button>}
                       </td>
@@ -212,42 +226,159 @@ export default function HRManagerDashboard() {
 
           {/* COMPANIES */}
           {section==="companies" && (
-            <div className="panel">
-              <h2>Recruiters</h2>
-              <table className="table">
-                <thead><tr><th>Company</th><th>Email</th><th>Contact</th></tr></thead>
-                <tbody>
-                  {companies.map((c,i)=>(
-                    <tr key={i}>
-                      <td>{c.companyName}</td>
-                      <td>{c.email}</td>
-                      <td>{c.contact}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+  <div className="panel">
+    <h2>Recruiters</h2>
+
+    <table className="table">
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Email</th>
+          <th>Contact</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {companies.map((c, i) => (
+          <tr key={i}>
+            <td>{c.companyName}</td>
+            <td>{c.email}</td>
+            <td>{c.contact}</td>
+            <td>
+              <button
+                className="btn ghost"
+                onClick={() =>
+                  setEditModal({
+                    type: "company",
+                    data: { ...c },
+                    index: i
+                  })
+                }
+              >
+                Edit
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+)}
+
 
           {/* STUDENTS */}
           {section==="students" && (
             <div className="panel">
               <h2>Applicants</h2>
               <table className="table">
-                <thead><tr><th>Name</th><th>Email</th><th>Degree</th><th>Experience</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Degree</th>
+                  <th>Experience</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+
                 <tbody>
                   {students.map((s,i)=>(
                     <tr key={i}>
-                      <td>{s.firstName} {s.lastName}</td>
-                      <td>{s.email}</td>
-                      <td>{s.degree}</td>
-                      <td>{s.experience}</td>
-                    </tr>
+                    <td>{s.firstName} {s.lastName}</td>
+                    <td>{s.email}</td>
+                    <td>{s.degree}</td>
+                    <td>{s.experience}</td>
+                    <td>
+                      <button
+                        className="btn ghost"
+                        onClick={() =>
+                          setEditModal({ type: "student", data: { ...s }, index: i })
+                        }
+                      >
+                        Edit
+                      </button>
+                    </td>
+                  </tr>
+                  
                   ))}
                 </tbody>
               </table>
             </div>
           )}
+          {editModal.data && (
+  <div className="modal-bg" onClick={() => setEditModal({ type:null, data:null, index:null })}>
+    <div className="edit-modal" onClick={e => e.stopPropagation()}>
+
+      <div className="edit-modal-header">
+        <h2>Edit {editModal.type}</h2>
+        <p>Update details carefully</p>
+      </div>
+
+      <div className="edit-modal-body">
+        {Object.entries(editModal.data).map(([key, value]) =>
+          typeof value === "string" ? (
+            <div className="edit-field" key={key}>
+              <label>{key}</label>
+              <input
+                value={value}
+                onChange={e =>
+                  setEditModal(m => ({
+                    ...m,
+                    data: { ...m.data, [key]: e.target.value }
+                  }))
+                }
+              />
+            </div>
+          ) : null
+        )}
+      </div>
+
+      <div className="edit-modal-footer">
+        <button
+          className="btn ghost"
+          onClick={() => setEditModal({ type:null, data:null, index:null })}
+        >
+          Cancel
+        </button>
+        <button
+          className="btn"
+          onClick={() => {
+            if (editModal.type === "job") {
+              const list = [...jobs];
+              list[editModal.index] = editModal.data;
+              setJobs(list);
+              writeJSON("jobs", list);
+            }
+            if (editModal.type === "company") {
+              const list = [...companies];
+              list[editModal.index] = editModal.data;
+              setCompanies(list);
+            }
+            if (editModal.type === "student") {
+              const list = [...students];
+              list[editModal.index] = editModal.data;
+              setStudents(list);
+              writeJSON("users", list);
+            }
+            setEditModal({ type:null, data:null, index:null });
+          }}
+        >
+          Save Changes
+        </button>
+      </div>
+
+      <button
+        className="close-btn"
+        onClick={() => setEditModal({ type:null, data:null, index:null })}
+      >
+        ✕
+      </button>
+
+    </div>
+  </div>
+)}
+
         </main>
       </div>
 
@@ -429,7 +560,72 @@ export default function HRManagerDashboard() {
 @media(max-width:1000px){
   .hr-content{grid-template-columns:1fr}
   .hr-stats{grid-template-columns:repeat(2,1fr)}
+  
 }
+
+/* ===== EDIT MODAL ===== */
+.edit-modal{
+  background:#fff;
+  width:620px;
+  max-height:85vh;
+  border-radius:18px;
+  overflow:hidden;
+  position:relative;
+  box-shadow:0 30px 80px rgba(0,0,0,.25);
+}
+
+.edit-modal-header{
+  padding:24px;
+  background:linear-gradient(135deg,#2563eb,#1d4ed8);
+  color:#fff;
+}
+
+.edit-modal-header h2{
+  margin:0;
+  font-size:20px;
+}
+
+.edit-modal-header p{
+  margin-top:6px;
+  font-size:13px;
+  opacity:.85;
+}
+
+.edit-modal-body{
+  padding:24px;
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:16px;
+}
+
+.edit-field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.edit-field label{
+  font-size:12px;
+  font-weight:600;
+  color:#475569;
+  text-transform:capitalize;
+}
+
+.edit-field input{
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid #e5e7eb;
+  font-weight:500;
+}
+
+.edit-modal-footer{
+  padding:16px 24px;
+  display:flex;
+  justify-content:flex-end;
+  gap:12px;
+  border-top:1px solid #e5e7eb;
+}
+
       `}</style>
     </div>
   );
