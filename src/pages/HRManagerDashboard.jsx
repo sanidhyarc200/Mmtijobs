@@ -53,6 +53,19 @@ export default function HRManagerDashboard() {
     data: null,
     index: null,
   });
+  const [viewCompany, setViewCompany] = useState({
+    open: false,
+    company: null,
+    companyJobs: [],
+    companyApplicantsMap: {},
+  });
+  
+  const [viewStudent, setViewStudent] = useState({
+    open: false,
+    student: null,
+    applications: [],
+  });
+  
 
   /* =========================================================
      AUTH + STATIC DATA INJECTION (ADMIN PARITY)
@@ -144,6 +157,77 @@ export default function HRManagerDashboard() {
     writeJSON("jobs", list);
   };
 
+
+  function openCompanyView(company) {
+    const jobsList = getJobs();
+    const apps = getApplications();
+    const users = students;
+  
+    const email = company?.email || "";
+    const name = company?.companyName || company?.name || "";
+  
+    const companyJobs = jobsList.filter(
+      (j) =>
+        j.companyEmail === email ||
+        j.company === name
+    );
+  
+    const map = {};
+    for (const job of companyJobs) {
+      const jobApps = apps.filter((a) => a.jobId === job.id);
+      map[job.id] = jobApps.map((a) => ({
+        application: a,
+        user: users.find(
+          (u) => u.id === a.userId || u.userId === a.userId
+        ),
+      }));
+    }
+  
+    setViewCompany({
+      open: true,
+      company,
+      companyJobs,
+      companyApplicantsMap: map,
+    });
+  }
+  
+  function closeCompanyView() {
+    setViewCompany({
+      open: false,
+      company: null,
+      companyJobs: [],
+      companyApplicantsMap: {},
+    });
+  }
+
+  function openStudentView(student) {
+    const apps = getApplications();
+    const jobsList = getJobs();
+  
+    const studentApps = apps
+      .filter(
+        (a) => a.userId === student.id || a.userId === student.userId
+      )
+      .map((a) => ({
+        application: a,
+        job: jobsList.find((j) => j.id === a.jobId),
+      }));
+  
+    setViewStudent({
+      open: true,
+      student,
+      applications: studentApps,
+    });
+  }
+  
+  function closeStudentView() {
+    setViewStudent({
+      open: false,
+      student: null,
+      applications: [],
+    });
+  }
+  
   /* =========================================================
      DERIVED MODAL DATA
   ========================================================= */
@@ -164,7 +248,7 @@ export default function HRManagerDashboard() {
       <div className="hr-content">
         {/* SIDEBAR (ADMIN STYLE) */}
         <aside className="hr-sidebar">
-          <div className="sidebar-title">HR</div>
+          <div className="sidebar-title">HR Manager</div>
           <button className={section==="jobs"?"active":""} onClick={()=>setSection("jobs")}>Jobs</button>
           <button className={section==="companies"?"active":""} onClick={()=>setSection("companies")}>Recruiters</button>
           <button className={section==="students"?"active":""} onClick={()=>setSection("students")}>Applicants</button>
@@ -174,7 +258,6 @@ export default function HRManagerDashboard() {
         <main className="hr-main">
         <div className="hr-dashboard-header">
           <h1>HR Operations Dashboard</h1>
-          <p>Admin visibility · HR authority</p>
         </div>
 
           {/* STATS */}
@@ -223,6 +306,7 @@ export default function HRManagerDashboard() {
               </table>
             </div>
           )}
+          
 
           {/* COMPANIES */}
           {section==="companies" && (
@@ -245,7 +329,14 @@ export default function HRManagerDashboard() {
             <td>{c.companyName}</td>
             <td>{c.email}</td>
             <td>{c.contact}</td>
+           
             <td>
+            <button
+            className="btn ghost"
+            onClick={() => openCompanyView(c)}
+          >
+            👁️ View
+          </button>
               <button
                 className="btn ghost"
                 onClick={() =>
@@ -289,7 +380,15 @@ export default function HRManagerDashboard() {
                     <td>{s.email}</td>
                     <td>{s.degree}</td>
                     <td>{s.experience}</td>
+                  
+
                     <td>
+                    <button
+                    className="btn ghost"
+                    onClick={() => openStudentView(s)}
+                  >
+                    👁️ View
+                  </button>
                       <button
                         className="btn ghost"
                         onClick={() =>
@@ -382,38 +481,160 @@ export default function HRManagerDashboard() {
         </main>
       </div>
 
-      {/* ================= JOB VIEW MODAL (PREMIUM) ================= */}
-      {viewJob && (
-        <div className="modal-bg" onClick={()=>setViewJob(null)}>
-          <div className="job-modal" onClick={e=>e.stopPropagation()}>
-            <div className="job-modal-header">
-              <h2>{viewJob.title}</h2>
-              <p>{viewJob.company} • {viewJob.location}</p>
-            </div>
+{/* ================= JOB VIEW MODAL (PREMIUM) ================= */}
+{viewJob && (
+  <div className="modal-bg" onClick={() => setViewJob(null)}>
+    <div className="job-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="job-modal-header">
+        <h2>{viewJob.title}</h2>
+        <p>{viewJob.company} • {viewJob.location}</p>
+      </div>
 
-            <div className="job-modal-body">
-              <div className="job-meta">
-                <div><strong>Experience</strong><span>{viewJob.experienceRange}</span></div>
-                <div><strong>Salary</strong><span>{viewJob.salary}</span></div>
-                <div><strong>Status</strong><span className={`pill ${viewJob.status}`}>{viewJob.status}</span></div>
-              </div>
-
-              <h3>Applicants ({jobApplicants.length})</h3>
-              {jobApplicants.length===0 && <p className="muted">No applicants yet.</p>}
-
-              {jobApplicants.map((a,i)=>(
-                <div key={i} className="applicant-card">
-                  <div className="name">{a.user?.firstName} {a.user?.lastName}</div>
-                  <div className="email">{a.user?.email}</div>
-                  <div className="meta">{a.user?.degree} · {a.user?.experience}</div>
-                </div>
-              ))}
-            </div>
-
-            <button className="close-btn" onClick={()=>setViewJob(null)}>✕</button>
+      <div className="job-modal-body">
+        <div className="job-meta">
+          <div>
+            <strong>Experience</strong>
+            <span>{viewJob.experienceRange}</span>
+          </div>
+          <div>
+            <strong>Salary</strong>
+            <span>{viewJob.salary}</span>
+          </div>
+          <div>
+            <strong>Status</strong>
+            <span className={`pill ${viewJob.status}`}>{viewJob.status}</span>
           </div>
         </div>
-      )}
+
+        <h3>Applicants ({jobApplicants.length})</h3>
+        {jobApplicants.length === 0 && (
+          <p className="muted">No applicants yet.</p>
+        )}
+
+        {jobApplicants.map((a, i) => (
+          <div key={i} className="applicant-card">
+            <div className="name">
+              {a.user?.firstName} {a.user?.lastName}
+            </div>
+            <div className="email">{a.user?.email}</div>
+            <div className="meta">
+              {a.user?.degree} · {a.user?.experience}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <button className="close-btn" onClick={() => setViewJob(null)}>
+        ✕
+      </button>
+    </div>
+  </div>
+)}
+
+{/* ================= COMPANY VIEW MODAL ================= */}
+{viewCompany.open && (
+  <div className="modal-bg" onClick={closeCompanyView}>
+    <div
+      className="company-view-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="company-view-header">
+        <h2>{viewCompany.company?.companyName}</h2>
+        <p>HR read-only company dashboard</p>
+      </div>
+
+      <div className="company-view-body">
+        <div className="company-card">
+          <h3>Company Profile</h3>
+          <p><strong>Email:</strong> {viewCompany.company?.email}</p>
+          <p><strong>Contact:</strong> {viewCompany.company?.contact}</p>
+        </div>
+
+        <div className="company-card">
+          <h3>Stats</h3>
+          <div className="stats-grid">
+            <div>
+              <span>Jobs</span>
+              <strong>{viewCompany.companyJobs.length}</strong>
+            </div>
+            <div>
+              <span>Applicants</span>
+              <strong>
+                {Object.values(viewCompany.companyApplicantsMap).flat().length}
+              </strong>
+            </div>
+          </div>
+        </div>
+
+        <div className="company-card">
+          <h3>Job Posts</h3>
+
+          {viewCompany.companyJobs.length === 0 && (
+            <p className="muted">No jobs posted.</p>
+          )}
+
+          {viewCompany.companyJobs.map((job) => (
+            <div key={job.id} className="job-block">
+              <h4>{job.title}</h4>
+              <p>{job.location} • {job.experienceRange}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <button className="close-btn" onClick={closeCompanyView}>
+        ✕
+      </button>
+    </div>
+  </div>
+)}
+
+{/* ================= STUDENT VIEW MODAL ================= */}
+{viewStudent.open && (
+  <div className="modal-bg" onClick={closeStudentView}>
+    <div
+      className="company-view-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="company-view-header">
+        <h2>
+          {viewStudent.student?.firstName}{" "}
+          {viewStudent.student?.lastName}
+        </h2>
+        <p>Applicant profile · HR view</p>
+      </div>
+
+      <div className="company-view-body">
+        <div className="company-card">
+          <h3>Profile</h3>
+          <p><strong>Email:</strong> {viewStudent.student?.email}</p>
+          <p><strong>Degree:</strong> {viewStudent.student?.degree}</p>
+          <p><strong>Experience:</strong> {viewStudent.student?.experience}</p>
+        </div>
+
+        <div className="company-card">
+          <h3>Applications</h3>
+
+          {viewStudent.applications.length === 0 && (
+            <p className="muted">No applications yet.</p>
+          )}
+
+          {viewStudent.applications.map(({ job }, i) => (
+            <div key={i} className="job-block">
+              <strong>{job?.title}</strong>
+              <p>{job?.company} • {job?.location}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <button className="close-btn" onClick={closeStudentView}>
+        ✕
+      </button>
+    </div>
+  </div>
+)}
+
 
       {/* ================= FULL CSS ================= */}
       <style>{`
@@ -625,6 +846,51 @@ export default function HRManagerDashboard() {
   gap:12px;
   border-top:1px solid #e5e7eb;
 }
+  .company-view-modal{
+  background:#fff;
+  width:900px;
+  max-height:90vh;
+  border-radius:16px;
+  overflow:hidden;
+  position:relative;
+}
+
+.company-view-header{
+  background:linear-gradient(135deg,#0a66c2,#0047a8);
+  color:#fff;
+  padding:40px;
+  text-align:center;
+}
+
+.company-view-body{
+  padding:24px;
+  background:#f3f6fb;
+  overflow-y:auto;
+}
+
+.company-card{
+  background:#fff;
+  padding:20px;
+  border-radius:14px;
+  margin-bottom:16px;
+  box-shadow:0 6px 20px rgba(0,0,0,.06);
+}
+
+.stats-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  text-align:center;
+}
+
+.job-block{
+  background:#f9fbff;
+  border:1px solid #e5e9ff;
+  padding:14px;
+  border-radius:12px;
+  margin-bottom:10px;
+}
+
 
       `}</style>
     </div>
