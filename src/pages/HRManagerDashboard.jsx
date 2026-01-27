@@ -756,6 +756,281 @@ export default function HRManagerDashboard() {
 .table th{font-size:12px;color:#64748b;text-transform:uppercase;padding:12px;border-bottom:1px solid #e5e7eb}
 .table td{padding:12px;border-bottom:1px solid #f1f5f9}
 
+/* ===================== TABLE UI IMPROVEMENTS ===================== */
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #ffffff;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* Header */
+.table thead th {
+  text-align: left;
+  padding: 14px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #475569;
+  background: linear-gradient(180deg, #f8fafc, #f1f5f9);
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+/* Body cells */
+.table tbody td {
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #0f172a;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* Last row cleanup */
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Row hover */
+.table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.table tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* Actions column fix */
+.table td.actions,
+.table th.actions {
+  text-align: right;
+  padding-right: 20px;
+}
+
+/* Action buttons alignment */
+.table td.actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Pills inside tables */
+.table .pill {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+/* Column visual rhythm */
+.table td,
+.table th {
+  box-sizing: border-box;
+}
+
+/* Improve readability on narrow screens */
+@media (max-width: 900px) {
+  .table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .table thead th,
+  .table tbody td {
+    padding: 12px 14px;
+  }
+}
+/* ===================== TABLE POLISH ===================== */
+
+/* Slight row separation for breathing room */
+.table tbody tr {
+  background: #ffffff;
+}
+
+.table tbody tr:not(:last-child) td {
+  border-bottom: 1px solid #eef2f7;
+}
+
+/* Zebra – VERY subtle (enterprise style) */
+.table tbody tr:nth-child(even) {
+  background: #fbfdff;
+}
+
+/* Hover = soft highlight, not aggressive */
+.table tbody tr:hover {
+  background: #f1f5ff;
+}
+
+/* ===================== ACTIONS COLUMN ===================== */
+
+.table th.actions {
+  text-align: right;
+  padding-right: 22px;
+}
+
+.table td.actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px; /* improved spacing */
+}
+
+/* ===================== BUTTON REFINEMENT ===================== */
+
+.table .btn {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 10px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+/* Ghost buttons (View / Edit) */
+.table .btn.ghost {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #dbeafe;
+}
+
+.table .btn.ghost:hover {
+  background: #dbeafe;
+  color: #1e40af;
+  transform: translateY(-1px);
+}
+
+/* Primary buttons (Approve / Activate) */
+.table .btn:not(.ghost):not(.warn) {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #ffffff;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+}
+
+.table .btn:not(.ghost):not(.warn):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.45);
+}
+
+/* Warning buttons (Deactivate) */
+.table .btn.warn {
+  background: #fff1f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.table .btn.warn:hover {
+  background: #fee2e2;
+  transform: translateY(-1px);
+}
+
+/* ===================== TABLE HEADER POLISH ===================== */
+
+.table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+/* ===================== EMPTY STATE (OPTIONAL BUT NICE) ===================== */
+
+.table tbody tr.empty-row td {
+  text-align: center;
+  padding: 26px;
+  font-size: 14px;
+  color: #64748b;
+  background: #f8fafc;
+}
+
+/* ===================== MOBILE FRIENDLY ===================== */
+
+@media (max-width: 900px) {
+  .table td.actions {
+    gap: 6px;
+  }
+
+  .table .btn {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+}
+
+/* ===================== HARD ALIGNMENT FIX ===================== */
+
+/* Force identical box model for th & td */
+.table th,
+.table td {
+  padding-left: 18px !important;
+  padding-right: 18px !important;
+  box-sizing: border-box;
+  vertical-align: middle;
+}
+
+/* Text alignment consistency */
+.table th {
+  text-align: left;
+}
+
+.table td {
+  text-align: left;
+}
+
+/* Fix flex content (buttons / pills) shifting left */
+.table td > *,
+.table td span,
+.table td div {
+  margin-left: 0;
+}
+
+/* Actions column: isolate alignment */
+.table th.actions,
+.table td.actions {
+  text-align: right !important;
+}
+
+/* Prevent flex from breaking column alignment */
+.table td.actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding-left: 18px !important;
+}
+
+/* Pills alignment normalization */
+.table td .pill {
+  position: relative;
+  top: 1px; /* visual centering */
+}
+
+/* Prevent invisible whitespace from fonts */
+.table th,
+.table td {
+  line-height: 1.4;
+}
+
+/* Kill browser default table quirks */
+.table {
+  table-layout: fixed;
+}
+
+/* Optional: consistent column rhythm */
+.table th:nth-child(1),
+.table td:nth-child(1) { padding-left: 20px !important; }
+
+.table th:last-child,
+.table td:last-child { padding-right: 20px !important; }
+
 .actions{display:flex;gap:8px}
 .btn{padding:6px 12px;border-radius:8px;border:none;font-weight:600;cursor:pointer;background:#0a66c2;color:#fff}
 .btn.warn{background:#fee2e2;color:#991b1b}
