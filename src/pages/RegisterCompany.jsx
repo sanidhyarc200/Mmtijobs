@@ -6,50 +6,61 @@ export default function RegisterCompany() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // form state
+  // =========================
+  // FORM STATE
+  // =========================
   const [companyName, setCompanyName] = useState("");
   const [companyEmail, setCompanyEmail] = useState("");
   const [contact, setContact] = useState("");
   const [password, setPassword] = useState("");
   const [profilePic, setProfilePic] = useState(null);
 
-  // flow state
+  // =========================
+  // FLOW STATE
+  // =========================
   const [errors, setErrors] = useState({});
   const [showSuccess, setShowSuccess] = useState(false);
   const [showInlineLogin, setShowInlineLogin] = useState(false);
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [loginError, setLoginError] = useState("");
 
-  // current user + whether they own the saved company
+  // current user + ownership
   const [currentUser, setCurrentUser] = useState(null);
   const [registered, setRegistered] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
 
+  // =========================
+  // PROFILE PIC
+  // =========================
   const handlePicUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => setProfilePic(reader.result);
     reader.readAsDataURL(file);
-     };
-    
+  };
 
-  // read current user first
+  // =========================
+  // LOAD CURRENT USER
+  // =========================
   useEffect(() => {
     setCurrentUser(JSON.parse(localStorage.getItem("currentUser")));
   }, []);
 
-  // when user changes, decide if we should show "registered" state
+  // =========================
+  // PREFILL + OWNERSHIP LOGIC
+  // =========================
   useEffect(() => {
     const savedCompany = JSON.parse(localStorage.getItem("registeredCompany"));
-
-    // If query param asks for a fresh flow (e.g., from landing/header),
-    // ignore any saved company and show a blank form.
     const params = new URLSearchParams(location.search);
-    const forceFresh = params.get("fresh") === "1" || params.get("from") === "postjob" || params.get("from") === "signup" || params.get("from") === "landing";
+
+    const forceFresh =
+      params.get("fresh") === "1" ||
+      params.get("from") === "postjob" ||
+      params.get("from") === "signup" ||
+      params.get("from") === "landing";
 
     if (!savedCompany || forceFresh || !currentUser) {
-      // Fresh form — no prefill, no registered state
       setCompanyName("");
       setCompanyEmail("");
       setContact("");
@@ -58,7 +69,6 @@ export default function RegisterCompany() {
       return;
     }
 
-    // We have a logged-in user + saved company: only show registered UI if THIS user owns it
     const owns =
       currentUser?.userType === "recruiter" &&
       currentUser?.email?.toLowerCase() === savedCompany.email?.toLowerCase();
@@ -70,75 +80,52 @@ export default function RegisterCompany() {
     setIsOwner(owns);
   }, [currentUser, location.search]);
 
-  // --- Validation (strong rules) ---
+  // =========================
+  // VALIDATION
+  // =========================
   const validate = () => {
     const e = {};
     const name = companyName.trim();
     const email = companyEmail.trim();
     const phone = contact.trim();
 
-    // --- Company Name ---
-    if (!name) {
-      e.companyName = "Company Name is required";
-    } else {
-      if (name.length < 3) {
-        e.companyName = "Company Name must be at least 3 characters";
-      } else if (/^\d+$/.test(name)) {
-        e.companyName = "Company Name cannot be only numbers";
-      } else if (/^[a-z]$/i.test(name)) {
-        e.companyName = "Company Name cannot be a single letter";
-      }
-    }
+    if (!name) e.companyName = "Company Name is required";
+    else if (name.length < 3) e.companyName = "At least 3 characters required";
+    else if (/^\d+$/.test(name)) e.companyName = "Cannot be only numbers";
 
-    // --- Company Email ---
-    if (!email) {
-      e.companyEmail = "Company Email is required";
-    } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email)) {
+    if (!email) e.companyEmail = "Company Email is required";
+    else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email))
       e.companyEmail = "Invalid email address";
-    }
 
-    // --- Contact Number ---
-    if (!phone) {
-      e.contact = "Contact number is required";
-    } else if (!/^\d{10}$/.test(phone)) {
-      e.contact = "Contact number must be 10 digits";
-    } else {
-      // prevent duplicate contact across companies
-      const existing = JSON.parse(localStorage.getItem("users")) || [];
-      const duplicate = existing.find(
-        (u) =>
-          u.userType === "recruiter" &&
-          u.contact === phone &&
-          u.email.toLowerCase() !== email.toLowerCase()
-      );
-      if (duplicate) {
-        e.contact = "This contact number is already registered with another company";
-      }
-    }
+    if (!phone) e.contact = "Contact number is required";
+    else if (!/^\d{10}$/.test(phone))
+      e.contact = "Must be exactly 10 digits";
 
-    // --- Password (Strong rules) ---
-    if (!password.trim()) {
-      e.password = "Password is required";
-    } else if (password.length < 8) {
-      e.password = "Password must be at least 8 characters";
-    } else if (!/[A-Z]/.test(password)) {
-      e.password = "Password must contain at least one uppercase letter";
-    } else if (!/[a-z]/.test(password)) {
-      e.password = "Password must contain at least one lowercase letter";
-    } else if (!/[0-9]/.test(password)) {
-      e.password = "Password must contain at least one number";
-    } else if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      e.password = "Password must contain at least one special character";
-    }
+    if (!password.trim()) e.password = "Password is required";
+    else if (password.length < 8)
+      e.password = "Minimum 8 characters required";
+    else if (!/[A-Z]/.test(password))
+      e.password = "Include at least one uppercase letter";
+    else if (!/[a-z]/.test(password))
+      e.password = "Include at least one lowercase letter";
+    else if (!/[0-9]/.test(password))
+      e.password = "Include at least one number";
+    else if (!/[!@#$%^&*(),.?":{}|<>]/.test(password))
+      e.password = "Include at least one special character";
 
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
-
+  // =========================
+  // USER UPSERT
+  // =========================
   const upsertRecruiterUser = (companyData) => {
     const users = JSON.parse(localStorage.getItem("users")) || [];
-    const idx = users.findIndex(u => u.email?.toLowerCase() === companyData.email.toLowerCase());
+    const idx = users.findIndex(
+      (u) => u.email?.toLowerCase() === companyData.email.toLowerCase()
+    );
+
     const recruiterUser = {
       id: idx >= 0 ? users[idx].id : Date.now(),
       userType: "recruiter",
@@ -149,22 +136,29 @@ export default function RegisterCompany() {
       contact: companyData.contact,
       createdAt: new Date().toISOString(),
     };
-    if (idx >= 0) users[idx] = recruiterUser; else users.push(recruiterUser);
+
+    if (idx >= 0) users[idx] = recruiterUser;
+    else users.push(recruiterUser);
+
     localStorage.setItem("users", JSON.stringify(users));
     return recruiterUser;
   };
 
+  // =========================
+  // REGISTER
+  // =========================
   const registerCompany = () => {
     if (!validate()) return;
 
-  const users = JSON.parse(localStorage.getItem("users")) || [];
-  const emailLower = companyEmail.trim().toLowerCase();
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    const emailLower = companyEmail.trim().toLowerCase();
 
-  // 🚫 Prevent duplicate email across applicants & recruiters
-  if (users.some(u => u.email?.toLowerCase() === emailLower)) {
-    setErrors({ companyEmail: "This email is already registered with another account" });
-    return;
-  }
+    if (users.some((u) => u.email?.toLowerCase() === emailLower)) {
+      setErrors({
+        companyEmail: "This email is already registered",
+      });
+      return;
+    }
 
     const companyData = {
       name: companyName.trim(),
@@ -178,165 +172,465 @@ export default function RegisterCompany() {
     localStorage.setItem("registeredCompany", JSON.stringify(companyData));
     upsertRecruiterUser(companyData);
 
-    // lock success modal until a choice is made
     setShowSuccess(true);
     setShowInlineLogin(false);
     setLoginData({ email: companyData.email, password: "" });
     setLoginError("");
   };
 
+  // =========================
+  // INLINE LOGIN
+  // =========================
   const handleInlineLogin = (e) => {
     e.preventDefault();
     setLoginError("");
+
     const users = JSON.parse(localStorage.getItem("users")) || [];
     const user = users.find(
-      u =>
-        u.email?.toLowerCase() === loginData.email.trim().toLowerCase() &&
+      (u) =>
+        u.email?.toLowerCase() === loginData.email.toLowerCase() &&
         u.password === loginData.password
     );
+
     if (!user) {
-      setLoginError("Invalid email or password.");
+      setLoginError("Invalid email or password");
       return;
     }
+
     localStorage.setItem("currentUser", JSON.stringify(user));
-    try { window.dispatchEvent(new Event("authChanged")); } catch {}
+    window.dispatchEvent(new Event("authChanged"));
     navigate("/company-dashboard");
   };
-  
-  // --- UI (clean white/blue) ---
-  const BLUE = "#0a66c2", BG = "#f3f6fb";
-  const btnPrimary = { padding: "10px 16px", background: BLUE, color: "#fff", border: "none", borderRadius: 10, fontWeight: 800, cursor: "pointer" };
-  const btnOutline = { padding: "10px 16px", background: "#fff", color: BLUE, border: `1.5px solid ${BLUE}`, borderRadius: 10, fontWeight: 800, cursor: "pointer" };
-  const label = { display: "block", fontWeight: 700, marginBottom: 6, color: "#1f2937", fontSize: 13 };
-  const inp = (err) => ({ width: "100%", padding: 12, borderRadius: 10, border: err ? "1.5px solid #e11d48" : "1px solid #e6eef5", outline: "none", fontSize: 14 });
 
+  // =========================
+  // STYLES
+  // =========================
+  const BLUE = "#0a66c2";
+  const BG = "#f3f6fb";
+
+  const label = {
+    display: "block",
+    fontWeight: 700,
+    marginBottom: 6,
+    fontSize: 13,
+    color: "#1f2937",
+  };
+
+  const inp = (err) => ({
+    width: "100%",
+    padding: "14px 12px",
+    borderRadius: 12,
+    border: err ? "1.5px solid #f43f5e" : "1px solid #e6eef5",
+    background: err ? "#fff5f7" : "#fff",
+    fontSize: 14,
+    outline: "none",
+transition: "border .2s ease, box-shadow .2s ease",
+boxShadow: err ? "0 0 0 3px rgba(244,63,94,.15)" : "none",
+
+  });
+
+  const btnPrimary = {
+    padding: "14px 22px",
+    background: "linear-gradient(135deg, #0a66c2, #004182)",
+    color: "#fff",
+    border: "none",
+    borderRadius: 12,
+    fontWeight: 900,
+    cursor: "pointer",
+    boxShadow: "0 10px 25px rgba(10,102,194,0.35)",
+  };
+
+  const btnOutline = {
+    padding: "12px 20px",
+    background: "#fff",
+    color: BLUE,
+    border: `1.5px solid ${BLUE}`,
+    borderRadius: 12,
+    fontWeight: 900,
+    cursor: "pointer",
+  };
+
+  // =========================
+  // UI
+  // =========================
   return (
-    <div style={{ fontFamily: "'Inter','Arial',sans-serif", background: `linear-gradient(180deg, #f7faff 0%, ${BG} 100%)`, minHeight: "100dvh", padding: "48px 16px" }}>
-      <div style={{ maxWidth: 880, margin: "0 auto 18px", textAlign: "center" }}>
-        <div style={{ display: "inline-block", padding: "6px 10px", borderRadius: 999, background: "rgba(10,102,194,0.1)", color: BLUE, fontWeight: 700, fontSize: 12, marginBottom: 8 }}>Recruiter</div>
-        <h1 style={{ margin: 0, color: BLUE, fontSize: 28, fontWeight: 800 }}>Register Your Company</h1>
-        <p style={{ margin: "8px 0 0", color: "#6b7280", fontSize: 14 }}>Create your recruiter account to start posting jobs.</p>
-      </div>
-
-      <div style={{ maxWidth: 880, margin: "18px auto 0", background: "#fff", borderRadius: 16, boxShadow: "0 16px 40px rgba(10,102,194,0.08)", border: "1px solid #e6eef9", padding: 18 }}>
-        {/* Profile Picture Upload */}
-<div style={{ textAlign: "center", marginBottom: 20 }}>
-  <div style={{ position: "relative", display: "inline-block" }}>
-    <img
-      src={profilePic || "https://via.placeholder.com/120x120.png?text=Upload+Logo"}
-      alt="profile"
+    <div
       style={{
-        width: 120,
-        height: 120,
-        borderRadius: "50%",
-        objectFit: "cover",
-        border: "3px solid #e5e7eb",
-      }}
-    />
-    <label
-      htmlFor="file"
-      style={{
-        position: "absolute",
-        bottom: 0,
-        right: 0,
-        background: "#0a66c2",
-        color: "#fff",
-        borderRadius: "50%",
-        width: 32,
-        height: 32,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        cursor: "pointer",
-        fontWeight: 700,
+        fontFamily: "'Inter','Arial',sans-serif",
+        background: `linear-gradient(180deg, #f7faff 0%, ${BG} 100%)`,
+        minHeight: "100dvh",
+        padding: "48px 16px",
       }}
     >
-      +
-    </label>
-    <input
-      id="file"
-      type="file"
-      accept="image/*"
-      style={{ display: "none" }}
-      onChange={handlePicUpload}
-    />
-  </div>
-</div>
+      <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
+        <div
+          style={{
+            display: "inline-block",
+            padding: "6px 12px",
+            borderRadius: 999,
+            background: "rgba(10,102,194,0.1)",
+            color: BLUE,
+            fontWeight: 700,
+            fontSize: 12,
+            marginBottom: 8,
+          }}
+        >
+          Recruiter Registration
+        </div>
+        <h1 style={{ color: BLUE, fontSize: 30, fontWeight: 900 }}>
+          Register Your Company
+        </h1>
+        <p style={{ color: "#6b7280", fontSize: 14 }}>
+          Create a recruiter account and start hiring smarter.
+        </p>
+      </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      {/* CARD */}
+      <div
+        style={{
+          maxWidth: 900,
+          margin: "24px auto",
+          background: "#fff",
+          borderRadius: 18,
+          padding: 28,
+          border: "1px solid #e6eef9",
+          boxShadow: "0 20px 45px rgba(10,102,194,0.1)",
+          animation: "cardIn .35s ease",
+        }}
+      >
+        {/* PROFILE PIC UPLOAD */}
+      <div style={{ textAlign: "center", marginBottom: 32 }}>
+        <div
+          style={{
+            position: "relative",
+            width: 120,
+            height: 120,
+            minWidth: 120,
+            minHeight: 120,
+            margin: "0 auto",
+            borderRadius: "50%",
+            overflow: "hidden",
+            flexShrink: 0,
+            transition: "transform .2s ease",
+            boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+          }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.transform = "scale(1.04)")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.transform = "none")
+          }
+        >
+          <img
+            src={
+              profilePic ||
+              "https://via.placeholder.com/120x120.png?text=Logo"
+            }
+            alt="logo"
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              borderRadius: "50%",
+              display: "block",
+            }}
+          />
+
+          {/* UPLOAD ICON */}
+          <label
+            htmlFor="file"
+            style={{
+              position: "absolute",
+              bottom: 6,
+              right: 6,
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              background: BLUE,
+              color: "#fff",
+              display: "grid",
+              placeItems: "center",
+              cursor: "pointer",
+              fontWeight: 900,
+              boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
+            }}
+          >
+            +
+          </label>
+
+          <input
+            id="file"
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={handlePicUpload}
+          />
+        </div>
+
+        <p style={{ fontSize: 12, color: "#6b7280", marginTop: 8 }}>
+          Upload company logo (optional)
+        </p>
+      </div>
+
+        {/* FORM */}
+        <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: 16,
+            }}
+          >
+
           <div>
             <label style={label}>Company Name</label>
-            <input value={companyName} onChange={e=>setCompanyName(e.target.value)} style={inp(errors.companyName)} placeholder="Acme Labs Pvt. Ltd." disabled={registered && isOwner} />
-            {errors.companyName && <div style={{ color: "#e11d48", fontSize: 12, marginTop: 6 }}>{errors.companyName}</div>}
+            <input
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              style={inp(errors.companyName)}
+              disabled={registered && isOwner}
+            />
+            {errors.companyName && (
+              <small style={{ color: "#e11d48" }}>
+                {errors.companyName}
+              </small>
+            )}
           </div>
+
           <div>
             <label style={label}>Company Email</label>
-            <input type="email" value={companyEmail} onChange={e=>setCompanyEmail(e.target.value)} style={inp(errors.companyEmail)} placeholder="hr@acme.com" disabled={registered && isOwner} />
-            {errors.companyEmail && <div style={{ color: "#e11d48", fontSize: 12, marginTop: 6 }}>{errors.companyEmail}</div>}
+            <input
+              value={companyEmail}
+              onChange={(e) => setCompanyEmail(e.target.value)}
+              style={inp(errors.companyEmail)}
+              disabled={registered && isOwner}
+            />
+            {errors.companyEmail && (
+              <small style={{ color: "#e11d48" }}>
+                {errors.companyEmail}
+              </small>
+            )}
           </div>
+
           <div>
             <label style={label}>Contact Number</label>
-            <input value={contact} onChange={e=>setContact(e.target.value)} style={inp(errors.contact)} placeholder="9876543210" disabled={registered && isOwner} />
-            {errors.contact && <div style={{ color: "#e11d48", fontSize: 12, marginTop: 6 }}>{errors.contact}</div>}
+            <input
+              value={contact}
+              onChange={(e) => setContact(e.target.value)}
+              style={inp(errors.contact)}
+              disabled={registered && isOwner}
+            />
+            {errors.contact && (
+              <small style={{ color: "#e11d48" }}>{errors.contact}</small>
+            )}
           </div>
+
           <div>
             <label style={label}>Password</label>
-            <input type="password" value={password} onChange={e=>setPassword(e.target.value)} style={inp(errors.password)} placeholder="Create a strong password" disabled={registered && isOwner} />
-            {errors.password && <div style={{ color: "#e11d48", fontSize: 12, marginTop: 6 }}>{errors.password}</div>}
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={inp(errors.password)}
+              disabled={registered && isOwner}
+            />
+            {errors.password && (
+              <small style={{ color: "#e11d48" }}>
+                {errors.password}
+              </small>
+            )}
           </div>
         </div>
 
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 12 }}>
-          {/* show Register when not the owner (either logged out or different user) */}
+        {/* ACTIONS */}
+        <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 12,
+              marginTop: 24,
+              flexWrap: "wrap", 
+              maxHeight: "90dvh",
+              overflowY: "auto",       // 👈 mobile safe
+            }}
+          >
+
           {!isOwner ? (
-            <button onClick={registerCompany} style={btnPrimary}>Register</button>
+            <button
+            onClick={registerCompany}
+            style={btnPrimary}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.transform = "translateY(-2px)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.transform = "none")
+            }
+          >
+          
+              Register Company
+            </button>
           ) : (
             <>
-              <button onClick={() => navigate("/post-job")} style={btnOutline}>Post a Job</button>
-              <button onClick={() => navigate("/company-dashboard")} style={btnPrimary}>Go to Profile</button>
+              <button
+                onClick={() => navigate("/post-job")}
+                style={btnOutline}
+              >
+                Post a Job
+              </button>
+              <button
+                onClick={() => navigate("/company-dashboard")}
+                style={btnPrimary}
+              >
+                Go to Profile
+              </button>
             </>
           )}
         </div>
       </div>
 
-      {/* Success Modal (locked until a choice is made) */}
+      {/* SUCCESS MODAL */}
       {showSuccess && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(2,10,25,0.45)", backdropFilter: "blur(4px)", display: "flex", justifyContent: "center", alignItems: "center", padding: 16, zIndex: 1000 }}>
-          <div style={{ width: "100%", maxWidth: 520, background: "#fff", borderRadius: 18, border: "1px solid #e6eef9", boxShadow: "0 24px 60px rgba(10,102,194,0.18)", overflow: "hidden" }}>
-            <div style={{ padding: "22px 20px 10px", textAlign: "center", background: "linear-gradient(180deg, rgba(10,102,194,0.06), rgba(10,102,194,0.02))" }}>
-              <div style={{ position: "relative", width: 64, height: 64, margin: "6px auto 8px" }}>
-                <div style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "conic-gradient(from 90deg, rgba(10,102,194,0.25), rgba(10,102,194,0.55))", filter: "blur(1px)" }} />
-                <div style={{ position: "relative", width: 64, height: 64, borderRadius: "50%", background: BLUE, color: "#fff", display: "grid", placeItems: "center", fontSize: 28, fontWeight: 900, boxShadow: "0 10px 24px rgba(10,102,194,0.35)" }}>✓</div>
-              </div>
-              <h3 style={{ margin: "6px 0 0", color: "#0b1f36", fontWeight: 900 }}>Registration successful</h3>
-              <p style={{ margin: "6px 0 10px", color: "#6b7280", fontSize: 14 }}>Nice! Choose how you want to continue.</p>
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(2,10,25,0.45)",
+            display: "grid",
+            placeItems: "center",
+            zIndex: 999,
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: 520,
+              background: "#fff",
+              borderRadius: 18,
+              padding: 24,
+              textAlign: "center",
+              animation: "modalPop .25s ease",
+              maxHeight: "90dvh",
+              overflowY: "auto",
+            }}>
+            <div
+              style={{
+                width: 64,
+                height: 64,
+                margin: "0 auto 12px",
+                borderRadius: "50%",
+                background: BLUE,
+                color: "#fff",
+                display: "grid",
+                placeItems: "center",
+                fontSize: 32,
+                fontWeight: 900,
+              }}
+            >
+              ✓
+            </div>
+            <h3 style={{ fontWeight: 900 }}>
+              Registration Successful
+            </h3>
+            <p style={{ color: "#6b7280", fontSize: 14 }}>
+              Your company is live. What would you like to do next?
+            </p>
+
+            <div style={{ display: "grid", gap: 10, marginTop: 16 }}>
+              <button
+                onClick={() => navigate("/company-dashboard")}
+                style={btnPrimary}
+              >
+                Go to Profile
+              </button>
+              <button
+                onClick={() => navigate("/post-job")}
+                style={btnOutline}
+              >
+                Post a Job
+              </button>
+              <button
+                onClick={() => setShowInlineLogin(true)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: BLUE,
+                  fontWeight: 800,
+                  cursor: "pointer",
+                }}
+              >
+                Login instead
+              </button>
             </div>
 
-            {!showInlineLogin ? (
-              <div style={{ padding: 16, display: "grid", gap: 10 }}>
-                <button onClick={() => navigate("/company-dashboard")} style={{ padding: "12px 16px", background: BLUE, color: "#fff", border: "none", borderRadius: 12, fontWeight: 900, cursor: "pointer" }}>Go to Profile</button>
-                <button onClick={() => navigate("/post-job")} style={{ padding: "12px 16px", background: "#ffffff", color: BLUE, border: `1.5px solid ${BLUE}`, borderRadius: 12, fontWeight: 900, cursor: "pointer" }}>Post a Job</button>
-                <button onClick={() => setShowInlineLogin(true)} style={{ padding: "12px 16px", background: "transparent", color: "#004182", border: "none", borderRadius: 12, fontWeight: 900, cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 3 }}>Login</button>
-              </div>
-            ) : (
-              <form onSubmit={handleInlineLogin} style={{ padding: 16 }}>
-                <div style={{ marginBottom: 10 }}>
-                  <label style={label}>Email</label>
-                  <input type="email" value={loginData.email} onChange={e=>setLoginData({ ...loginData, email: e.target.value })} required placeholder="you@company.com" style={inp()} />
-                </div>
-                <div style={{ marginBottom: 10 }}>
-                  <label style={label}>Password</label>
-                  <input type="password" value={loginData.password} onChange={e=>setLoginData({ ...loginData, password: e.target.value })} required placeholder="••••••••" style={inp()} />
-                </div>
-                {loginError && <div style={{ background: "#fef2f2", color: "#991b1b", border: "1px solid #fee2e2", borderRadius: 10, padding: "10px 12px", fontSize: 14, marginBottom: 10 }}>{loginError}</div>}
-                <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                  <button type="submit" style={btnPrimary}>Login</button>
-                </div>
+            {showInlineLogin && (
+              <form onSubmit={handleInlineLogin} style={{ marginTop: 16 }}>
+                <input
+                  value={loginData.email}
+                  onChange={(e) =>
+                    setLoginData({ ...loginData, email: e.target.value })
+                  }
+                  placeholder="Email"
+                  style={{ ...inp(), marginBottom: 10 }}
+                />
+                <input
+                  type="password"
+                  autoFocus
+                  value={loginData.password}
+                  onChange={(e) =>
+                    setLoginData({ ...loginData, password: e.target.value })
+                  }
+                  placeholder="Password"
+                  style={inp()}
+                />
+                {loginError && (
+                  <p style={{ color: "#e11d48", marginTop: 8 }}>
+                    {loginError}
+                  </p>
+                )}
+                <button
+                  type="submit"
+                  style={{ ...btnPrimary, marginTop: 12 }}
+                >
+                  Login
+                </button>
               </form>
             )}
           </div>
         </div>
       )}
+      <style>
+{`
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes modalPop {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+`}
+</style>
+
     </div>
   );
 }
+

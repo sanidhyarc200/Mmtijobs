@@ -1320,6 +1320,50 @@ export default function Header({ onPostJobClick }) {
   color: var(--brand-dark);
 }
 
+/* ================= MOBILE FULL-WIDTH HEADER FIX ================= */
+
+@media (max-width: 768px) {
+
+  /* Kill max-width & percentage padding on mobile */
+  .header {
+    width: 100vw;
+    left: 0;
+    right: 0;
+  }
+
+  .nav-layout {
+    width: 100%;
+    max-width: none !important;
+    padding: 8px 12px !important;   /* fixed padding, not % */
+    grid-template-columns: auto 1fr auto; /* left | spacer | right */
+  }
+
+  /* Ensure no phantom centering */
+  .nav-center {
+    display: none !important;
+  }
+
+  .nav-left,
+  .nav-right {
+    min-width: 0;
+  }
+
+  /* Logo never pushes layout */
+  .logo {
+    max-width: 100%;
+  }
+
+  .logo-img {
+    height: 52px;
+    max-width: 100%;
+  }
+
+  /* Prevent body overflow tricks */
+  body {
+    overflow-x: hidden;
+  }
+}
+
 
 `}</style>
 
