@@ -262,7 +262,11 @@ boxShadow: err ? "0 0 0 3px rgba(244,63,94,.15)" : "none",
         padding: "48px 16px",
       }}
     >
-      <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}>
+      <div
+  className="register-header"
+  style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}
+>
+
         <div
           style={{
             display: "inline-block",
@@ -299,7 +303,16 @@ boxShadow: err ? "0 0 0 3px rgba(244,63,94,.15)" : "none",
         }}
       >
         {/* PROFILE PIC UPLOAD */}
-      <div style={{ textAlign: "center", marginBottom: 32 }}>
+        <div
+  style={{
+    textAlign: "center",
+    marginBottom: 32,
+    background: "linear-gradient(180deg, #f7faff, #eef4ff)",
+    border: "1px solid #dbe5f5",
+    borderRadius: 16,
+    padding: "24px 16px",
+  }}
+>
         <div
           style={{
             position: "relative",
@@ -310,6 +323,7 @@ boxShadow: err ? "0 0 0 3px rgba(244,63,94,.15)" : "none",
             margin: "0 auto",
             borderRadius: "50%",
             overflow: "hidden",
+            background: "#ffffff",
             flexShrink: 0,
             transition: "transform .2s ease",
             boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
@@ -372,15 +386,38 @@ boxShadow: err ? "0 0 0 3px rgba(244,63,94,.15)" : "none",
         </p>
       </div>
 
-        {/* FORM */}
-        <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-              gap: 16,
-            }}
-          >
+      <div
+  style={{
+    maxWidth: 720,
+    margin: "0 auto 20px",
+    textAlign: "left",
+  }}
+>
+  <h3
+    style={{
+      margin: 0,
+      fontSize: 18,
+      fontWeight: 800,
+      color: "#0b1f36",
+    }}
+  >
+    Company Details
+  </h3>
+  <p style={{ margin: "4px 0 0", fontSize: 13, color: "#6b7280" }}>
+    These details will be visible to job seekers.
+  </p>
+</div>
 
+        {/* FORM */}
+<div
+  style={{
+    maxWidth: 720,              // 👈 DESKTOP CONTROL
+    margin: "0 auto",           // 👈 CENTER FORM
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+    gap: 16,
+  }}
+>
           <div>
             <label style={label}>Company Name</label>
             <input
@@ -390,7 +427,8 @@ boxShadow: err ? "0 0 0 3px rgba(244,63,94,.15)" : "none",
               disabled={registered && isOwner}
             />
             {errors.companyName && (
-              <small style={{ color: "#e11d48" }}>
+              <small style={{ color: "#e11d48", marginTop: 6, display: "block" }}>
+
                 {errors.companyName}
               </small>
             )}
@@ -405,7 +443,8 @@ boxShadow: err ? "0 0 0 3px rgba(244,63,94,.15)" : "none",
               disabled={registered && isOwner}
             />
             {errors.companyEmail && (
-              <small style={{ color: "#e11d48" }}>
+             <small style={{ color: "#e11d48", marginTop: 6, display: "block" }}>
+
                 {errors.companyEmail}
               </small>
             )}
@@ -420,7 +459,8 @@ boxShadow: err ? "0 0 0 3px rgba(244,63,94,.15)" : "none",
               disabled={registered && isOwner}
             />
             {errors.contact && (
-              <small style={{ color: "#e11d48" }}>{errors.contact}</small>
+             <small style={{ color: "#e11d48", marginTop: 6, display: "block" }}>
+{errors.contact}</small>
             )}
           </div>
 
@@ -434,7 +474,8 @@ boxShadow: err ? "0 0 0 3px rgba(244,63,94,.15)" : "none",
               disabled={registered && isOwner}
             />
             {errors.password && (
-              <small style={{ color: "#e11d48" }}>
+             <small style={{ color: "#e11d48", marginTop: 6, display: "block" }}>
+
                 {errors.password}
               </small>
             )}
@@ -510,7 +551,12 @@ boxShadow: err ? "0 0 0 3px rgba(244,63,94,.15)" : "none",
               animation: "modalPop .25s ease",
               maxHeight: "90dvh",
               overflowY: "auto",
-            }}>
+              border: "1.5px solid #dbe5f5",
+              boxShadow: "0 24px 60px rgba(10,102,194,0.18)",
+              border: "1.5px solid #cfd9ea",
+            }}
+            
+            >
             <div
               style={{
                 width: 64,
@@ -627,6 +673,219 @@ boxShadow: err ? "0 0 0 3px rgba(244,63,94,.15)" : "none",
     transition: none !important;
   }
 }
+/* =====================================================
+   PRODUCTION FORM UI – DESKTOP + MOBILE
+   ===================================================== */
+
+/* ---------- GLOBAL TONE ---------- */
+body {
+  background-color: #f2f6fc;
+}
+
+/* ---------- CARD DEPTH ---------- */
+div[style*="box-shadow: 0 20px 45px"] {
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #f5f9ff 100%
+  );
+  border: 1px solid #dbe5f5 !important;
+}
+
+/* ---------- FORM SURFACE ---------- */
+div[style*="grid-template-columns"] {
+  background: linear-gradient(
+    180deg,
+    #f9fbff,
+    #f1f6ff
+  );
+  padding: 22px;
+  border-radius: 16px;
+  border: 1px solid #d7e2f2;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+}
+
+/* Slightly tighter on mobile */
+@media (max-width: 767px) {
+  div[style*="grid-template-columns"] {
+    padding: 16px;
+    border-radius: 14px;
+  }
+}
+
+/* ---------- INPUT FIELDS ---------- */
+input {
+  border: 1.6px solid #bfcfe6 !important;
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #f7faff 100%
+  );
+  font-weight: 500;
+  transition: border .2s ease, box-shadow .2s ease;
+}
+
+/* Hover (desktop only) */
+@media (hover: hover) {
+  input:hover {
+    border-color: #9fb6dd !important;
+  }
+}
+
+/* Focus (both desktop + mobile) */
+input:focus {
+  border-color: #0a66c2 !important;
+  box-shadow: 0 0 0 4px rgba(10,102,194,0.2) !important;
+  background: #ffffff !important;
+}
+
+/* Disabled inputs */
+input:disabled {
+  background: linear-gradient(
+    180deg,
+    #eef3fa,
+    #e8eef8
+  ) !important;
+  color: #6b7280 !important;
+}
+
+/* ---------- LABELS ---------- */
+label {
+  color: #0b1f36 !important;
+  font-size: 13.5px;
+  letter-spacing: 0.25px;
+}
+
+/* Slightly larger labels on mobile for readability */
+@media (max-width: 767px) {
+  label {
+    font-size: 14px;
+  }
+}
+
+/* ---------- ERROR TEXT ---------- */
+small {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+/* ---------- PROFILE IMAGE AREA ---------- */
+div[style*="border-radius: \"50%\""] {
+  background: radial-gradient(
+    circle at top,
+    #ffffff,
+    #edf3ff
+  );
+}
+
+/* ---------- BUTTONS ---------- */
+button {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Desktop hover lift */
+@media (hover: hover) {
+  button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 34px rgba(10,102,194,0.35);
+  }
+}
+
+/* Touch-friendly buttons on mobile */
+@media (max-width: 767px) {
+  button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Primary CTA */
+button[style*="linear-gradient(135deg, #0a66c2"] {
+  background: linear-gradient(
+    135deg,
+    #0a66c2,
+    #004182
+  ) !important;
+}
+
+/* Outline button */
+button[style*="background: #fff"] {
+  background: linear-gradient(
+    180deg,
+    #ffffff,
+    #f4f8ff
+  ) !important;
+  border-color: #a9bfe3 !important;
+}
+
+/* ---------- ACTION BAR ---------- */
+div[style*="justifyContent: \"flex-end\""] {
+  padding-top: 18px;
+  border-top: 1px solid #e1e9f6;
+}
+
+/* Stack actions cleanly on mobile */
+@media (max-width: 767px) {
+  div[style*="justifyContent: \"flex-end\""] {
+    justify-content: stretch;
+    gap: 10px;
+  }
+}
+
+/* ---------- MODAL ---------- */
+div[style*="modalPop"] {
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #f3f7ff 100%
+  );
+  border: 1px solid #dbe5f5;
+}
+
+/* ===============================
+   CLEAN HEADER UPGRADE (SAFE)
+   =============================== */
+
+.register-header {
+  background: linear-gradient(
+    180deg,
+    #f7faff,
+    #eef4ff
+  );
+  border: 1px solid #dbe5f5;
+  border-radius: 16px;
+  padding: 24px 20px;
+  margin-bottom: 28px;
+}
+
+/* Badge */
+.register-header > div {
+  background: rgba(10,102,194,0.12);
+  border: 1px solid rgba(10,102,194,0.25);
+  padding: 6px 14px;
+}
+
+/* Title */
+.register-header h1 {
+  margin-top: 12px;
+}
+
+/* Subtitle */
+.register-header p {
+  max-width: 520px;
+  margin: 8px auto 0;
+  color: #475569;
+  line-height: 1.6;
+}
+
+/* Mobile tightening */
+@media (max-width: 767px) {
+  .register-header {
+    padding: 18px 14px;
+    border-radius: 14px;
+  }
+}
+
 `}
 </style>
 
