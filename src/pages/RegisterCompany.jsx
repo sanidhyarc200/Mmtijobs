@@ -14,6 +14,18 @@ export default function RegisterCompany() {
   const [contact, setContact] = useState("");
   const [password, setPassword] = useState("");
   const [profilePic, setProfilePic] = useState(null);
+  
+  // NEW ADDRESS FIELDS
+  const [streetAddress, setStreetAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [pincode, setPincode] = useState("");
+  
+  // NEW COMPANY DETAILS
+  const [gstNumber, setGstNumber] = useState("");
+  const [industryType, setIndustryType] = useState("");
+  const [numberOfEmployees, setNumberOfEmployees] = useState("");
+  const [companyWebsite, setCompanyWebsite] = useState("");
 
   // =========================
   // FLOW STATE
@@ -64,6 +76,14 @@ export default function RegisterCompany() {
       setCompanyName("");
       setCompanyEmail("");
       setContact("");
+      setStreetAddress("");
+      setCity("");
+      setState("");
+      setPincode("");
+      setGstNumber("");
+      setIndustryType("");
+      setNumberOfEmployees("");
+      setCompanyWebsite("");
       setRegistered(false);
       setIsOwner(false);
       return;
@@ -76,6 +96,14 @@ export default function RegisterCompany() {
     setCompanyName(savedCompany.name || "");
     setCompanyEmail(savedCompany.email || "");
     setContact(savedCompany.contact || "");
+    setStreetAddress(savedCompany.streetAddress || "");
+    setCity(savedCompany.city || "");
+    setState(savedCompany.state || "");
+    setPincode(savedCompany.pincode || "");
+    setGstNumber(savedCompany.gstNumber || "");
+    setIndustryType(savedCompany.industryType || "");
+    setNumberOfEmployees(savedCompany.numberOfEmployees || "");
+    setCompanyWebsite(savedCompany.companyWebsite || "");
     setRegistered(owns);
     setIsOwner(owns);
   }, [currentUser, location.search]);
@@ -89,18 +117,22 @@ export default function RegisterCompany() {
     const email = companyEmail.trim();
     const phone = contact.trim();
 
+    // Company Name
     if (!name) e.companyName = "Company Name is required";
     else if (name.length < 3) e.companyName = "At least 3 characters required";
     else if (/^\d+$/.test(name)) e.companyName = "Cannot be only numbers";
 
+    // Company Email
     if (!email) e.companyEmail = "Company Email is required";
     else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email))
       e.companyEmail = "Invalid email address";
 
+    // Contact Number
     if (!phone) e.contact = "Contact number is required";
     else if (!/^\d{10}$/.test(phone))
       e.contact = "Must be exactly 10 digits";
 
+    // Password
     if (!password.trim()) e.password = "Password is required";
     else if (password.length < 8)
       e.password = "Minimum 8 characters required";
@@ -112,6 +144,35 @@ export default function RegisterCompany() {
       e.password = "Include at least one number";
     else if (!/[!@#$%^&*(),.?":{}|<>]/.test(password))
       e.password = "Include at least one special character";
+
+    // Street Address
+    if (!streetAddress.trim()) e.streetAddress = "Street Address is required";
+
+    // City
+    if (!city.trim()) e.city = "City is required";
+    else if (city.trim().length < 2) e.city = "City name too short";
+
+    // State
+    if (!state.trim()) e.state = "State is required";
+
+    // Pincode
+    if (!pincode.trim()) e.pincode = "Pincode is required";
+    else if (!/^\d{6}$/.test(pincode))
+      e.pincode = "Must be exactly 6 digits";
+
+    // GST Number (optional but validate format if provided)
+    if (gstNumber.trim() && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(gstNumber.trim()))
+      e.gstNumber = "Invalid GST format";
+
+    // Industry Type
+    if (!industryType) e.industryType = "Industry Type is required";
+
+    // Number of Employees
+    if (!numberOfEmployees) e.numberOfEmployees = "Company size is required";
+
+    // Company Website (optional but validate format if provided)
+    if (companyWebsite.trim() && !/^https?:\/\/.+\..+/.test(companyWebsite.trim()))
+      e.companyWebsite = "Invalid website URL (include http:// or https://)";
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -134,6 +195,14 @@ export default function RegisterCompany() {
       name: companyData.name,
       company: companyData.name,
       contact: companyData.contact,
+      streetAddress: companyData.streetAddress,
+      city: companyData.city,
+      state: companyData.state,
+      pincode: companyData.pincode,
+      gstNumber: companyData.gstNumber,
+      industryType: companyData.industryType,
+      numberOfEmployees: companyData.numberOfEmployees,
+      companyWebsite: companyData.companyWebsite,
       createdAt: new Date().toISOString(),
     };
 
@@ -166,6 +235,14 @@ export default function RegisterCompany() {
       contact: contact.trim(),
       password,
       profilePic,
+      streetAddress: streetAddress.trim(),
+      city: city.trim(),
+      state: state.trim(),
+      pincode: pincode.trim(),
+      gstNumber: gstNumber.trim(),
+      industryType,
+      numberOfEmployees,
+      companyWebsite: companyWebsite.trim(),
       createdAt: new Date().toISOString(),
     };
 
@@ -202,326 +279,332 @@ export default function RegisterCompany() {
     navigate("/company-dashboard");
   };
 
+  // Industry options
+  const industries = [
+    "Information Technology",
+    "Healthcare",
+    "Finance & Banking",
+    "Education",
+    "Manufacturing",
+    "Retail",
+    "Real Estate",
+    "Transportation",
+    "Hospitality",
+    "Media & Entertainment",
+    "Consulting",
+    "Other"
+  ];
+
+  // Company size options
+  const companySizes = [
+    "1-10 employees",
+    "11-50 employees",
+    "51-200 employees",
+    "201-500 employees",
+    "501-1000 employees",
+    "1000+ employees"
+  ];
+
   // =========================
-  // STYLES
+  // RENDER INPUT FIELD
   // =========================
-  const BLUE = "#0a66c2";
-  const BG = "#f3f6fb";
+  const InputField = ({ label, value, onChange, error, type = "text", placeholder, disabled, icon }) => (
+    <div className="input-group">
+      <label className="input-label">
+        {icon && <span className="input-icon">{icon}</span>}
+        {label}
+      </label>
+      <div className="input-wrapper">
+        <input
+          type={type}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          className={`input-field ${error ? 'input-error' : ''}`}
+          disabled={disabled}
+        />
+        {error && (
+          <div className="error-message">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <circle cx="7" cy="7" r="6" fill="currentColor" opacity="0.1"/>
+              <path d="M7 4v3M7 9.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+            {error}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 
-  const label = {
-    display: "block",
-    fontWeight: 700,
-    marginBottom: 6,
-    fontSize: 13,
-    color: "#1f2937",
-  };
-
-  const inp = (err) => ({
-    width: "100%",
-    padding: "14px 12px",
-    borderRadius: 12,
-    border: err ? "1.5px solid #f43f5e" : "1px solid #e6eef5",
-    background: err ? "#fff5f7" : "#fff",
-    fontSize: 14,
-    outline: "none",
-transition: "border .2s ease, box-shadow .2s ease",
-boxShadow: err ? "0 0 0 3px rgba(244,63,94,.15)" : "none",
-
-  });
-
-  const btnPrimary = {
-    padding: "14px 22px",
-    background: "linear-gradient(135deg, #0a66c2, #004182)",
-    color: "#fff",
-    border: "none",
-    borderRadius: 12,
-    fontWeight: 900,
-    cursor: "pointer",
-    boxShadow: "0 10px 25px rgba(10,102,194,0.35)",
-  };
-
-  const btnOutline = {
-    padding: "12px 20px",
-    background: "#fff",
-    color: BLUE,
-    border: `1.5px solid ${BLUE}`,
-    borderRadius: 12,
-    fontWeight: 900,
-    cursor: "pointer",
-  };
+  const SelectField = ({ label, value, onChange, error, options, placeholder, disabled, icon }) => (
+    <div className="input-group">
+      <label className="input-label">
+        {icon && <span className="input-icon">{icon}</span>}
+        {label}
+      </label>
+      <div className="input-wrapper">
+        <select
+          value={value}
+          onChange={onChange}
+          className={`input-field ${error ? 'input-error' : ''}`}
+          disabled={disabled}
+        >
+          <option value="">{placeholder}</option>
+          {options.map((opt) => (
+            <option key={opt} value={opt}>{opt}</option>
+          ))}
+        </select>
+        {error && (
+          <div className="error-message">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <circle cx="7" cy="7" r="6" fill="currentColor" opacity="0.1"/>
+              <path d="M7 4v3M7 9.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+            {error}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 
   // =========================
   // UI
   // =========================
   return (
-    <div
-      style={{
-        fontFamily: "'Inter','Arial',sans-serif",
-        background: `linear-gradient(180deg, #f7faff 0%, ${BG} 100%)`,
-        minHeight: "100dvh",
-        padding: "48px 16px",
-      }}
-    >
-      <div
-  className="register-header"
-  style={{ maxWidth: 900, margin: "0 auto", textAlign: "center" }}
->
-
-        <div
-          style={{
-            display: "inline-block",
-            padding: "6px 12px",
-            borderRadius: 999,
-            background: "rgba(10,102,194,0.1)",
-            color: BLUE,
-            fontWeight: 700,
-            fontSize: 12,
-            marginBottom: 8,
-          }}
-        >
-          Recruiter Registration
-        </div>
-        <h1 style={{ color: BLUE, fontSize: 30, fontWeight: 900 }}>
-          Register Your Company
-        </h1>
-        <p style={{ color: "#6b7280", fontSize: 14 }}>
-          Create a recruiter account and start hiring smarter.
+    <div className="register-container">
+      {/* HEADER */}
+      <div className="register-header">
+        <div className="header-badge">Employer Registration</div>
+        <h1 className="header-title">Create Your Company Profile</h1>
+        <p className="header-subtitle">
+          Join our platform and connect with top talent. Complete the form below to get started.
         </p>
       </div>
 
-      {/* CARD */}
-      <div
-        style={{
-          maxWidth: 900,
-          margin: "24px auto",
-          background: "#fff",
-          borderRadius: 18,
-          padding: 28,
-          border: "1px solid #e6eef9",
-          boxShadow: "0 20px 45px rgba(10,102,194,0.1)",
-          animation: "cardIn .35s ease",
-        }}
-      >
-        {/* PROFILE PIC UPLOAD */}
-        <div
-  style={{
-    textAlign: "center",
-    marginBottom: 32,
-    background: "linear-gradient(180deg, #f7faff, #eef4ff)",
-    border: "1px solid #dbe5f5",
-    borderRadius: 16,
-    padding: "24px 16px",
-  }}
->
-        <div
-          style={{
-            position: "relative",
-            width: 120,
-            height: 120,
-            minWidth: 120,
-            minHeight: 120,
-            margin: "0 auto",
-            borderRadius: "50%",
-            overflow: "hidden",
-            background: "#ffffff",
-            flexShrink: 0,
-            transition: "transform .2s ease",
-            boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
-          }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.transform = "scale(1.04)")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.transform = "none")
-          }
-        >
-          <img
-            src={
-              profilePic ||
-              "https://via.placeholder.com/120x120.png?text=Logo"
-            }
-            alt="logo"
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              borderRadius: "50%",
-              display: "block",
-            }}
-          />
-
-          {/* UPLOAD ICON */}
-          <label
-            htmlFor="file"
-            style={{
-              position: "absolute",
-              bottom: 6,
-              right: 6,
-              width: 32,
-              height: 32,
-              borderRadius: "50%",
-              background: BLUE,
-              color: "#fff",
-              display: "grid",
-              placeItems: "center",
-              cursor: "pointer",
-              fontWeight: 900,
-              boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
-            }}
-          >
-            +
-          </label>
-
-          <input
-            id="file"
-            type="file"
-            accept="image/*"
-            style={{ display: "none" }}
-            onChange={handlePicUpload}
-          />
+      {/* MAIN CARD */}
+      <div className="register-card">
+        {/* PROFILE UPLOAD */}
+        <div className="profile-section">
+          <div className="profile-upload-wrapper">
+            <div className="profile-preview">
+              <img
+                src={profilePic || "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=300&h=300&fit=crop"}
+                alt="Company Logo"
+                className="profile-image"
+              />
+              <label htmlFor="file-upload" className="upload-overlay">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                </svg>
+                <span>Upload Logo</span>
+              </label>
+              <input
+                id="file-upload"
+                type="file"
+                accept="image/*"
+                onChange={handlePicUpload}
+                style={{ display: 'none' }}
+              />
+            </div>
+            <p className="profile-hint">PNG, JPG up to 5MB</p>
+          </div>
         </div>
 
-        <p style={{ fontSize: 12, color: "#6b7280", marginTop: 8 }}>
-          Upload company logo (optional)
-        </p>
-      </div>
+        {/* FORM SECTIONS */}
+        <div className="form-content">
+          {/* BASIC DETAILS */}
+          <div className="form-section">
+            <div className="section-header">
+              <div className="section-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                  <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+              </div>
+              <div>
+                <h2 className="section-title">Company Information</h2>
+                <p className="section-description">Basic details about your organization</p>
+              </div>
+            </div>
 
-      <div
-  style={{
-    maxWidth: 720,
-    margin: "0 auto 20px",
-    textAlign: "left",
-  }}
->
-  <h3
-    style={{
-      margin: 0,
-      fontSize: 18,
-      fontWeight: 800,
-      color: "#0b1f36",
-    }}
-  >
-    Company Details
-  </h3>
-  <p style={{ margin: "4px 0 0", fontSize: 13, color: "#6b7280" }}>
-    These details will be visible to job seekers.
-  </p>
-</div>
-
-        {/* FORM */}
-<div
-  style={{
-    maxWidth: 720,              // 👈 DESKTOP CONTROL
-    margin: "0 auto",           // 👈 CENTER FORM
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-    gap: 16,
-  }}
->
-          <div>
-            <label style={label}>Company Name</label>
-            <input
-              value={companyName}
-              onChange={(e) => setCompanyName(e.target.value)}
-              style={inp(errors.companyName)}
-              disabled={registered && isOwner}
-            />
-            {errors.companyName && (
-              <small style={{ color: "#e11d48", marginTop: 6, display: "block" }}>
-
-                {errors.companyName}
-              </small>
-            )}
+            <div className="form-grid">
+              <InputField
+                label="Company Name"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                error={errors.companyName}
+                placeholder="Acme Corporation"
+                disabled={registered && isOwner}
+                icon="🏢"
+              />
+              <InputField
+                label="Company Email"
+                value={companyEmail}
+                onChange={(e) => setCompanyEmail(e.target.value)}
+                error={errors.companyEmail}
+                type="email"
+                placeholder="hello@acme.com"
+                disabled={registered && isOwner}
+                icon="📧"
+              />
+              <InputField
+                label="Contact Number"
+                value={contact}
+                onChange={(e) => setContact(e.target.value)}
+                error={errors.contact}
+                type="tel"
+                placeholder="9876543210"
+                disabled={registered && isOwner}
+                icon="📱"
+              />
+              <InputField
+                label="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                error={errors.password}
+                type="password"
+                placeholder="••••••••"
+                disabled={registered && isOwner}
+                icon="🔒"
+              />
+            </div>
           </div>
 
-          <div>
-            <label style={label}>Company Email</label>
-            <input
-              value={companyEmail}
-              onChange={(e) => setCompanyEmail(e.target.value)}
-              style={inp(errors.companyEmail)}
-              disabled={registered && isOwner}
-            />
-            {errors.companyEmail && (
-             <small style={{ color: "#e11d48", marginTop: 6, display: "block" }}>
+          {/* ADDRESS */}
+          <div className="form-section">
+            <div className="section-header">
+              <div className="section-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+              </div>
+              <div>
+                <h2 className="section-title">Business Address</h2>
+                <p className="section-description">Your company's primary location</p>
+              </div>
+            </div>
 
-                {errors.companyEmail}
-              </small>
-            )}
+            <div className="form-grid">
+              <div style={{ gridColumn: '1 / -1' }}>
+                <InputField
+                  label="Street Address"
+                  value={streetAddress}
+                  onChange={(e) => setStreetAddress(e.target.value)}
+                  error={errors.streetAddress}
+                  placeholder="123 Business Street, Building A"
+                  disabled={registered && isOwner}
+                  icon="🏛️"
+                />
+              </div>
+              <InputField
+                label="City"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                error={errors.city}
+                placeholder="Mumbai"
+                disabled={registered && isOwner}
+                icon="🌆"
+              />
+              <InputField
+                label="State / Province"
+                value={state}
+                onChange={(e) => setState(e.target.value)}
+                error={errors.state}
+                placeholder="Maharashtra"
+                disabled={registered && isOwner}
+                icon="🗺️"
+              />
+              <InputField
+                label="Postal Code"
+                value={pincode}
+                onChange={(e) => setPincode(e.target.value)}
+                error={errors.pincode}
+                placeholder="400001"
+                disabled={registered && isOwner}
+                icon="📮"
+              />
+            </div>
           </div>
 
-          <div>
-            <label style={label}>Contact Number</label>
-            <input
-              value={contact}
-              onChange={(e) => setContact(e.target.value)}
-              style={inp(errors.contact)}
-              disabled={registered && isOwner}
-            />
-            {errors.contact && (
-             <small style={{ color: "#e11d48", marginTop: 6, display: "block" }}>
-{errors.contact}</small>
-            )}
-          </div>
+          {/* COMPANY DETAILS */}
+          <div className="form-section">
+            <div className="section-header">
+              <div className="section-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                </svg>
+              </div>
+              <div>
+                <h2 className="section-title">Organization Details</h2>
+                <p className="section-description">Additional information about your company</p>
+              </div>
+            </div>
 
-          <div>
-            <label style={label}>Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={inp(errors.password)}
-              disabled={registered && isOwner}
-            />
-            {errors.password && (
-             <small style={{ color: "#e11d48", marginTop: 6, display: "block" }}>
-
-                {errors.password}
-              </small>
-            )}
+            <div className="form-grid">
+              <InputField
+                label="GST Number (Optional)"
+                value={gstNumber}
+                onChange={(e) => setGstNumber(e.target.value)}
+                error={errors.gstNumber}
+                placeholder="27AABCU9603R1ZX"
+                disabled={registered && isOwner}
+                icon="📋"
+              />
+              <SelectField
+                label="Industry Type"
+                value={industryType}
+                onChange={(e) => setIndustryType(e.target.value)}
+                error={errors.industryType}
+                options={industries}
+                placeholder="Select your industry"
+                disabled={registered && isOwner}
+                icon="🏭"
+              />
+              <SelectField
+                label="Company Size"
+                value={numberOfEmployees}
+                onChange={(e) => setNumberOfEmployees(e.target.value)}
+                error={errors.numberOfEmployees}
+                options={companySizes}
+                placeholder="Number of employees"
+                disabled={registered && isOwner}
+                icon="👥"
+              />
+              <InputField
+                label="Website (Optional)"
+                value={companyWebsite}
+                onChange={(e) => setCompanyWebsite(e.target.value)}
+                error={errors.companyWebsite}
+                type="url"
+                placeholder="https://acme.com"
+                disabled={registered && isOwner}
+                icon="🌐"
+              />
+            </div>
           </div>
         </div>
 
         {/* ACTIONS */}
-        <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: 12,
-              marginTop: 24,
-              flexWrap: "wrap", 
-              maxHeight: "90dvh",
-              overflowY: "auto",       // 👈 mobile safe
-            }}
-          >
-
+        <div className="form-actions">
           {!isOwner ? (
-            <button
-            onClick={registerCompany}
-            style={btnPrimary}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.transform = "translateY(-2px)")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.transform = "none")
-            }
-          >
-          
-              Register Company
+            <button onClick={registerCompany} className="btn-primary">
+              <span>Complete Registration</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
             </button>
           ) : (
             <>
-              <button
-                onClick={() => navigate("/post-job")}
-                style={btnOutline}
-              >
+              <button onClick={() => navigate("/post-job")} className="btn-secondary">
                 Post a Job
               </button>
-              <button
-                onClick={() => navigate("/company-dashboard")}
-                style={btnPrimary}
-              >
-                Go to Profile
+              <button onClick={() => navigate("/company-dashboard")} className="btn-primary">
+                <span>Go to Dashboard</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
               </button>
             </>
           )}
@@ -530,366 +613,712 @@ boxShadow: err ? "0 0 0 3px rgba(244,63,94,.15)" : "none",
 
       {/* SUCCESS MODAL */}
       {showSuccess && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(2,10,25,0.45)",
-            display: "grid",
-            placeItems: "center",
-            zIndex: 999,
-          }}
-        >
-          <div
-            style={{
-              width: "100%",
-              maxWidth: 520,
-              background: "#fff",
-              borderRadius: 18,
-              padding: 24,
-              textAlign: "center",
-              animation: "modalPop .25s ease",
-              maxHeight: "90dvh",
-              overflowY: "auto",
-              border: "1.5px solid #dbe5f5",
-              boxShadow: "0 24px 60px rgba(10,102,194,0.18)",
-              border: "1.5px solid #cfd9ea",
-            }}
-            
-            >
-            <div
-              style={{
-                width: 64,
-                height: 64,
-                margin: "0 auto 12px",
-                borderRadius: "50%",
-                background: BLUE,
-                color: "#fff",
-                display: "grid",
-                placeItems: "center",
-                fontSize: 32,
-                fontWeight: 900,
-              }}
-            >
-              ✓
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="success-icon">
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                <circle cx="24" cy="24" r="22" stroke="currentColor" strokeWidth="3"/>
+                <path d="M14 24l8 8 16-16" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </div>
-            <h3 style={{ fontWeight: 900 }}>
-              Registration Successful
-            </h3>
-            <p style={{ color: "#6b7280", fontSize: 14 }}>
-              Your company is live. What would you like to do next?
+            <h3 className="modal-title">Welcome Aboard! 🎉</h3>
+            <p className="modal-description">
+              Your company profile has been created successfully. Start posting jobs and connecting with talented candidates.
             </p>
 
-            <div style={{ display: "grid", gap: 10, marginTop: 16 }}>
-              <button
-                onClick={() => navigate("/company-dashboard")}
-                style={btnPrimary}
-              >
-                Go to Profile
+            <div className="modal-actions">
+              <button onClick={() => navigate("/company-dashboard")} className="btn-primary">
+                <span>Go to Dashboard</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
               </button>
-              <button
-                onClick={() => navigate("/post-job")}
-                style={btnOutline}
-              >
-                Post a Job
+              <button onClick={() => navigate("/post-job")} className="btn-secondary">
+                Post Your First Job
               </button>
               <button
                 onClick={() => setShowInlineLogin(true)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: BLUE,
-                  fontWeight: 800,
-                  cursor: "pointer",
-                }}
+                className="btn-text"
               >
-                Login instead
+                Login to existing account
               </button>
             </div>
 
             {showInlineLogin && (
-              <form onSubmit={handleInlineLogin} style={{ marginTop: 16 }}>
-                <input
+              <form onSubmit={handleInlineLogin} className="inline-login">
+                <div className="login-divider">
+                  <span>Login Instead</span>
+                </div>
+                <InputField
+                  label="Email"
                   value={loginData.email}
-                  onChange={(e) =>
-                    setLoginData({ ...loginData, email: e.target.value })
-                  }
-                  placeholder="Email"
-                  style={{ ...inp(), marginBottom: 10 }}
+                  onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                  type="email"
+                  placeholder="your@email.com"
                 />
-                <input
-                  type="password"
-                  autoFocus
+                <InputField
+                  label="Password"
                   value={loginData.password}
-                  onChange={(e) =>
-                    setLoginData({ ...loginData, password: e.target.value })
-                  }
-                  placeholder="Password"
-                  style={inp()}
+                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                  type="password"
+                  placeholder="••••••••"
                 />
                 {loginError && (
-                  <p style={{ color: "#e11d48", marginTop: 8 }}>
+                  <div className="error-message" style={{ marginTop: 8 }}>
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <circle cx="7" cy="7" r="6" fill="currentColor" opacity="0.1"/>
+                      <path d="M7 4v3M7 9.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
                     {loginError}
-                  </p>
+                  </div>
                 )}
-                <button
-                  type="submit"
-                  style={{ ...btnPrimary, marginTop: 12 }}
-                >
-                  Login
+                <button type="submit" className="btn-primary" style={{ marginTop: 16 }}>
+                  <span>Login</span>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="9 18 15 12 9 6"/>
+                  </svg>
                 </button>
               </form>
             )}
           </div>
         </div>
       )}
-      <style>
-{`
-@keyframes cardIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
 
-@keyframes modalPop {
-  from {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
+      {/* STYLES */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation: none !important;
-    transition: none !important;
-  }
-}
-/* =====================================================
-   PRODUCTION FORM UI – DESKTOP + MOBILE
-   ===================================================== */
+        :root {
+          --primary: #2563eb;
+          --primary-dark: #1e40af;
+          --primary-light: #3b82f6;
+          --success: #10b981;
+          --error: #ef4444;
+          --gray-50: #f9fafb;
+          --gray-100: #f3f4f6;
+          --gray-200: #e5e7eb;
+          --gray-300: #d1d5db;
+          --gray-400: #9ca3af;
+          --gray-500: #6b7280;
+          --gray-600: #4b5563;
+          --gray-700: #374151;
+          --gray-800: #1f2937;
+          --gray-900: #111827;
+          --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+          --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+          --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+          --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+          --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+          --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
 
-/* ---------- GLOBAL TONE ---------- */
-body {
-  background-color: #f2f6fc;
-}
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
 
-/* ---------- CARD DEPTH ---------- */
-div[style*="box-shadow: 0 20px 45px"] {
-  background: linear-gradient(
-    180deg,
-    #ffffff 0%,
-    #f5f9ff 100%
-  );
-  border: 1px solid #dbe5f5 !important;
-}
+        .register-container {
+          font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+          min-height: 100vh;
+          background: linear-gradient(135deg, #667eea 0%, #004182 100%);
+          padding: 40px 20px;
+          position: relative;
+        }
 
-/* ---------- FORM SURFACE ---------- */
-div[style*="grid-template-columns"] {
-  background: linear-gradient(
-    180deg,
-    #f9fbff,
-    #f1f6ff
-  );
-  padding: 22px;
-  border-radius: 16px;
-  border: 1px solid #d7e2f2;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
-}
+        .register-container::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background-image: 
+            radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
+          pointer-events: none;
+        }
 
-/* Slightly tighter on mobile */
-@media (max-width: 767px) {
-  div[style*="grid-template-columns"] {
-    padding: 16px;
-    border-radius: 14px;
-  }
-}
+        .register-header {
+          max-width: 900px;
+          margin: 0 auto 32px;
+          text-align: center;
+          position: relative;
+          z-index: 1;
+          animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
 
-/* ---------- INPUT FIELDS ---------- */
-input {
-  border: 1.6px solid #bfcfe6 !important;
-  background: linear-gradient(
-    180deg,
-    #ffffff 0%,
-    #f7faff 100%
-  );
-  font-weight: 500;
-  transition: border .2s ease, box-shadow .2s ease;
-}
+        .header-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 20px;
+          background: rgba(255, 255, 255, 0.2);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: 100px;
+          color: white;
+          font-size: 13px;
+          font-weight: 600;
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
+          margin-bottom: 20px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
 
-/* Hover (desktop only) */
-@media (hover: hover) {
-  input:hover {
-    border-color: #9fb6dd !important;
-  }
-}
+        .header-title {
+          font-size: clamp(32px, 5vw, 48px);
+          font-weight: 800;
+          color: white;
+          margin-bottom: 12px;
+          line-height: 1.2;
+          letter-spacing: -0.02em;
+        }
 
-/* Focus (both desktop + mobile) */
-input:focus {
-  border-color: #0a66c2 !important;
-  box-shadow: 0 0 0 4px rgba(10,102,194,0.2) !important;
-  background: #ffffff !important;
-}
+        .header-subtitle {
+          font-size: 16px;
+          color: rgba(255, 255, 255, 0.9);
+          max-width: 600px;
+          margin: 0 auto;
+          line-height: 1.6;
+        }
 
-/* Disabled inputs */
-input:disabled {
-  background: linear-gradient(
-    180deg,
-    #eef3fa,
-    #e8eef8
-  ) !important;
-  color: #6b7280 !important;
-}
+        .register-card {
+          max-width: 900px;
+          margin: 0 auto;
+          background: white;
+          border-radius: 24px;
+          box-shadow: var(--shadow-2xl);
+          overflow: hidden;
+          position: relative;
+          z-index: 1;
+          animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s backwards;
+        }
 
-/* ---------- LABELS ---------- */
-label {
-  color: #0b1f36 !important;
-  font-size: 13.5px;
-  letter-spacing: 0.25px;
-}
+        .profile-section {
+          padding: 48px 32px;
+          background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
+          border-bottom: 1px solid var(--gray-200);
+        }
 
-/* Slightly larger labels on mobile for readability */
-@media (max-width: 767px) {
-  label {
-    font-size: 14px;
-  }
-}
+        .profile-upload-wrapper {
+          max-width: 200px;
+          margin: 0 auto;
+          text-align: center;
+        }
 
-/* ---------- ERROR TEXT ---------- */
-small {
-  font-size: 12.5px;
-  font-weight: 600;
-}
+        .profile-preview {
+          width: 140px;
+          height: 140px;
+          margin: 0 auto 16px;
+          position: relative;
+          border-radius: 24px;
+          overflow: hidden;
+          box-shadow: var(--shadow-lg);
+          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
 
-/* ---------- PROFILE IMAGE AREA ---------- */
-div[style*="border-radius: \"50%\""] {
-  background: radial-gradient(
-    circle at top,
-    #ffffff,
-    #edf3ff
-  );
-}
+        .profile-preview:hover {
+          transform: translateY(-4px) scale(1.02);
+        }
 
-/* ---------- BUTTONS ---------- */
-button {
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
+        .profile-preview:hover .upload-overlay {
+          opacity: 1;
+        }
 
-/* Desktop hover lift */
-@media (hover: hover) {
-  button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 14px 34px rgba(10,102,194,0.35);
-  }
-}
+        .profile-image {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
 
-/* Touch-friendly buttons on mobile */
-@media (max-width: 767px) {
-  button {
-    width: 100%;
-    justify-content: center;
-  }
-}
+        .upload-overlay {
+          position: absolute;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.7);
+          backdrop-filter: blur(4px);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          color: white;
+          font-size: 13px;
+          font-weight: 600;
+          opacity: 0;
+          cursor: pointer;
+          transition: opacity 0.3s ease;
+        }
 
-/* Primary CTA */
-button[style*="linear-gradient(135deg, #0a66c2"] {
-  background: linear-gradient(
-    135deg,
-    #0a66c2,
-    #004182
-  ) !important;
-}
+        .upload-overlay svg {
+          width: 28px;
+          height: 28px;
+        }
 
-/* Outline button */
-button[style*="background: #fff"] {
-  background: linear-gradient(
-    180deg,
-    #ffffff,
-    #f4f8ff
-  ) !important;
-  border-color: #a9bfe3 !important;
-}
+        .profile-hint {
+          font-size: 13px;
+          color: var(--gray-500);
+          font-weight: 500;
+        }
 
-/* ---------- ACTION BAR ---------- */
-div[style*="justifyContent: \"flex-end\""] {
-  padding-top: 18px;
-  border-top: 1px solid #e1e9f6;
-}
+        .form-content {
+          padding: 40px 32px;
+        }
 
-/* Stack actions cleanly on mobile */
-@media (max-width: 767px) {
-  div[style*="justifyContent: \"flex-end\""] {
-    justify-content: stretch;
-    gap: 10px;
-  }
-}
+        .form-section {
+          margin-bottom: 48px;
+        }
 
-/* ---------- MODAL ---------- */
-div[style*="modalPop"] {
-  background: linear-gradient(
-    180deg,
-    #ffffff 0%,
-    #f3f7ff 100%
-  );
-  border: 1px solid #dbe5f5;
-}
+        .form-section:last-child {
+          margin-bottom: 0;
+        }
 
-/* ===============================
-   CLEAN HEADER UPGRADE (SAFE)
-   =============================== */
+        .section-header {
+          display: flex;
+          align-items: flex-start;
+          gap: 16px;
+          margin-bottom: 28px;
+          padding-bottom: 20px;
+          border-bottom: 2px solid var(--gray-100);
+        }
 
-.register-header {
-  background: linear-gradient(
-    180deg,
-    #f7faff,
-    #eef4ff
-  );
-  border: 1px solid #dbe5f5;
-  border-radius: 16px;
-  padding: 24px 20px;
-  margin-bottom: 28px;
-}
+        .section-icon {
+          width: 44px;
+          height: 44px;
+          border-radius: 12px;
+          background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
 
-/* Badge */
-.register-header > div {
-  background: rgba(10,102,194,0.12);
-  border: 1px solid rgba(10,102,194,0.25);
-  padding: 6px 14px;
-}
+        .section-title {
+          font-size: 20px;
+          font-weight: 700;
+          color: var(--gray-900);
+          margin-bottom: 4px;
+          letter-spacing: -0.01em;
+        }
 
-/* Title */
-.register-header h1 {
-  margin-top: 12px;
-}
+        .section-description {
+          font-size: 14px;
+          color: var(--gray-500);
+          font-weight: 500;
+        }
 
-/* Subtitle */
-.register-header p {
-  max-width: 520px;
-  margin: 8px auto 0;
-  color: #475569;
-  line-height: 1.6;
-}
+        .form-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 24px;
+        }
 
-/* Mobile tightening */
-@media (max-width: 767px) {
-  .register-header {
-    padding: 18px 14px;
-    border-radius: 14px;
-  }
-}
+        .input-group {
+          position: relative;
+        }
 
-`}
-</style>
+        .input-label {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 14px;
+          font-weight: 600;
+          color: var(--gray-700);
+          margin-bottom: 8px;
+          letter-spacing: -0.01em;
+        }
 
+        .input-icon {
+          font-size: 16px;
+        }
+
+        .input-wrapper {
+          position: relative;
+        }
+
+        .input-field {
+          width: 100%;
+          padding: 14px 16px;
+          font-size: 15px;
+          font-weight: 500;
+          color: var(--gray-900);
+          background: white;
+          border: 2px solid var(--gray-200);
+          border-radius: 12px;
+          outline: none;
+          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+          font-family: 'Manrope', sans-serif;
+        }
+
+        .input-field::placeholder {
+          color: var(--gray-400);
+          font-weight: 500;
+        }
+
+        .input-field:hover:not(:disabled) {
+          border-color: var(--gray-300);
+        }
+
+        .input-field:focus {
+          border-color: var(--primary);
+          box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .input-field:disabled {
+          background: var(--gray-50);
+          color: var(--gray-500);
+          cursor: not-allowed;
+        }
+
+        .input-field.input-error {
+          border-color: var(--error);
+          background: rgba(239, 68, 68, 0.02);
+        }
+
+        .input-field.input-error:focus {
+          box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+        }
+
+        select.input-field {
+          cursor: pointer;
+          appearance: none;
+          background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%234b5563' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 16px center;
+          padding-right: 44px;
+        }
+
+        .error-message {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-top: 8px;
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--error);
+        }
+
+        .error-message svg {
+          flex-shrink: 0;
+        }
+
+        .form-actions {
+          padding: 32px;
+          background: var(--gray-50);
+          border-top: 1px solid var(--gray-200);
+          display: flex;
+          justify-content: flex-end;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+
+        .btn-primary {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 14px 28px;
+          font-size: 15px;
+          font-weight: 700;
+          color: white;
+          background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+          border: none;
+          border-radius: 12px;
+          cursor: pointer;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+          font-family: 'Manrope', sans-serif;
+          letter-spacing: -0.01em;
+        }
+
+        .btn-primary:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-primary:active {
+          transform: translateY(0);
+        }
+
+        .btn-secondary {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 14px 28px;
+          font-size: 15px;
+          font-weight: 700;
+          color: var(--primary);
+          background: white;
+          border: 2px solid var(--primary);
+          border-radius: 12px;
+          cursor: pointer;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          font-family: 'Manrope', sans-serif;
+          letter-spacing: -0.01em;
+        }
+
+        .btn-secondary:hover {
+          background: var(--primary);
+          color: white;
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-text {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 10px 16px;
+          font-size: 14px;
+          font-weight: 600;
+          color: var(--primary);
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          transition: opacity 0.2s ease;
+          font-family: 'Manrope', sans-serif;
+        }
+
+        .btn-text:hover {
+          opacity: 0.7;
+        }
+
+        .modal-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.6);
+          backdrop-filter: blur(8px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          z-index: 1000;
+          animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+          width: 100%;
+          max-width: 500px;
+          background: white;
+          border-radius: 24px;
+          padding: 40px;
+          box-shadow: var(--shadow-2xl);
+          animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+          max-height: 90vh;
+          overflow-y: auto;
+        }
+
+        .success-icon {
+          width: 80px;
+          height: 80px;
+          margin: 0 auto 24px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+        }
+
+        .modal-title {
+          font-size: 28px;
+          font-weight: 800;
+          color: var(--gray-900);
+          text-align: center;
+          margin-bottom: 12px;
+          letter-spacing: -0.02em;
+        }
+
+        .modal-description {
+          font-size: 15px;
+          color: var(--gray-600);
+          text-align: center;
+          line-height: 1.6;
+          margin-bottom: 32px;
+          font-weight: 500;
+        }
+
+        .modal-actions {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .modal-actions .btn-primary,
+        .modal-actions .btn-secondary {
+          width: 100%;
+          justify-content: center;
+        }
+
+        .inline-login {
+          margin-top: 32px;
+          padding-top: 32px;
+          border-top: 2px solid var(--gray-100);
+        }
+
+        .login-divider {
+          text-align: center;
+          margin-bottom: 24px;
+          position: relative;
+        }
+
+        .login-divider span {
+          display: inline-block;
+          padding: 0 16px;
+          font-size: 14px;
+          font-weight: 700;
+          color: var(--gray-500);
+          background: white;
+          position: relative;
+          z-index: 1;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .login-divider::before {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background: var(--gray-200);
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes fadeInDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes modalSlideUp {
+          from {
+            opacity: 0;
+            transform: translateY(40px) scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+
+        @media (max-width: 768px) {
+          .register-container {
+            padding: 24px 16px;
+          }
+
+          .register-header {
+            margin-bottom: 24px;
+          }
+
+          .header-badge {
+            font-size: 11px;
+            padding: 6px 16px;
+          }
+
+          .header-title {
+            font-size: 28px;
+          }
+
+          .header-subtitle {
+            font-size: 14px;
+          }
+
+          .register-card {
+            border-radius: 20px;
+          }
+
+          .profile-section {
+            padding: 32px 24px;
+          }
+
+          .profile-preview {
+            width: 120px;
+            height: 120px;
+          }
+
+          .form-content {
+            padding: 32px 24px;
+          }
+
+          .form-section {
+            margin-bottom: 40px;
+          }
+
+          .section-header {
+            gap: 12px;
+            margin-bottom: 24px;
+          }
+
+          .section-icon {
+            width: 40px;
+            height: 40px;
+          }
+
+          .section-title {
+            font-size: 18px;
+          }
+
+          .form-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+          }
+
+          .form-actions {
+            padding: 24px;
+            flex-direction: column;
+          }
+
+          .form-actions .btn-primary,
+          .form-actions .btn-secondary {
+            width: 100%;
+            justify-content: center;
+          }
+
+          .modal-content {
+            padding: 32px 24px;
+          }
+
+          .modal-title {
+            font-size: 24px;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          *,
+          *::before,
+          *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
-
