@@ -2,6 +2,68 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
+// =========================
+// FIELD COMPONENTS (OUTSIDE TO PREVENT RE-CREATION)
+// =========================
+const InputField = ({ label, value, onChange, error, type = "text", placeholder, disabled, icon }) => (
+  <div className="input-group">
+    <label className="input-label">
+      {icon && <span className="input-icon">{icon}</span>}
+      {label}
+    </label>
+    <div className="input-wrapper">
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className={`input-field ${error ? 'input-error' : ''}`}
+        disabled={disabled}
+      />
+      {error && (
+        <div className="error-message">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <circle cx="7" cy="7" r="6" fill="currentColor" opacity="0.1"/>
+            <path d="M7 4v3M7 9.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+          {error}
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+const SelectField = ({ label, value, onChange, error, options, placeholder, disabled, icon }) => (
+  <div className="input-group">
+    <label className="input-label">
+      {icon && <span className="input-icon">{icon}</span>}
+      {label}
+    </label>
+    <div className="input-wrapper">
+      <select
+        value={value}
+        onChange={onChange}
+        className={`input-field ${error ? 'input-error' : ''}`}
+        disabled={disabled}
+      >
+        <option value="">{placeholder}</option>
+        {options.map((opt) => (
+          <option key={opt} value={opt}>{opt}</option>
+        ))}
+      </select>
+      {error && (
+        <div className="error-message">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <circle cx="7" cy="7" r="6" fill="currentColor" opacity="0.1"/>
+            <path d="M7 4v3M7 9.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+          {error}
+        </div>
+      )}
+    </div>
+  </div>
+);
+
 export default function RegisterCompany() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -304,68 +366,6 @@ export default function RegisterCompany() {
     "501-1000 employees",
     "1000+ employees"
   ];
-
-  // =========================
-  // RENDER INPUT FIELD
-  // =========================
-  const InputField = ({ label, value, onChange, error, type = "text", placeholder, disabled, icon }) => (
-    <div className="input-group">
-      <label className="input-label">
-        {icon && <span className="input-icon">{icon}</span>}
-        {label}
-      </label>
-      <div className="input-wrapper">
-        <input
-          type={type}
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          className={`input-field ${error ? 'input-error' : ''}`}
-          disabled={disabled}
-        />
-        {error && (
-          <div className="error-message">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <circle cx="7" cy="7" r="6" fill="currentColor" opacity="0.1"/>
-              <path d="M7 4v3M7 9.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-            {error}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-
-  const SelectField = ({ label, value, onChange, error, options, placeholder, disabled, icon }) => (
-    <div className="input-group">
-      <label className="input-label">
-        {icon && <span className="input-icon">{icon}</span>}
-        {label}
-      </label>
-      <div className="input-wrapper">
-        <select
-          value={value}
-          onChange={onChange}
-          className={`input-field ${error ? 'input-error' : ''}`}
-          disabled={disabled}
-        >
-          <option value="">{placeholder}</option>
-          {options.map((opt) => (
-            <option key={opt} value={opt}>{opt}</option>
-          ))}
-        </select>
-        {error && (
-          <div className="error-message">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <circle cx="7" cy="7" r="6" fill="currentColor" opacity="0.1"/>
-              <path d="M7 4v3M7 9.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-            {error}
-          </div>
-        )}
-      </div>
-    </div>
-  );
 
   // =========================
   // UI
@@ -721,7 +721,7 @@ export default function RegisterCompany() {
         .register-container {
           font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
           min-height: 100vh;
-          background: linear-gradient(135deg, #667eea 0%, #004182 100%);
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           padding: 40px 20px;
           position: relative;
         }
