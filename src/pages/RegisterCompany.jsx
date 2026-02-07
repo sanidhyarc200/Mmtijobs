@@ -265,6 +265,7 @@ export default function RegisterCompany() {
       industryType: companyData.industryType,
       numberOfEmployees: companyData.numberOfEmployees,
       companyWebsite: companyData.companyWebsite,
+      profilePic: companyData.profilePic,          // ← was missing
       createdAt: new Date().toISOString(),
     };
 
@@ -282,19 +283,32 @@ export default function RegisterCompany() {
     if (!validate()) return;
 
     const users = JSON.parse(localStorage.getItem("users")) || [];
-    const emailLower = companyEmail.trim().toLowerCase();
+    const emailLower   = companyEmail.trim().toLowerCase();
+    const contactVal   = contact.trim();
+    const gstVal       = gstNumber.trim().toUpperCase();
 
-    if (users.some((u) => u.email?.toLowerCase() === emailLower)) {
-      setErrors({
-        companyEmail: "This email is already registered",
-      });
-      return;
+    // ── duplicate checks: email + mobile + GST (all at once) ──
+    const dupErrors = {};
+
+    if (users.some((u) => u.email?.toLowerCase() === emailLower))
+      dupErrors.companyEmail = "This email is already registered";
+
+    if (users.some((u) => u.contact && String(u.contact).trim() === contactVal))
+      dupErrors.contact = "This mobile number is already registered";
+
+    // GST is optional — only check when user actually entered one
+    if (gstVal && users.some((u) => u.gstNumber && u.gstNumber.trim().toUpperCase() === gstVal))
+      dupErrors.gstNumber = "This GST number is already registered";
+
+    if (Object.keys(dupErrors).length > 0) {
+      setErrors(dupErrors);   // show errors inline
+      return;                 // BLOCK — no modal, no creation
     }
 
     const companyData = {
       name: companyName.trim(),
       email: companyEmail.trim(),
-      contact: contact.trim(),
+      contact: contactVal,
       password,
       profilePic,
       streetAddress: streetAddress.trim(),
@@ -311,6 +325,7 @@ export default function RegisterCompany() {
     localStorage.setItem("registeredCompany", JSON.stringify(companyData));
     upsertRecruiterUser(companyData);
 
+    // success modal ONLY on fresh creation — never anywhere else
     setShowSuccess(true);
     setShowInlineLogin(false);
     setLoginData({ email: companyData.email, password: "" });

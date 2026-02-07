@@ -319,7 +319,7 @@ export default function AdminDashboard() {
         salary: "₹2,00,000 – ₹3,00,000 per annum",
         tags: ["HR", "Operations", "Team Management", "MS Office"],
         description:
-          "We are hiring an experienced HR & Operations Executive to handle HR functions and oversee daily office operations. Key responsibilities include recruitment, onboarding, attendance & payroll management, HR documentation, office coordination, supporting sales teams, creating reports, and ensuring smooth inter-department communication. Required skills: strong team management, communication, HR operations knowledge, MS Office proficiency, and basic understanding of sales processes. Documents required: Experience Certificate, last 3 months’ pay slips, previous company offer letter, Aadhaar & PAN card.",
+          "We are hiring an experienced HR & Operations Executive to handle HR functions and oversee daily office operations. Key responsibilities include recruitment, onboarding, attendance & payroll management, HR documentation, office coordination, supporting sales teams, creating reports, and ensuring smooth inter-department communication. Required skills: strong team management, communication, HR operations knowledge, MS Office proficiency, and basic understanding of sales processes. Documents required: Experience Certificate, last 3 months' pay slips, previous company offer letter, Aadhaar & PAN card.",
         status: "active",
         createdAt: Date.now(),
       },
@@ -332,7 +332,7 @@ export default function AdminDashboard() {
         salary: "₹1.5 LPA – ₹3 LPA",
         tags: ["Nutrition", "Diet Planning", "Client Handling", "Wellness"],
         description:
-          "Fitness Tycoon is hiring a qualified Nutritionist for a full-time office role. Responsibilities include creating customized diet plans, conducting nutritional assessments, collaborating with fitness trainers, monitoring client progress, maintaining records, educating clients on nutrition, and staying updated with latest nutrition research. Required qualifications include a Bachelor’s or Master’s degree in Nutrition/Dietetics, experience in personalized diet planning, and strong understanding of macro & micronutrients. Skills: excellent communication, counseling, knowledge of Indian diets, and basic computer proficiency.",
+          "Fitness Tycoon is hiring a qualified Nutritionist for a full-time office role. Responsibilities include creating customized diet plans, conducting nutritional assessments, collaborating with fitness trainers, monitoring client progress, maintaining records, educating clients on nutrition, and staying updated with latest nutrition research. Required qualifications include a Bachelor's or Master's degree in Nutrition/Dietetics, experience in personalized diet planning, and strong understanding of macro & micronutrients. Skills: excellent communication, counseling, knowledge of Indian diets, and basic computer proficiency.",
         status: "active",
         createdAt: Date.now(),
       },
@@ -516,8 +516,6 @@ export default function AdminDashboard() {
   // New: Open company view modal
   // -----------------------
   function openCompanyView(company) {
-    // Determine company's email and/or name to find jobs posted by them, matching CompanyDashboard logic.
-    // CompanyDashboard used: j.companyEmail === email || j.postedBy === uid
     const jobsList = getJobs();
     const apps = getApplications();
     const users = getStudents();
@@ -533,7 +531,6 @@ export default function AdminDashboard() {
           (j.company === company.companyName || j.company === company.name))
     );
 
-    // Build map jobId -> applicants array with full user details
     const map = {};
     for (const job of companyJobs) {
       const jobApps = apps.filter((a) => a.jobId === job.id);
@@ -701,8 +698,6 @@ export default function AdminDashboard() {
           </button>
         </div>
 
-        {/* FILTERS (UI ONLY) */}
-
         <StableFilterBar>
           <div className="admin-filter-field">
             <label>Company</label>
@@ -775,7 +770,6 @@ export default function AdminDashboard() {
                       <td>{c.contact || c.phone || "-"}</td>
                       <td>{jobsCount}</td>
                       <td className="actions">
-                        {/* NEW: Eye view button */}
                         <button
                           className="btn secondary"
                           onClick={() => openCompanyView(c)}
@@ -843,7 +837,6 @@ export default function AdminDashboard() {
           </button>
         </div>
 
-        {/* FILTERS (UI ONLY) */}
         <StableFilterBar>
           <div className="admin-filter-field">
             <label>Name</label>
@@ -978,7 +971,6 @@ export default function AdminDashboard() {
           </button>
         </div>
 
-        {/* FILTERS (UI ONLY) */}
         <StableFilterBar>
           <div className="admin-filter-field">
             <label>Job Title</label>
@@ -1144,10 +1136,9 @@ export default function AdminDashboard() {
         </main>
       </div>
 
-      {/* EDIT MODAL and COMPANY VIEW MODAL will follow in PART 2 */}
       {/* ============================
-      COMPANY VIEW MODAL (READ-ONLY DASHBOARD)
-============================ */}
+      COMPANY VIEW MODAL — updated Company Profile rows
+      ============================ */}
       {viewCompany.open && (
         <div className="modal-backdrop" onClick={closeCompanyView}>
           <div
@@ -1175,7 +1166,6 @@ export default function AdminDashboard() {
                 position: "relative",
               }}
             >
-              {/* PROFILE PIC FIXED CIRCLE */}
               <div
                 style={{
                   position: "absolute",
@@ -1202,279 +1192,137 @@ export default function AdminDashboard() {
                     <img
                       src={viewCompany.company.profilePic}
                       alt="profile"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
                     />
                   ) : (
-                    <span
-                      style={{
-                        color: "#6b7280",
-                        fontSize: 12,
-                        fontWeight: 700,
-                      }}
-                    >
-                      No Image
-                    </span>
+                    <span style={{ color: "#6b7280", fontSize: 12, fontWeight: 700 }}>No Image</span>
                   )}
                 </div>
               </div>
 
               <h2 style={{ fontSize: 28, marginTop: 20, fontWeight: 900 }}>
-                {viewCompany.company.name ||
-                  viewCompany.company.companyName ||
-                  "Company"}
+                {viewCompany.company.name || viewCompany.company.companyName || "Company"}
               </h2>
-              <p style={{ opacity: 0.85 }}>
-                Admin view of company dashboard — read-only.
-              </p>
+              <p style={{ opacity: 0.85 }}>Admin view of company dashboard — read-only.</p>
             </div>
 
             {/* BODY (scrollable) */}
-            <div
-              style={{
-                padding: "80px 30px 40px",
-                overflowY: "auto",
-                flex: 1,
-                background: "#f3f6fb",
-              }}
-            >
+            <div style={{ padding: "80px 30px 40px", overflowY: "auto", flex: 1, background: "#f3f6fb" }}>
               <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-                {/* Company Info */}
-                <div
-                  style={{
-                    background: "#fff",
-                    padding: 20,
-                    borderRadius: 14,
-                    marginBottom: 20,
-                    boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
-                  }}
-                >
-                  <h3
-                    style={{
-                      fontSize: 20,
-                      marginTop: 0,
-                      fontWeight: 800,
-                      color: "#0a66c2",
-                    }}
-                  >
-                    Company Profile
-                  </h3>
+
+                {/* ── Company Info — shows ALL registered fields ── */}
+                <div style={{ background: "#fff", padding: 20, borderRadius: 14, marginBottom: 20, boxShadow: "0 6px 20px rgba(0,0,0,0.06)" }}>
+                  <h3 style={{ fontSize: 20, marginTop: 0, fontWeight: 800, color: "#0a66c2" }}>Company Profile</h3>
 
                   <div style={{ display: "grid", gap: 10 }}>
-                    <div>
-                      <strong>Email:</strong> {viewCompany.company.email}
-                    </div>
-                    <div>
-                      <strong>Contact:</strong> {viewCompany.company.contact}
-                    </div>
-                    <div>
-                      <strong>Website:</strong>{" "}
-                      {viewCompany.company.website || "-"}
-                    </div>
+                    <div><strong>Email:</strong> {viewCompany.company.email || "-"}</div>
+                    <div><strong>Contact:</strong> {viewCompany.company.contact || "-"}</div>
+
+                    {/* Address: join the four fields; fall back to legacy .address */}
                     <div>
                       <strong>Address:</strong>{" "}
-                      {viewCompany.company.address || "-"}
+                      {[
+                        viewCompany.company.streetAddress,
+                        viewCompany.company.city,
+                        viewCompany.company.state,
+                        viewCompany.company.pincode,
+                      ].filter(Boolean).join(", ") || viewCompany.company.address || "-"}
                     </div>
-                    <div>
-                      <strong>Description:</strong>{" "}
-                      {viewCompany.company.description || "-"}
-                    </div>
+
+                    {/* Industry — chip style */}
+                    {viewCompany.company.industryType && (
+                      <div>
+                        <strong>Industry:</strong>{" "}
+                        <span style={{ display: "inline-block", background: "#e0f2fe", color: "#0369a1", padding: "2px 10px", borderRadius: 50, fontSize: 13, fontWeight: 600 }}>
+                          {viewCompany.company.industryType}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Company Size — chip style */}
+                    {viewCompany.company.numberOfEmployees && (
+                      <div>
+                        <strong>Size:</strong>{" "}
+                        <span style={{ display: "inline-block", background: "#e0f2fe", color: "#0369a1", padding: "2px 10px", borderRadius: 50, fontSize: 13, fontWeight: 600 }}>
+                          {viewCompany.company.numberOfEmployees}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* GST — chip style, only when present */}
+                    {viewCompany.company.gstNumber && (
+                      <div>
+                        <strong>GST:</strong>{" "}
+                        <span style={{ display: "inline-block", background: "#e0f2fe", color: "#0369a1", padding: "2px 10px", borderRadius: 50, fontSize: 13, fontWeight: 600 }}>
+                          {viewCompany.company.gstNumber}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Website — clickable link; check both keys */}
+                    {(viewCompany.company.companyWebsite || viewCompany.company.website) && (
+                      <div>
+                        <strong>Website:</strong>{" "}
+                        <a href={viewCompany.company.companyWebsite || viewCompany.company.website} target="_blank" rel="noreferrer" style={{ color: "#0a66c2", fontWeight: 600 }}>
+                          {viewCompany.company.companyWebsite || viewCompany.company.website}
+                        </a>
+                      </div>
+                    )}
+
+                    {/* HR Name — still shown when present (static clients have it) */}
+                    {viewCompany.company.hrName && (
+                      <div><strong>HR Name:</strong> {viewCompany.company.hrName}</div>
+                    )}
                   </div>
                 </div>
 
                 {/* Stats */}
-                <div
-                  style={{
-                    background: "#fff",
-                    padding: 20,
-                    borderRadius: 14,
-                    marginBottom: 20,
-                    boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
-                  }}
-                >
-                  <h3
-                    style={{
-                      fontSize: 20,
-                      marginTop: 0,
-                      fontWeight: 800,
-                      color: "#0a66c2",
-                    }}
-                  >
-                    Quick Stats
-                  </h3>
-
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: 12,
-                      textAlign: "center",
-                    }}
-                  >
-                    <div
-                      style={{
-                        background: "#f8fafc",
-                        padding: 18,
-                        borderRadius: 12,
-                        boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
-                      }}
-                    >
+                <div style={{ background: "#fff", padding: 20, borderRadius: 14, marginBottom: 20, boxShadow: "0 6px 20px rgba(0,0,0,0.06)" }}>
+                  <h3 style={{ fontSize: 20, marginTop: 0, fontWeight: 800, color: "#0a66c2" }}>Quick Stats</h3>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, textAlign: "center" }}>
+                    <div style={{ background: "#f8fafc", padding: 18, borderRadius: 12, boxShadow: "0 4px 14px rgba(0,0,0,0.06)" }}>
                       <div style={{ color: "#6b7280" }}>Active Jobs</div>
-                      <div style={{ fontSize: 26, fontWeight: 800 }}>
-                        {viewCompany.companyJobs.length}
-                      </div>
+                      <div style={{ fontSize: 26, fontWeight: 800 }}>{viewCompany.companyJobs.length}</div>
                     </div>
-
-                    <div
-                      style={{
-                        background: "#f8fafc",
-                        padding: 18,
-                        borderRadius: 12,
-                        boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
-                      }}
-                    >
+                    <div style={{ background: "#f8fafc", padding: 18, borderRadius: 12, boxShadow: "0 4px 14px rgba(0,0,0,0.06)" }}>
                       <div style={{ color: "#6b7280" }}>Applicants</div>
-                      <div style={{ fontSize: 26, fontWeight: 800 }}>
-                        {
-                          Object.values(viewCompany.companyApplicantsMap).flat()
-                            .length
-                        }
-                      </div>
+                      <div style={{ fontSize: 26, fontWeight: 800 }}>{Object.values(viewCompany.companyApplicantsMap).flat().length}</div>
                     </div>
                   </div>
                 </div>
 
                 {/* Job List */}
-                <div
-                  style={{
-                    background: "#fff",
-                    padding: 20,
-                    borderRadius: 14,
-                    boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
-                  }}
-                >
-                  <h3
-                    style={{
-                      fontSize: 20,
-                      marginTop: 0,
-                      fontWeight: 800,
-                      color: "#0a66c2",
-                    }}
-                  >
-                    Job Posts
-                  </h3>
+                <div style={{ background: "#fff", padding: 20, borderRadius: 14, boxShadow: "0 6px 20px rgba(0,0,0,0.06)" }}>
+                  <h3 style={{ fontSize: 20, marginTop: 0, fontWeight: 800, color: "#0a66c2" }}>Job Posts</h3>
 
                   {viewCompany.companyJobs.length === 0 ? (
-                    <div
-                      style={{
-                        textAlign: "center",
-                        padding: 20,
-                        color: "#6b7280",
-                      }}
-                    >
-                      No jobs posted.
-                    </div>
+                    <div style={{ textAlign: "center", padding: 20, color: "#6b7280" }}>No jobs posted.</div>
                   ) : (
                     viewCompany.companyJobs.map((job) => {
-                      const applicants =
-                        viewCompany.companyApplicantsMap[job.id] || [];
-
+                      const applicants = viewCompany.companyApplicantsMap[job.id] || [];
                       return (
-                        <div
-                          key={job.id}
-                          style={{
-                            marginBottom: 20,
-                            background: "#f9fbff",
-                            border: "1px solid #e5e9ff",
-                            padding: 18,
-                            borderRadius: 14,
-                          }}
-                        >
-                          <h4
-                            style={{
-                              margin: 0,
-                              marginBottom: 6,
-                              color: "#0a66c2",
-                              fontWeight: 800,
-                            }}
-                          >
-                            {job.title}
-                          </h4>
-
+                        <div key={job.id} style={{ marginBottom: 20, background: "#f9fbff", border: "1px solid #e5e9ff", padding: 18, borderRadius: 14 }}>
+                          <h4 style={{ margin: 0, marginBottom: 6, color: "#0a66c2", fontWeight: 800 }}>{job.title}</h4>
                           <div style={{ marginBottom: 10, color: "#6b7280" }}>
-                            {job.location} • {job.experienceRange} •{" "}
-                            {job.salary}
+                            {job.location} • {job.experienceRange} • {job.salary}
                           </div>
-
-                          <div
-                            style={{
-                              fontSize: 14,
-                              marginBottom: 10,
-                            }}
-                          >
-                            Posted on{" "}
-                            {new Date(
-                              job.createdAt || Date.now()
-                            ).toLocaleDateString()}
+                          <div style={{ fontSize: 14, marginBottom: 10 }}>
+                            Posted on {new Date(job.createdAt || Date.now()).toLocaleDateString()}
                           </div>
-
                           <hr style={{ opacity: 0.3, margin: "10px 0" }} />
-
-                          {/* Applicants */}
-                          <h5
-                            style={{
-                              margin: 0,
-                              marginBottom: 8,
-                              fontWeight: 700,
-                            }}
-                          >
-                            Applicants ({applicants.length})
-                          </h5>
+                          <h5 style={{ margin: 0, marginBottom: 8, fontWeight: 700 }}>Applicants ({applicants.length})</h5>
 
                           {applicants.length === 0 ? (
-                            <div
-                              style={{
-                                padding: "8px 0",
-                                fontSize: 14,
-                                color: "#9ca3af",
-                              }}
-                            >
-                              No applicants yet.
-                            </div>
+                            <div style={{ padding: "8px 0", fontSize: 14, color: "#9ca3af" }}>No applicants yet.</div>
                           ) : (
                             applicants.map(({ user, application }, i) => (
-                              <div
-                                key={i}
-                                style={{
-                                  background: "#fff",
-                                  padding: 12,
-                                  borderRadius: 10,
-                                  border: "1px solid #e5e7eb",
-                                  marginBottom: 10,
-                                }}
-                              >
-                                <div style={{ fontWeight: 700 }}>
-                                  {user?.firstName} {user?.lastName}
-                                </div>
+                              <div key={i} style={{ background: "#fff", padding: 12, borderRadius: 10, border: "1px solid #e5e7eb", marginBottom: 10 }}>
+                                <div style={{ fontWeight: 700 }}>{user?.firstName} {user?.lastName}</div>
                                 <div>Email: {user?.email}</div>
                                 <div>Degree: {user?.degree}</div>
                                 <div>Experience: {user?.experience}</div>
-
                                 {application.resume && (
-                                  <a
-                                    href={application.resume}
-                                    target="_blank"
-                                    style={{
-                                      color: "#0a66c2",
-                                      fontWeight: 700,
-                                      fontSize: 14,
-                                      marginTop: 6,
-                                      display: "inline-block",
-                                    }}
-                                  >
+                                  <a href={application.resume} target="_blank" style={{ color: "#0a66c2", fontWeight: 700, fontSize: 14, marginTop: 6, display: "inline-block" }}>
                                     View Resume →
                                   </a>
                                 )}
@@ -1492,56 +1340,33 @@ export default function AdminDashboard() {
             {/* CLOSE BUTTON */}
             <button
               onClick={closeCompanyView}
-              style={{
-                position: "absolute",
-                top: 16,
-                right: 16,
-                background: "rgba(255,255,255,0.8)",
-                border: "none",
-                fontSize: 20,
-                cursor: "pointer",
-                padding: "4px 10px",
-                borderRadius: 8,
-              }}
-            >
-              ✕
-            </button>
+              style={{ position: "absolute", top: 16, right: 16, background: "rgba(255,255,255,0.8)", border: "none", fontSize: 20, cursor: "pointer", padding: "4px 10px", borderRadius: 8 }}
+            >✕</button>
           </div>
         </div>
       )}
 
       {/* ============================
-      EDIT MODAL (UPDATED WITH PROFILE PIC UPLOAD)
-============================ */}
+      EDIT MODAL — company section now has all new fields
+      ============================ */}
       {editModal.open && (
         <div className="modal-backdrop" onClick={closeEdit}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Edit {editModal.type}</h3>
-              <button className="icon-btn" onClick={closeEdit}>
-                ✕
-              </button>
+              <button className="icon-btn" onClick={closeEdit}>✕</button>
             </div>
 
             <div className="modal-body">
-              {/* COMPANY EDIT */}
+              {/* COMPANY EDIT — all registered fields */}
               {editModal.type === "company" && (
                 <div className="form-grid">
                   <label>
                     Company Name
                     <input
-                      value={
-                        editModal.item.companyName || editModal.item.name || ""
-                      }
+                      value={editModal.item.companyName || editModal.item.name || ""}
                       onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: {
-                            ...m.item,
-                            companyName: e.target.value,
-                            name: e.target.value,
-                          },
-                        }))
+                        setEditModal((m) => ({ ...m, item: { ...m.item, companyName: e.target.value, name: e.target.value } }))
                       }
                     />
                   </label>
@@ -1551,10 +1376,7 @@ export default function AdminDashboard() {
                     <input
                       value={editModal.item.hrName || editModal.item.hr || ""}
                       onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, hrName: e.target.value },
-                        }))
+                        setEditModal((m) => ({ ...m, item: { ...m.item, hrName: e.target.value } }))
                       }
                     />
                   </label>
@@ -1564,10 +1386,7 @@ export default function AdminDashboard() {
                     <input
                       value={editModal.item.email || ""}
                       onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, email: e.target.value },
-                        }))
+                        setEditModal((m) => ({ ...m, item: { ...m.item, email: e.target.value } }))
                       }
                     />
                   </label>
@@ -1575,19 +1394,124 @@ export default function AdminDashboard() {
                   <label>
                     Phone
                     <input
-                      value={
-                        editModal.item.contact || editModal.item.phone || ""
-                      }
+                      value={editModal.item.contact || editModal.item.phone || ""}
                       onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, contact: e.target.value },
-                        }))
+                        setEditModal((m) => ({ ...m, item: { ...m.item, contact: e.target.value } }))
                       }
                     />
                   </label>
 
-                  {/* NEW: PROFILE PIC UPLOAD */}
+                  {/* ── NEW: Address fields ── */}
+                  <label>
+                    Street Address
+                    <input
+                      value={editModal.item.streetAddress || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({ ...m, item: { ...m.item, streetAddress: e.target.value } }))
+                      }
+                      placeholder="123 Business Street"
+                    />
+                  </label>
+
+                  <label>
+                    City
+                    <input
+                      value={editModal.item.city || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({ ...m, item: { ...m.item, city: e.target.value } }))
+                      }
+                      placeholder="Mumbai"
+                    />
+                  </label>
+
+                  <label>
+                    State
+                    <input
+                      value={editModal.item.state || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({ ...m, item: { ...m.item, state: e.target.value } }))
+                      }
+                      placeholder="Maharashtra"
+                    />
+                  </label>
+
+                  <label>
+                    Postal Code
+                    <input
+                      value={editModal.item.pincode || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({ ...m, item: { ...m.item, pincode: e.target.value } }))
+                      }
+                      placeholder="400001"
+                    />
+                  </label>
+
+                  {/* ── NEW: Organisation fields ── */}
+                  <label>
+                    GST Number
+                    <input
+                      value={editModal.item.gstNumber || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({ ...m, item: { ...m.item, gstNumber: e.target.value } }))
+                      }
+                      placeholder="27AABCU9603R1ZX"
+                    />
+                  </label>
+
+                  <label>
+                    Industry Type
+                    <select
+                      value={editModal.item.industryType || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({ ...m, item: { ...m.item, industryType: e.target.value } }))
+                      }
+                    >
+                      <option value="">Select industry</option>
+                      <option value="Information Technology">Information Technology</option>
+                      <option value="Healthcare">Healthcare</option>
+                      <option value="Finance & Banking">Finance & Banking</option>
+                      <option value="Education">Education</option>
+                      <option value="Manufacturing">Manufacturing</option>
+                      <option value="Retail">Retail</option>
+                      <option value="Real Estate">Real Estate</option>
+                      <option value="Transportation">Transportation</option>
+                      <option value="Hospitality">Hospitality</option>
+                      <option value="Media & Entertainment">Media & Entertainment</option>
+                      <option value="Consulting">Consulting</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </label>
+
+                  <label>
+                    Company Size
+                    <select
+                      value={editModal.item.numberOfEmployees || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({ ...m, item: { ...m.item, numberOfEmployees: e.target.value } }))
+                      }
+                    >
+                      <option value="">Select size</option>
+                      <option value="1-10 employees">1-10 employees</option>
+                      <option value="11-50 employees">11-50 employees</option>
+                      <option value="51-200 employees">51-200 employees</option>
+                      <option value="201-500 employees">201-500 employees</option>
+                      <option value="501-1000 employees">501-1000 employees</option>
+                      <option value="1000+ employees">1000+ employees</option>
+                    </select>
+                  </label>
+
+                  <label>
+                    Website
+                    <input
+                      value={editModal.item.companyWebsite || editModal.item.website || ""}
+                      onChange={(e) =>
+                        setEditModal((m) => ({ ...m, item: { ...m.item, companyWebsite: e.target.value, website: e.target.value } }))
+                      }
+                      placeholder="https://acme.com"
+                    />
+                  </label>
+
+                  {/* Profile Picture upload — kept exactly as before */}
                   <label>
                     Profile Picture
                     <input
@@ -1596,13 +1520,9 @@ export default function AdminDashboard() {
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (!file) return;
-
                         const reader = new FileReader();
                         reader.onload = () =>
-                          setEditModal((m) => ({
-                            ...m,
-                            item: { ...m.item, profilePic: reader.result },
-                          }));
+                          setEditModal((m) => ({ ...m, item: { ...m.item, profilePic: reader.result } }));
                         reader.readAsDataURL(file);
                       }}
                     />
@@ -1613,21 +1533,14 @@ export default function AdminDashboard() {
                       <img
                         src={editModal.item.profilePic}
                         alt="preview"
-                        style={{
-                          width: 72,
-                          height: 72,
-                          borderRadius: "50%",
-                          marginTop: 6,
-                          objectFit: "cover",
-                          border: "2px solid #ddd",
-                        }}
+                        style={{ width: 72, height: 72, borderRadius: "50%", marginTop: 6, objectFit: "cover", border: "2px solid #ddd" }}
                       />
                     </div>
                   )}
                 </div>
               )}
 
-              {/* STUDENT EDIT */}
+              {/* STUDENT EDIT — untouched */}
               {editModal.type === "student" && (
                 <div className="form-grid">
                   <label>
@@ -1635,10 +1548,7 @@ export default function AdminDashboard() {
                     <input
                       value={editModal.item.firstName || ""}
                       onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, firstName: e.target.value },
-                        }))
+                        setEditModal((m) => ({ ...m, item: { ...m.item, firstName: e.target.value } }))
                       }
                     />
                   </label>
@@ -1647,10 +1557,7 @@ export default function AdminDashboard() {
                     <input
                       value={editModal.item.lastName || ""}
                       onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, lastName: e.target.value },
-                        }))
+                        setEditModal((m) => ({ ...m, item: { ...m.item, lastName: e.target.value } }))
                       }
                     />
                   </label>
@@ -1659,10 +1566,7 @@ export default function AdminDashboard() {
                     <input
                       value={editModal.item.email || ""}
                       onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, email: e.target.value },
-                        }))
+                        setEditModal((m) => ({ ...m, item: { ...m.item, email: e.target.value } }))
                       }
                     />
                   </label>
@@ -1671,10 +1575,7 @@ export default function AdminDashboard() {
                     <input
                       value={editModal.item.degree || ""}
                       onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, degree: e.target.value },
-                        }))
+                        setEditModal((m) => ({ ...m, item: { ...m.item, degree: e.target.value } }))
                       }
                     />
                   </label>
@@ -1683,10 +1584,7 @@ export default function AdminDashboard() {
                     <input
                       value={editModal.item.experience || ""}
                       onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, experience: e.target.value },
-                        }))
+                        setEditModal((m) => ({ ...m, item: { ...m.item, experience: e.target.value } }))
                       }
                     />
                   </label>
@@ -1695,17 +1593,14 @@ export default function AdminDashboard() {
                     <input
                       value={editModal.item.location || ""}
                       onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, location: e.target.value },
-                        }))
+                        setEditModal((m) => ({ ...m, item: { ...m.item, location: e.target.value } }))
                       }
                     />
                   </label>
                 </div>
               )}
 
-              {/* JOB EDIT */}
+              {/* JOB EDIT — untouched */}
               {editModal.type === "job" && (
                 <div className="form-grid">
                   <label>
@@ -1713,10 +1608,7 @@ export default function AdminDashboard() {
                     <input
                       value={editModal.item.title || ""}
                       onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, title: e.target.value },
-                        }))
+                        setEditModal((m) => ({ ...m, item: { ...m.item, title: e.target.value } }))
                       }
                     />
                   </label>
@@ -1725,10 +1617,7 @@ export default function AdminDashboard() {
                     <input
                       value={editModal.item.company || ""}
                       onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, company: e.target.value },
-                        }))
+                        setEditModal((m) => ({ ...m, item: { ...m.item, company: e.target.value } }))
                       }
                     />
                   </label>
@@ -1737,10 +1626,7 @@ export default function AdminDashboard() {
                     <input
                       value={editModal.item.location || ""}
                       onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, location: e.target.value },
-                        }))
+                        setEditModal((m) => ({ ...m, item: { ...m.item, location: e.target.value } }))
                       }
                     />
                   </label>
@@ -1749,10 +1635,7 @@ export default function AdminDashboard() {
                     <input
                       value={editModal.item.experienceRange || ""}
                       onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, experienceRange: e.target.value },
-                        }))
+                        setEditModal((m) => ({ ...m, item: { ...m.item, experienceRange: e.target.value } }))
                       }
                     />
                   </label>
@@ -1761,10 +1644,7 @@ export default function AdminDashboard() {
                     <input
                       value={editModal.item.salary || ""}
                       onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, salary: e.target.value },
-                        }))
+                        setEditModal((m) => ({ ...m, item: { ...m.item, salary: e.target.value } }))
                       }
                     />
                   </label>
@@ -1773,10 +1653,7 @@ export default function AdminDashboard() {
                     <select
                       value={editModal.item.status || "pending"}
                       onChange={(e) =>
-                        setEditModal((m) => ({
-                          ...m,
-                          item: { ...m.item, status: e.target.value },
-                        }))
+                        setEditModal((m) => ({ ...m, item: { ...m.item, status: e.target.value } }))
                       }
                     >
                       <option value="pending">Pending</option>
@@ -1789,19 +1666,16 @@ export default function AdminDashboard() {
             </div>
 
             <div className="modal-footer">
-              <button className="btn" onClick={handleEditSave}>
-                Save
-              </button>
-              <button className="btn secondary" onClick={closeEdit}>
-                Cancel
-              </button>
+              <button className="btn" onClick={handleEditSave}>Save</button>
+              <button className="btn secondary" onClick={closeEdit}>Cancel</button>
             </div>
           </div>
         </div>
       )}
+
       {/* ============================
-      JOB VIEW MODAL
-============================ */}
+      JOB VIEW MODAL — untouched
+      ============================ */}
       {viewJob.open && (
         <div className="modal-backdrop" onClick={closeJobView}>
           <div
@@ -1819,132 +1693,37 @@ export default function AdminDashboard() {
               boxShadow: "0 12px 40px rgba(0,0,0,0.25)",
             }}
           >
-            {/* HEADER */}
-            <div
-              style={{
-                background: "linear-gradient(135deg, #0a66c2, #0047a8)",
-                color: "#fff",
-                padding: "40px 20px",
-                textAlign: "center",
-              }}
-            >
-              <h2 style={{ margin: 0, fontSize: 26, fontWeight: 900 }}>
-                {viewJob.job.title}
-              </h2>
-              <div style={{ opacity: 0.85, fontSize: 14, marginTop: 4 }}>
-                {viewJob.job.company} • {viewJob.job.location}
-              </div>
+            <div style={{ background: "linear-gradient(135deg, #0a66c2, #0047a8)", color: "#fff", padding: "40px 20px", textAlign: "center" }}>
+              <h2 style={{ margin: 0, fontSize: 26, fontWeight: 900 }}>{viewJob.job.title}</h2>
+              <div style={{ opacity: 0.85, fontSize: 14, marginTop: 4 }}>{viewJob.job.company} • {viewJob.job.location}</div>
             </div>
 
-            {/* BODY */}
-            <div
-              style={{
-                padding: "22px",
-                overflowY: "auto",
-                flex: 1,
-                background: "#f3f6fb",
-              }}
-            >
-              {/* Job Details */}
-              <div
-                style={{
-                  background: "#fff",
-                  padding: 20,
-                  borderRadius: 14,
-                  marginBottom: 20,
-                  boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
-                }}
-              >
-                <h3
-                  style={{
-                    marginTop: 0,
-                    fontSize: 20,
-                    fontWeight: 800,
-                    color: "#0a66c2",
-                  }}
-                >
-                  Job Details
-                </h3>
-
+            <div style={{ padding: "22px", overflowY: "auto", flex: 1, background: "#f3f6fb" }}>
+              <div style={{ background: "#fff", padding: 20, borderRadius: 14, marginBottom: 20, boxShadow: "0 6px 20px rgba(0,0,0,0.06)" }}>
+                <h3 style={{ marginTop: 0, fontSize: 20, fontWeight: 800, color: "#0a66c2" }}>Job Details</h3>
                 <div style={{ display: "grid", gap: 10 }}>
-                  <div>
-                    <strong>Title:</strong> {viewJob.job.title}
-                  </div>
-                  <div>
-                    <strong>Company:</strong> {viewJob.job.company}
-                  </div>
-                  <div>
-                    <strong>Location:</strong> {viewJob.job.location}
-                  </div>
-                  <div>
-                    <strong>Experience:</strong> {viewJob.job.experienceRange}
-                  </div>
-                  <div>
-                    <strong>Salary:</strong> {viewJob.job.salary}
-                  </div>
-                  <div>
-                    <strong>Description:</strong>{" "}
-                    {viewJob.job.description || "-"}
-                  </div>
+                  <div><strong>Title:</strong> {viewJob.job.title}</div>
+                  <div><strong>Company:</strong> {viewJob.job.company}</div>
+                  <div><strong>Location:</strong> {viewJob.job.location}</div>
+                  <div><strong>Experience:</strong> {viewJob.job.experienceRange}</div>
+                  <div><strong>Salary:</strong> {viewJob.job.salary}</div>
+                  <div><strong>Description:</strong> {viewJob.job.description || "-"}</div>
                 </div>
               </div>
 
-              {/* Applicants */}
-              <div
-                style={{
-                  background: "#fff",
-                  padding: 20,
-                  borderRadius: 14,
-                  boxShadow: "0 6px 20px rgba(0,0,0,0.06)",
-                }}
-              >
-                <h3
-                  style={{
-                    marginTop: 0,
-                    fontSize: 20,
-                    fontWeight: 800,
-                    color: "#0a66c2",
-                  }}
-                >
-                  Applicants ({viewJob.applicants.length})
-                </h3>
-
+              <div style={{ background: "#fff", padding: 20, borderRadius: 14, boxShadow: "0 6px 20px rgba(0,0,0,0.06)" }}>
+                <h3 style={{ marginTop: 0, fontSize: 20, fontWeight: 800, color: "#0a66c2" }}>Applicants ({viewJob.applicants.length})</h3>
                 {viewJob.applicants.length === 0 ? (
-                  <div style={{ padding: 10, color: "#6b7280" }}>
-                    No applicants yet.
-                  </div>
+                  <div style={{ padding: 10, color: "#6b7280" }}>No applicants yet.</div>
                 ) : (
                   viewJob.applicants.map(({ user, application }, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        marginBottom: 14,
-                        padding: 12,
-                        borderRadius: 12,
-                        border: "1px solid #e5e7eb",
-                        background: "#f9fafb",
-                      }}
-                    >
-                      <strong>
-                        {user?.firstName} {user?.lastName}
-                      </strong>
+                    <div key={i} style={{ marginBottom: 14, padding: 12, borderRadius: 12, border: "1px solid #e5e7eb", background: "#f9fafb" }}>
+                      <strong>{user?.firstName} {user?.lastName}</strong>
                       <div>Email: {user?.email}</div>
                       <div>Degree: {user?.degree}</div>
                       <div>Experience: {user?.experience}</div>
-
                       {application.resume && (
-                        <a
-                          href={application.resume}
-                          target="_blank"
-                          style={{
-                            color: "#0a66c2",
-                            fontWeight: 700,
-                            display: "inline-block",
-                            marginTop: 4,
-                          }}
-                        >
-                          View Resume →
-                        </a>
+                        <a href={application.resume} target="_blank" style={{ color: "#0a66c2", fontWeight: 700, display: "inline-block", marginTop: 4 }}>View Resume →</a>
                       )}
                     </div>
                   ))
@@ -1952,30 +1731,14 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* CLOSE */}
-            <button
-              onClick={closeJobView}
-              style={{
-                position: "absolute",
-                top: 16,
-                right: 16,
-                background: "rgba(255,255,255,0.8)",
-                border: "none",
-                fontSize: 20,
-                cursor: "pointer",
-                padding: "4px 10px",
-                borderRadius: 8,
-              }}
-            >
-              ✕
-            </button>
+            <button onClick={closeJobView} style={{ position: "absolute", top: 16, right: 16, background: "rgba(255,255,255,0.8)", border: "none", fontSize: 20, cursor: "pointer", padding: "4px 10px", borderRadius: 8 }}>✕</button>
           </div>
         </div>
       )}
 
       {/* ============================
-      STYLES (FULL FILE BOTTOM)
-============================ */}
+      STYLES — untouched
+      ============================ */}
       <style>{`
 .admin-filter-bar {
   padding: 14px 16px;
