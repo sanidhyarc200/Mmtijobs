@@ -165,3 +165,4 @@ export default function HRRecruiterLogin() {
     </AuthShell>
   );
 }
+// update the password block
