@@ -14,39 +14,61 @@ const Field = ({
   autoComplete,
   inputMode,
   accept,
-}) => (
-  <div className={`input-group ${full ? 'input-group-full' : ''}`}>
-    <div className="label-row">
-      <label className="input-label">
-        {label}
-        {required && <span className="required-mark">*</span>}
-      </label>
-      {!required && <span className="optional-badge">Optional</span>}
-    </div>
-    <input
-      type={type}
-      name={name}
-      value={type === "file" ? undefined : value}
-      onChange={onChange}
-      placeholder={placeholder}
-      autoComplete={autoComplete}
-      inputMode={inputMode}
-      accept={accept}
-      className={`input-field ${error ? 'input-error' : ''}`}
-      required={required}
-    />
-    {error && (
-      <div className="error-message">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <circle cx="7" cy="7" r="6" fill="currentColor" opacity="0.1"/>
-          <path d="M7 4v3M7 9.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-        </svg>
-        {error}
-      </div>
-    )}
-  </div>
-);
+}) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const isPassword = type === "password";
+  const inputType = isPassword ? (showPassword ? "text" : "password") : type;
 
+  return (
+    <div className={`input-group ${full ? 'input-group-full' : ''}`}>
+      <div className="label-row">
+        <label className="input-label">
+          {label}
+          {required && <span className="required-mark">*</span>}
+        </label>
+        {!required && <span className="optional-badge">Optional</span>}
+      </div>
+      <div style={{ position: 'relative' }}>
+        <input
+          type={inputType}
+          name={name}
+          value={type === "file" ? undefined : value}
+          onChange={onChange}
+          placeholder={placeholder}
+          autoComplete={autoComplete}
+          inputMode={inputMode}
+          accept={accept}
+          className={`input-field ${error ? 'input-error' : ''}`}
+          required={required}
+          style={isPassword ? { paddingRight: '42px' } : undefined}
+        />
+        {isPassword && (
+          <button
+            type="button"
+            onClick={() => setShowPassword(p => !p)}
+            style={{
+              position: 'absolute', right: '10px', top: '50%',
+              transform: 'translateY(-50%)', background: 'none',
+              border: 'none', cursor: 'pointer', color: '#6b7280',
+              padding: '4px', fontSize: '16px'
+            }}
+          >
+            {showPassword ? '🙈' : '👁️'}
+          </button>
+        )}
+      </div>
+      {error && (
+        <div className="error-message">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <circle cx="7" cy="7" r="6" fill="currentColor" opacity="0.1"/>
+            <path d="M7 4v3M7 9.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+          {error}
+        </div>
+      )}
+    </div>
+  );
+};
 export default function UserOnboarding() {
   const TOTAL_STEPS = 5;
 

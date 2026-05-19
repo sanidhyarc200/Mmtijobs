@@ -5,33 +5,57 @@ import { useNavigate, useLocation } from "react-router-dom";
 // =========================
 // FIELD COMPONENTS (OUTSIDE TO PREVENT RE-CREATION)
 // =========================
-const InputField = ({ label, value, onChange, error, type = "text", placeholder, disabled, icon }) => (
-  <div className="input-group">
-    <label className="input-label">
-      {icon && <span className="input-icon">{icon}</span>}
-      {label}
-    </label>
-    <div className="input-wrapper">
-      <input
-        type={type}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className={`input-field ${error ? 'input-error' : ''}`}
-        disabled={disabled}
-      />
-      {error && (
-        <div className="error-message">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <circle cx="7" cy="7" r="6" fill="currentColor" opacity="0.1"/>
-            <path d="M7 4v3M7 9.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-          </svg>
-          {error}
+const InputField = ({ label, value, onChange, error, type = "text", placeholder, disabled, icon }) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const isPassword = type === "password";
+  const inputType = isPassword ? (showPassword ? "text" : "password") : type;
+
+  return (
+    <div className="input-group">
+      <label className="input-label">
+        {icon && <span className="input-icon">{icon}</span>}
+        {label}
+      </label>
+      <div className="input-wrapper">
+        <div style={{ position: 'relative' }}>
+          <input
+            type={inputType}
+            value={value}
+            onChange={onChange}
+            placeholder={placeholder}
+            className={`input-field ${error ? 'input-error' : ''}`}
+            disabled={disabled}
+            style={isPassword ? { paddingRight: '42px' } : undefined}
+          />
+          {isPassword && (
+            <button
+              type="button"
+              onClick={() => setShowPassword(p => !p)}
+              disabled={disabled}
+              style={{
+                position: 'absolute', right: '10px', top: '50%',
+                transform: 'translateY(-50%)', background: 'none',
+                border: 'none', cursor: disabled ? 'not-allowed' : 'pointer',
+                color: '#6b7280', padding: '4px', fontSize: '16px'
+              }}
+            >
+              {showPassword ? '🙈' : '👁️'}
+            </button>
+          )}
         </div>
-      )}
+        {error && (
+          <div className="error-message">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <circle cx="7" cy="7" r="6" fill="currentColor" opacity="0.1"/>
+              <path d="M7 4v3M7 9.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+            {error}
+          </div>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const SelectField = ({ label, value, onChange, error, options, placeholder, disabled, icon }) => (
   <div className="input-group">
