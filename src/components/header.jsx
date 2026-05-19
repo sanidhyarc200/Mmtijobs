@@ -13,6 +13,7 @@ export default function Header({ onPostJobClick }) {
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showRecruiterHelp, setShowRecruiterHelp] = useState(false);
   const [showContactForm, setShowContactForm] = useState(false);
   const [showChatBot, setShowChatBot] = useState(false);
@@ -136,8 +137,9 @@ export default function Header({ onPostJobClick }) {
     // 👉 Normal users (students/candidates)
     const users = JSON.parse(localStorage.getItem('users')) || [];
     const user = users.find(
-      (u) => u.email === email && u.password === password
+      (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
     );
+    
 
     if (user) {
       localStorage.setItem('currentUser', JSON.stringify(user));
@@ -381,15 +383,29 @@ export default function Header({ onPostJobClick }) {
                 />
               </div>
               <div className="form-field">
-                <label>Password</label>
+              <label>Password</label>
+              <div style={{ position: 'relative' }}>
                 <input
-                  type="password"
+                  type={showLoginPassword ? 'text' : 'password'}
                   value={loginData.password}
                   onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                   required
                   placeholder="••••••••"
+                  style={{ paddingRight: '42px', width: '100%', boxSizing: 'border-box' }}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowLoginPassword(p => !p)}
+                  style={{
+                    position: 'absolute', right: '10px', top: '50%',
+                    transform: 'translateY(-50%)', background: 'none',
+                    border: 'none', cursor: 'pointer', color: '#6b7280', padding: '4px'
+                  }}
+                >
+                  {showLoginPassword ? '🙈' : '👁️'}
+                </button>
               </div>
+            </div>
 
               {loginError && <div className="error-banner">{loginError}</div>}
 

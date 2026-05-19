@@ -13,8 +13,8 @@ export default function HRLogin() {
     e.preventDefault();
     setError('');
 
-    if (email === 'hrmmti@gmail.com' && password === 'Hr@123') {
-      const user = {
+    if (email.toLowerCase() === 'hrmmti@gmail.com' && password === 'Hr@123') {
+    const user = {
         id: 'hr-1',
         name: 'HR',
         email,

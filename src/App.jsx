@@ -169,6 +169,8 @@ function CompanyLoginModal({ onClose }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
   const navigate = useNavigate();
 
   const handleLogin = () => {
@@ -214,13 +216,26 @@ function CompanyLoginModal({ onClose }) {
           onChange={(e) => setEmail(e.target.value)}
           style={styles.input}
         />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={styles.input}
-        />
+        <div style={{ position: 'relative' }}>
+          <input
+            type={showPassword ? 'text' : 'password'}
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{ ...styles.input, paddingRight: '42px' }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(p => !p)}
+            style={{
+              position: 'absolute', right: '10px', top: '50%',
+              transform: 'translateY(-50%)', background: 'none',
+              border: 'none', cursor: 'pointer', color: '#6b7280', padding: '4px'
+            }}
+          >
+            {showPassword ? '🙈' : '👁️'}
+          </button>
+        </div>
         {error && <p style={styles.error}>{error}</p>}
         <button onClick={handleLogin} style={styles.primaryBtn}>Login</button>
         <button onClick={onClose} style={styles.cancelBtn}>Cancel</button>

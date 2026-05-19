@@ -12,7 +12,7 @@ export default function AdminLogin() {
     setError('');
 
     if (
-      email === 'sanidhyakoranne123@gmail.com' &&
+      email.toLowerCase() === 'sanidhyakoranne123@gmail.com' &&
       password === 'Mmti@help49'
     ) {
       const adminUser = {
