@@ -157,13 +157,24 @@ function SearchableJobTitle({ value, onChange, disabled }) {
   const [search, setSearch] = useState(value || "");
   const [open, setOpen] = useState(false);
 
+  // Merge default + custom titles from localStorage
+  const allTitles = useMemo(() => {
+    let custom = [];
+    try {
+      custom = JSON.parse(localStorage.getItem("customJobTitles")) || [];
+    } catch {}
+    const merged = [...new Set([...JOB_TITLES.filter(t => t !== "Other"), ...custom])]
+      .sort((a, b) => a.localeCompare(b));
+    return [...merged, "Other"];
+  }, [open]); // re-read when dropdown opens (catches newly added titles)
+
   useEffect(() => { setSearch(value || ""); }, [value]);
 
   const filtered = useMemo(() => {
-    if (!search) return JOB_TITLES;
+    if (!search) return allTitles;
     const s = search.toLowerCase();
-    return JOB_TITLES.filter(t => t.toLowerCase().includes(s));
-  }, [search]);
+    return allTitles.filter(t => t.toLowerCase().includes(s));
+  }, [search, allTitles]);
 
   const handleSelect = (title) => {
     setSearch(title);
@@ -312,7 +323,21 @@ export default function PostJob() {
     if (!canPost) return;
     if (!validate()) return;
 
-    const title = form.jobTitle === "other" ? form.customJobTitle.trim() : form.jobTitle;
+    const title = form.jobTitle === "Other" ? form.customJobTitle.trim() : form.jobTitle;
+
+    // Persist custom job title so it appears in future suggestions
+    if (form.jobTitle === "Other" && title) {
+      try {
+        const existing = JSON.parse(localStorage.getItem("customJobTitles")) || [];
+        const normalized = title.charAt(0).toUpperCase() + title.slice(1); // capitalize first letter
+        const alreadyExists = existing.some(t => t.toLowerCase() === normalized.toLowerCase())
+          || JOB_TITLES.some(t => t.toLowerCase() === normalized.toLowerCase());
+        if (!alreadyExists) {
+          existing.push(normalized);
+          localStorage.setItem("customJobTitles", JSON.stringify(existing));
+        }
+      } catch {}
+    }
     const qualification = form.qualification === "other" ? form.customQualification.trim() : form.qualification;
 
     const job = {
