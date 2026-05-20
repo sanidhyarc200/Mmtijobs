@@ -2,6 +2,230 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+// =========================
+// JOB TITLES MASTER LIST (MP/India + global)
+// =========================
+const JOB_TITLES = [
+  // --- Tech / IT ---
+  "Software Engineer", "Frontend Developer", "Backend Developer", "Full Stack Developer",
+  "Mobile App Developer", "Android Developer", "iOS Developer", "React Developer",
+  "Node.js Developer", "Python Developer", "Java Developer", "PHP Developer",
+  "WordPress Developer", "DevOps Engineer", "Cloud Engineer", "AWS Engineer",
+  "Data Analyst", "Data Scientist", "Data Engineer", "Machine Learning Engineer",
+  "AI Engineer", "Database Administrator", "System Administrator", "Network Engineer",
+  "QA Engineer", "Manual Tester", "Automation Tester", "Cybersecurity Analyst",
+  "IT Support", "Computer Operator", "Hardware Technician", "Web Designer",
+  "UI Designer", "UX Designer", "UI/UX Designer", "Graphic Designer",
+  "Product Manager", "Project Manager", "Scrum Master", "Tech Lead",
+  "CTO", "Technical Writer", "Game Developer", "Blockchain Developer",
+
+  // --- Office / Admin / Clerical ---
+  "Receptionist", "Office Assistant", "Office Boy", "Peon",
+  "Clerk", "Junior Clerk", "Senior Clerk", "Data Entry Operator",
+  "Back Office Executive", "Front Office Executive", "Admin Executive",
+  "Personal Assistant", "Executive Assistant", "Secretary", "Office Manager",
+  "Document Controller", "Mail Room Clerk",
+
+  // --- Finance / Accounts ---
+  "Accountant", "Junior Accountant", "Senior Accountant", "Accounts Manager",
+  "Tally Operator", "GST Executive", "Tax Consultant", "Chartered Accountant (CA)",
+  "Cost Accountant (CMA)", "Company Secretary (CS)", "Auditor", "Internal Auditor",
+  "Finance Manager", "Financial Analyst", "Investment Banker", "Cashier",
+  "Bank Teller", "Loan Officer", "Bank PO", "Bank Clerk", "Insurance Agent",
+  "Insurance Advisor", "Bookkeeper", "Billing Executive", "Payroll Executive",
+
+  // --- Sales / Marketing / BD ---
+  "Sales Executive", "Field Sales Executive", "Telecaller", "Telesales Executive",
+  "Inside Sales Executive", "Business Development Executive (BDE)",
+  "Business Development Manager (BDM)", "Sales Manager", "Area Sales Manager",
+  "Regional Sales Manager", "Marketing Executive", "Marketing Manager",
+  "Digital Marketing Executive", "SEO Executive", "Social Media Manager",
+  "Content Writer", "Copywriter", "Brand Manager", "Market Research Analyst",
+  "PR Executive", "Event Manager", "Salesman", "Counter Salesman",
+  "Showroom Sales Executive", "Real Estate Agent", "Property Consultant",
+
+  // --- Healthcare / Medical ---
+  "Doctor (MBBS)", "Specialist Doctor", "Dentist", "Surgeon",
+  "Nurse", "ANM Nurse", "GNM Nurse", "Staff Nurse", "Ward Boy",
+  "Pharmacist", "Medical Representative (MR)", "Lab Technician",
+  "Radiologist", "X-Ray Technician", "Physiotherapist", "Dietician",
+  "Optometrist", "Ayurvedic Doctor", "Homeopathic Doctor", "Veterinarian",
+  "Hospital Administrator", "Medical Coder", "Compounder", "ASHA Worker",
+  "Anganwadi Worker", "Caregiver", "Home Nurse",
+
+  // --- Education / Teaching ---
+  "Primary School Teacher", "Secondary School Teacher", "PGT Teacher", "TGT Teacher",
+  "Principal", "Vice Principal", "Lecturer", "Professor", "Assistant Professor",
+  "Tuition Teacher", "Home Tutor", "Online Tutor", "Coaching Teacher",
+  "English Teacher", "Hindi Teacher", "Maths Teacher", "Science Teacher",
+  "Computer Teacher", "Music Teacher", "Dance Teacher", "Art Teacher",
+  "Yoga Instructor", "Sports Coach", "Librarian", "School Counsellor",
+  "Special Educator", "Preschool Teacher", "Daycare Assistant",
+
+  // --- Hospitality / Hotel / Restaurant ---
+  "Chef", "Head Chef", "Sous Chef", "Cook", "Tandoor Cook", "Chinese Cook",
+  "South Indian Cook", "Punjabi Cook", "Continental Cook", "Pizza Maker",
+  "Baker", "Pastry Chef", "Kitchen Helper", "Dishwasher", "Steward",
+  "Waiter", "Captain", "Bartender", "Barista", "Hotel Manager",
+  "Front Office Manager", "Housekeeping Supervisor", "Room Boy",
+  "Housekeeping Staff", "Laundry Attendant", "Restaurant Manager",
+  "Banquet Manager", "Catering Manager", "Banquet Hall Staff", "Hotel Receptionist",
+
+  // --- Skilled Trades ---
+  "Electrician", "Plumber", "Carpenter", "Mason", "Painter (Building)",
+  "Welder", "Fitter", "Mechanic", "Bike Mechanic", "Car Mechanic",
+  "AC Technician", "Refrigerator Technician", "Washing Machine Technician",
+  "RO Technician", "Mobile Repair Technician", "Laptop Repair Technician",
+  "TV Repair Technician", "CCTV Technician", "Solar Technician",
+  "Lift Technician", "HVAC Technician", "Tile Worker", "POP Worker",
+  "Glass Fitter", "Aluminium Fabricator", "Iron Welder", "Pipe Fitter",
+
+  // --- Driving / Transport / Logistics ---
+  "Driver", "Personal Driver", "Taxi Driver", "Truck Driver", "Bus Driver",
+  "Auto Driver", "Delivery Boy", "Delivery Executive", "Zomato Delivery",
+  "Swiggy Delivery", "Amazon Delivery", "Flipkart Delivery", "Courier Boy",
+  "Bike Rider", "Tempo Driver", "Crane Operator", "JCB Operator",
+  "Forklift Operator", "Tractor Driver", "Loader", "Helper (Loading/Unloading)",
+
+  // --- Warehouse / Manufacturing / Factory ---
+  "Warehouse Manager", "Warehouse Supervisor", "Warehouse Executive",
+  "Store Keeper", "Inventory Manager", "Packing Helper", "Packer",
+  "Factory Worker", "Machine Operator", "Production Supervisor",
+  "Quality Control Inspector", "Maintenance Engineer", "Production Manager",
+  "Mechanical Engineer", "Electrical Engineer", "Civil Engineer",
+  "Chemical Engineer", "Industrial Engineer", "Site Engineer", "Site Supervisor",
+  "Foreman", "Operator", "Helper (Factory)", "Labourer", "Mazdoor",
+
+  // --- Retail / Shop ---
+  "Shop Salesman", "Kirana Shop Helper", "Cashier (Shop)", "Store Manager",
+  "Retail Sales Executive", "Mall Sales Staff", "Stock Boy", "Visual Merchandiser",
+  "Sales Girl", "Counter Boy", "Garment Shop Salesman", "Jewellery Shop Salesman",
+  "Mobile Shop Salesman", "Medical Shop Helper", "Petrol Pump Attendant",
+
+  // --- Beauty / Wellness / Personal Care ---
+  "Beautician", "Hair Stylist", "Barber", "Nail Technician", "Makeup Artist",
+  "Spa Therapist", "Massage Therapist", "Salon Manager", "Mehendi Artist",
+  "Bridal Makeup Artist", "Pedicurist", "Manicurist",
+
+  // --- Security / Domestic ---
+  "Security Guard", "Watchman", "Bouncer", "Gunman", "Security Supervisor",
+  "Maid", "House Maid", "Cook (Home)", "Babysitter", "Nanny", "Gardener (Mali)",
+  "Driver (Home)", "Caretaker", "Dhobi", "Sweeper",
+
+  // --- Creative / Media ---
+  "Photographer", "Wedding Photographer", "Videographer", "Video Editor",
+  "Cinematographer", "DOP", "Sound Engineer", "Music Producer",
+  "Journalist", "Reporter", "News Anchor", "Sub Editor", "Editor",
+  "Voice Artist", "Animator", "3D Artist", "Illustrator", "Cartoonist",
+  "DJ", "Event Photographer", "Drone Operator",
+
+  // --- Government / Govt Exam roles ---
+  "Constable", "Sub-Inspector", "Patwari", "Panchayat Secretary",
+  "Gram Sevak", "Postman", "Railway TTE", "Railway Loco Pilot",
+  "Forest Guard", "Excise Inspector", "Income Tax Inspector",
+
+  // --- HR / Operations / Other Corporate ---
+  "HR Executive", "HR Manager", "HR Recruiter", "Talent Acquisition Specialist",
+  "Operations Manager", "Operations Executive", "Customer Support Executive",
+  "Customer Service Representative (CSR)", "BPO Executive", "Call Center Executive",
+  "Process Associate", "Team Leader", "Floor Manager", "Quality Analyst",
+  "Trainer", "Training Manager", "Business Analyst",
+
+  // --- Legal ---
+  "Lawyer", "Junior Lawyer", "Advocate", "Legal Advisor", "Legal Assistant",
+  "Notary", "Paralegal",
+
+  // --- Agriculture / Rural ---
+  "Farm Worker", "Dairy Worker", "Poultry Farm Worker", "Tractor Operator",
+  "Agriculture Supervisor", "Veterinary Assistant", "Fishery Worker",
+
+  // --- Misc / Local ---
+  "Tailor", "Master Tailor", "Embroidery Worker", "Cobbler", "Dhaba Cook",
+  "Tea Stall Helper", "Pan Shop Helper", "Newspaper Delivery", "Milk Delivery Boy",
+  "Sweet Shop Helper", "Halwai", "Pandit / Priest", "Astrologer",
+  "Event Decorator", "Tent House Worker", "Caterer", "Wedding Planner",
+  "Real Estate Broker", "Property Caretaker",
+
+  // --- Other ---
+  "Other"
+].sort((a, b) => a === "Other" ? 1 : b === "Other" ? -1 : a.localeCompare(b));
+
+// =========================
+// SEARCHABLE JOB TITLE DROPDOWN
+// =========================
+function SearchableJobTitle({ value, onChange, disabled }) {
+  const [search, setSearch] = useState(value || "");
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => { setSearch(value || ""); }, [value]);
+
+  const filtered = useMemo(() => {
+    if (!search) return JOB_TITLES;
+    const s = search.toLowerCase();
+    return JOB_TITLES.filter(t => t.toLowerCase().includes(s));
+  }, [search]);
+
+  const handleSelect = (title) => {
+    setSearch(title);
+    setOpen(false);
+    onChange({ target: { name: "jobTitle", value: title } });
+  };
+
+  return (
+    <div style={{ position: "relative" }}>
+      <input
+        type="text"
+        value={search}
+        onChange={(e) => { setSearch(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 180)}
+        placeholder="Search job title..."
+        disabled={disabled}
+        className="input-field"
+        autoComplete="off"
+      />
+      {open && filtered.length > 0 && (
+        <div style={{
+          position: "absolute", top: "100%", left: 0, right: 0,
+          background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8,
+          maxHeight: 260, overflowY: "auto", zIndex: 50, marginTop: 4,
+          boxShadow: "0 6px 24px rgba(0,0,0,0.08)"
+        }}>
+          {filtered.slice(0, 80).map(t => (
+            <div
+              key={t}
+              onMouseDown={() => handleSelect(t)}
+              style={{
+                padding: "10px 14px", cursor: "pointer", fontSize: 14,
+                borderBottom: "1px solid #f3f4f6"
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = "#f9fafb"}
+              onMouseLeave={(e) => e.currentTarget.style.background = "#fff"}
+            >
+              {t}
+            </div>
+          ))}
+          {filtered.length > 80 && (
+            <div style={{ padding: "8px 14px", fontSize: 12, color: "#9ca3af", textAlign: "center" }}>
+              Showing first 80 — keep typing to narrow down
+            </div>
+          )}
+        </div>
+      )}
+      {open && filtered.length === 0 && (
+        <div style={{
+          position: "absolute", top: "100%", left: 0, right: 0,
+          background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8,
+          padding: "12px 14px", marginTop: 4, fontSize: 14, color: "#6b7280",
+          boxShadow: "0 6px 24px rgba(0,0,0,0.08)", zIndex: 50
+        }}>
+          No matches — pick "Other" and add custom title
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PostJob() {
   const navigate = useNavigate();
 
@@ -250,22 +474,14 @@ export default function PostJob() {
           <div className="form-grid">
             <div className="input-group">
               <label className="input-label">Job Title</label>
-              <select
-                name="jobTitle"
+              <SearchableJobTitle
                 value={form.jobTitle}
                 onChange={handleChange}
                 disabled={disabled}
-                className="input-field"
-              >
-                <option>Software Engineer</option>
-                <option>Data Analyst</option>
-                <option>Product Manager</option>
-                <option>UI/UX Designer</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
+              />
+              </div>
 
-            {form.jobTitle === "other" && (
+              {form.jobTitle === "Other" && (
               <div className="input-group">
                 <label className="input-label">Custom Title</label>
                 <input
