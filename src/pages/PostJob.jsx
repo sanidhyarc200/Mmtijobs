@@ -5,7 +5,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 // =========================
 // JOB TITLES MASTER LIST (MP/India + global)
 // =========================
-const JOB_TITLES = [
+const RAW_JOB_TITLES = [
   // --- Tech / IT ---
   "Software Engineer", "Frontend Developer", "Backend Developer", "Full Stack Developer",
   "Mobile App Developer", "Android Developer", "iOS Developer", "React Developer",
@@ -146,40 +146,111 @@ const JOB_TITLES = [
   "Event Decorator", "Tent House Worker", "Caterer", "Wedding Planner",
   "Real Estate Broker", "Property Caretaker",
 
+  // --- NEW BATCH (client added) ---
+  "Administrative Assistant", "Apprentice", "Chemistry", "Customer Support Technician",
+  "Cyber", "Data Entry Executive", "Delivery Driver", "Dental Assistant",
+  "Engineering", "Field Sales", "Finance", "Fishery Biologist",
+  "General Natural Resources Management", "General Physical Science",
+  "Health Physics", "Human Resources", "HVAC", "Listing Executive",
+  "Logistics Coordinator", "Mathematics", "Medical/Dental/Public Health",
+  "Network Engineer", "Nurse/Compounder", "Operations", "Physics",
+  "Recruiter", "Retail/Counter Sales", "Sales", "Social Science",
+  "Teacher/Tutor", "Warehouse/Logistics",
+
   // --- Other ---
   "Other"
-].sort((a, b) => a === "Other" ? 1 : b === "Other" ? -1 : a.localeCompare(b));
+];
+
+// Deduplicate case-insensitively, then sort A→Z with "Other" pinned last
+const JOB_TITLES = RAW_JOB_TITLES
+  .filter((t, i, arr) => arr.findIndex(x => x.toLowerCase() === t.toLowerCase()) === i)
+  .sort((a, b) => {
+    if (a === "Other") return 1;
+    if (b === "Other") return -1;
+    return a.localeCompare(b);
+  });
 
 // =========================
-// SEARCHABLE JOB TITLE DROPDOWN
+// QUALIFICATIONS MASTER LIST (India + global)
 // =========================
-function SearchableJobTitle({ value, onChange, disabled }) {
+const RAW_QUALIFICATIONS = [
+  // 10/12
+  "10th Pass", "12th Pass (Science)", "12th Pass (Commerce)", "12th Pass (Arts)",
+  "Diploma", "ITI",
+  // Engineering UG
+  "B.Tech", "B.E.", "B.Tech (CSE)", "B.Tech (IT)", "B.Tech (ECE)", "B.Tech (EE)",
+  "B.Tech (Mechanical)", "B.Tech (Civil)", "B.Tech (Chemical)",
+  // Engineering PG
+  "M.Tech", "M.E.", "M.Tech (CSE)", "M.Tech (Data Science)", "M.Tech (AI/ML)",
+  // CS / IT
+  "BCA", "MCA", "B.Sc IT", "M.Sc IT", "B.Sc CS", "M.Sc CS",
+  // Science
+  "B.Sc", "M.Sc", "B.Sc (Physics)", "B.Sc (Chemistry)", "B.Sc (Maths)",
+  "B.Sc (Biology)", "B.Sc (Biotech)", "B.Sc (Nursing)",
+  // Commerce / Mgmt
+  "B.Com", "M.Com", "BBA", "MBA", "MBA (Finance)", "MBA (Marketing)", "MBA (HR)",
+  "MBA (Operations)", "PGDM",
+  // Arts / Humanities
+  "B.A.", "M.A.", "B.A. (Economics)", "B.A. (English)", "B.A. (History)",
+  "B.A. (Political Science)", "B.A. (Psychology)", "BJMC", "MJMC",
+  // Law
+  "LLB", "LLM", "BA LLB",
+  // Medical
+  "MBBS", "MD", "MS", "BDS", "MDS", "BAMS", "BHMS", "BUMS", "B.Pharm", "M.Pharm",
+  "B.PT", "M.PT", "BPT (Physiotherapy)",
+  // Education
+  "B.Ed", "M.Ed", "D.El.Ed", "NTT",
+  // Design / Architecture
+  "B.Des", "M.Des", "B.Arch", "M.Arch",
+  // Vocational / Misc
+  "Hotel Management", "Aviation Diploma", "Fashion Design",
+  // International
+  "Bachelor's Degree", "Master's Degree", "PhD", "Postdoc", "MPhil",
+  "Associate Degree", "High School Diploma", "GED",
+  // Catch-all
+  "Any Graduate", "Any Post Graduate", "No formal qualification required",
+  "Other"
+];
+
+const QUALIFICATIONS = RAW_QUALIFICATIONS
+  .filter((t, i, arr) => arr.findIndex(x => x.toLowerCase() === t.toLowerCase()) === i)
+  .sort((a, b) => {
+    if (a === "Other") return 1;
+    if (b === "Other") return -1;
+    return a.localeCompare(b);
+  });
+
+// =========================
+// REUSABLE SEARCHABLE COMBOBOX
+// =========================
+function SearchableCombo({ value, onChange, options, fieldName, disabled, placeholder, storageKey }) {
   const [search, setSearch] = useState(value || "");
   const [open, setOpen] = useState(false);
 
-  // Merge default + custom titles from localStorage
-  const allTitles = useMemo(() => {
+  // Merge defaults + custom from localStorage (so client-added titles persist)
+  const allOptions = useMemo(() => {
     let custom = [];
-    try {
-      custom = JSON.parse(localStorage.getItem("customJobTitles")) || [];
-    } catch {}
-    const merged = [...new Set([...JOB_TITLES.filter(t => t !== "Other"), ...custom])]
+    if (storageKey) {
+      try { custom = JSON.parse(localStorage.getItem(storageKey)) || []; } catch {}
+    }
+    const base = options.filter(t => t !== "Other");
+    const merged = [...new Set([...base, ...custom])]
       .sort((a, b) => a.localeCompare(b));
     return [...merged, "Other"];
-  }, [open]); // re-read when dropdown opens (catches newly added titles)
+  }, [open, options, storageKey]);
 
   useEffect(() => { setSearch(value || ""); }, [value]);
 
   const filtered = useMemo(() => {
-    if (!search) return allTitles;
+    if (!search) return allOptions;
     const s = search.toLowerCase();
-    return allTitles.filter(t => t.toLowerCase().includes(s));
-  }, [search, allTitles]);
+    return allOptions.filter(t => t.toLowerCase().includes(s));
+  }, [search, allOptions]);
 
-  const handleSelect = (title) => {
-    setSearch(title);
+  const handleSelect = (item) => {
+    setSearch(item);
     setOpen(false);
-    onChange({ target: { name: "jobTitle", value: title } });
+    onChange({ target: { name: fieldName, value: item } });
   };
 
   return (
@@ -187,10 +258,15 @@ function SearchableJobTitle({ value, onChange, disabled }) {
       <input
         type="text"
         value={search}
-        onChange={(e) => { setSearch(e.target.value); setOpen(true); }}
+        onChange={(e) => {
+          setSearch(e.target.value);
+          setOpen(true);
+          // Live-update parent state so user can also type a custom value freely
+          onChange({ target: { name: fieldName, value: e.target.value } });
+        }}
         onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 180)}
-        placeholder="Search job title..."
+        placeholder={placeholder || "Type to search..."}
         disabled={disabled}
         className="input-field"
         autoComplete="off"
@@ -230,7 +306,7 @@ function SearchableJobTitle({ value, onChange, disabled }) {
           padding: "12px 14px", marginTop: 4, fontSize: 14, color: "#6b7280",
           boxShadow: "0 6px 24px rgba(0,0,0,0.08)", zIndex: 50
         }}>
-          No matches — pick "Other" and add custom title
+          No matches — type your custom value and continue
         </div>
       )}
     </div>
@@ -248,6 +324,41 @@ export default function PostJob() {
     try { return JSON.parse(localStorage.getItem("currentUser")) || null; } catch { return null; }
   });
 
+  useEffect(() => {
+    const read = () => {
+      try { setUser(JSON.parse(localStorage.getItem("currentUser")) || null); } catch {}
+    };
+    window.addEventListener("authChanged", read);
+    window.addEventListener("storage", read);
+    return () => {
+      window.removeEventListener("authChanged", read);
+      window.removeEventListener("storage", read);
+    };
+  }, []);
+
+  const canPost = useMemo(() => !!user && user.userType === "recruiter", [user]);
+
+  const [form, setForm] = useState({
+    jobTitle: "Software Engineer",
+    customJobTitle: "",     // kept for backward compatibility
+    jobType: "Full-time",
+    qualification: "B.Tech",
+    customQualification: "", // kept for backward compatibility
+    location: "",
+    salaryMin: "",
+    salaryMax: "",
+    hiringProcess: [],
+    passFrom: "",
+    passTo: "",
+    expFrom: "",
+    expTo: "",
+    cgpa: "",
+    gender: "Any",
+    description: "",
+    numberOfOpenings: "",
+    activeUntil: "",        // 🔥 NEW: date until which job is active
+  });
+
   // 🔥 Pre-fill form when editing an existing job
   useEffect(() => {
     if (!editId) return;
@@ -256,7 +367,6 @@ export default function PostJob() {
       const job = jobs.find((j) => String(j.id) === String(editId));
       if (!job) return;
 
-      // Parse back ranges saved as "min - max" strings
       const parseRange = (str) => {
         if (!str) return ["", ""];
         const parts = String(str).split("-").map(s => s.trim());
@@ -267,9 +377,6 @@ export default function PostJob() {
       const [passFrom, passTo] = parseRange(job.passingYearRange);
       const [expFrom, expTo] = parseRange(job.experienceRange);
 
-      // Determine if title is in default list or custom
-      const isCustomTitle = !!job.title; // we'll let SearchableJobTitle handle it
-      
       setForm({
         jobTitle: job.title || "Software Engineer",
         customJobTitle: "",
@@ -288,34 +395,12 @@ export default function PostJob() {
         gender: job.gender || "Any",
         description: job.description || "",
         numberOfOpenings: job.numberOfOpenings || "",
+        activeUntil: job.activeUntil || "",
       });
     } catch (err) {
       console.error("Failed to load job for editing:", err);
     }
   }, [editId]);
-
-  
-  const canPost = useMemo(() => !!user && user.userType === "recruiter", [user]);
-
-  const [form, setForm] = useState({
-    jobTitle: "Software Engineer",
-    customJobTitle: "",
-    jobType: "Full-time",
-    qualification: "B.Tech",
-    customQualification: "",
-    location: "",
-    salaryMin: "",
-    salaryMax: "",
-    hiringProcess: [],
-    passFrom: "",
-    passTo: "",
-    expFrom: "",
-    expTo: "",
-    cgpa: "",
-    gender: "Any",
-    description: "",
-    numberOfOpenings: "",
-  });
 
   const [errors, setErrors] = useState({});
   const [showSuccess, setShowSuccess] = useState(false);
@@ -341,6 +426,8 @@ export default function PostJob() {
 
   const validate = () => {
     const newErrors = {};
+    if (!form.jobTitle || !form.jobTitle.trim()) newErrors.jobTitle = "Job title is required";
+    if (!form.qualification || !form.qualification.trim()) newErrors.qualification = "Qualification is required";
     if (!form.location.trim()) newErrors.location = "Location is required";
     if (!form.salaryMin || form.salaryMin <= 0) newErrors.salaryMin = "Enter valid minimum salary";
     if (!form.salaryMax || form.salaryMax <= 0 || parseFloat(form.salaryMax) < parseFloat(form.salaryMin))
@@ -353,8 +440,34 @@ export default function PostJob() {
     if (!form.numberOfOpenings || form.numberOfOpenings <= 0)
       newErrors.numberOfOpenings = "Enter valid number of openings";
 
+    // activeUntil: optional, but if given must be in future
+    if (form.activeUntil) {
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const chosen = new Date(form.activeUntil);
+      if (isNaN(chosen.getTime())) newErrors.activeUntil = "Invalid date";
+      else if (chosen < today) newErrors.activeUntil = "Date must be today or later";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  // Resolve final title: prefer typed value; if user picked "Other", use customJobTitle (backward compat)
+  const resolveTitle = () => {
+    if (form.jobTitle === "Other" && form.customJobTitle.trim()) {
+      return form.customJobTitle.trim();
+    }
+    return (form.jobTitle || "").trim();
+  };
+
+  const resolveQualification = () => {
+    if (form.qualification === "other" && form.customQualification.trim()) {
+      return form.customQualification.trim();
+    }
+    if (form.qualification === "Other" && form.customQualification.trim()) {
+      return form.customQualification.trim();
+    }
+    return (form.qualification || "").trim();
   };
 
   const handleSubmit = (e) => {
@@ -362,18 +475,36 @@ export default function PostJob() {
     if (!canPost) return;
     if (!validate()) return;
 
-    const title = form.jobTitle === "Other" ? form.customJobTitle.trim() : form.jobTitle;
-    const qualification = form.qualification === "other" ? form.customQualification.trim() : form.qualification;
+    const title = resolveTitle();
+    const qualification = resolveQualification();
 
-    // Persist custom job title for future suggestions
-    if (form.jobTitle === "Other" && title) {
+    // Persist custom job title for future suggestions if it's not in default list
+    if (title) {
       try {
-        const existingTitles = JSON.parse(localStorage.getItem("customJobTitles")) || [];
-        const normalized = title.charAt(0).toUpperCase() + title.slice(1);
-        const alreadyExists = existingTitles.some(t => t.toLowerCase() === normalized.toLowerCase());
-        if (!alreadyExists) {
-          existingTitles.push(normalized);
-          localStorage.setItem("customJobTitles", JSON.stringify(existingTitles));
+        const isInDefaults = JOB_TITLES.some(t => t.toLowerCase() === title.toLowerCase());
+        if (!isInDefaults) {
+          const existingTitles = JSON.parse(localStorage.getItem("customJobTitles")) || [];
+          const normalized = title.charAt(0).toUpperCase() + title.slice(1);
+          const alreadyExists = existingTitles.some(t => t.toLowerCase() === normalized.toLowerCase());
+          if (!alreadyExists) {
+            existingTitles.push(normalized);
+            localStorage.setItem("customJobTitles", JSON.stringify(existingTitles));
+          }
+        }
+      } catch {}
+    }
+
+    // Persist custom qualification too
+    if (qualification) {
+      try {
+        const isInDefaults = QUALIFICATIONS.some(q => q.toLowerCase() === qualification.toLowerCase());
+        if (!isInDefaults) {
+          const existingQuals = JSON.parse(localStorage.getItem("customQualifications")) || [];
+          const alreadyExists = existingQuals.some(q => q.toLowerCase() === qualification.toLowerCase());
+          if (!alreadyExists) {
+            existingQuals.push(qualification);
+            localStorage.setItem("customQualifications", JSON.stringify(existingQuals));
+          }
         }
       } catch {}
     }
@@ -381,14 +512,14 @@ export default function PostJob() {
     const existing = JSON.parse(localStorage.getItem("jobs")) || [];
 
     if (isEditMode) {
-      // 🔥 UPDATE existing job — preserve id, createdAt, status, postedBy
+      // UPDATE existing job — preserve id, createdAt, status, postedBy
       const idx = existing.findIndex((j) => String(j.id) === String(editId));
       if (idx === -1) {
         alert("Job not found.");
         return;
       }
-      const updated = {
-        ...existing[idx], // preserve id, createdAt, status, postedBy, etc.
+      existing[idx] = {
+        ...existing[idx],
         title,
         jobType: form.jobType,
         qualification,
@@ -401,9 +532,9 @@ export default function PostJob() {
         gender: form.gender,
         description: form.description.trim(),
         numberOfOpenings: form.numberOfOpenings,
+        activeUntil: form.activeUntil || null,
         updatedAt: new Date().toISOString(),
       };
-      existing[idx] = updated;
       localStorage.setItem("jobs", JSON.stringify(existing));
     } else {
       // CREATE new job
@@ -421,8 +552,10 @@ export default function PostJob() {
         gender: form.gender,
         description: form.description.trim(),
         numberOfOpenings: form.numberOfOpenings,
+        activeUntil: form.activeUntil || null,
         postedBy: user.id,
         company: user.company || user.name || "Unknown Company",
+        companyEmail: user.email,
         posterEmail: user.email,
         createdAt: new Date().toISOString(),
         status: "pending",
@@ -488,17 +621,20 @@ export default function PostJob() {
 
   const disabled = !canPost;
 
+  // Today's date for the min attribute on activeUntil
+  const todayStr = new Date().toISOString().split("T")[0];
+
   return (
     <div className="postjob-container">
       {/* HEADER */}
       <div className="postjob-header">
         <div>
-        <h1 className="header-title">{isEditMode ? "Edit Job" : "Post a New Job"}</h1>
-<p className="header-subtitle">
-  {isEditMode
-    ? "Update the details below and save your changes"
-    : "Fill in the details below to create a new job opening"}
-</p>
+          <h1 className="header-title">{isEditMode ? "Edit Job" : "Post a New Job"}</h1>
+          <p className="header-subtitle">
+            {isEditMode
+              ? "Update the details below and save your changes"
+              : "Fill in the details below to create a new job opening"}
+          </p>
         </div>
         {canPost ? (
           <div className="status-badge status-active">
@@ -570,14 +706,27 @@ export default function PostJob() {
           <div className="form-grid">
             <div className="input-group">
               <label className="input-label">Job Title</label>
-              <SearchableJobTitle
+              <SearchableCombo
                 value={form.jobTitle}
                 onChange={handleChange}
+                options={JOB_TITLES}
+                fieldName="jobTitle"
                 disabled={disabled}
+                placeholder="Search or type job title..."
+                storageKey="customJobTitles"
               />
-              </div>
+              {errors.jobTitle && (
+                <div className="error-message">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <circle cx="7" cy="7" r="6" fill="currentColor" opacity="0.1"/>
+                    <path d="M7 4v3M7 9.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                  {errors.jobTitle}
+                </div>
+              )}
+            </div>
 
-              {form.jobTitle === "Other" && (
+            {form.jobTitle === "Other" && (
               <div className="input-group">
                 <label className="input-label">Custom Title</label>
                 <input
@@ -610,22 +759,27 @@ export default function PostJob() {
 
             <div className="input-group">
               <label className="input-label">Qualification</label>
-              <select
-                name="qualification"
+              <SearchableCombo
                 value={form.qualification}
                 onChange={handleChange}
+                options={QUALIFICATIONS}
+                fieldName="qualification"
                 disabled={disabled}
-                className="input-field"
-              >
-                <option>B.Tech</option>
-                <option>MCA</option>
-                <option>B.Sc</option>
-                <option>M.Tech</option>
-                <option value="other">Other</option>
-              </select>
+                placeholder="Search or type qualification..."
+                storageKey="customQualifications"
+              />
+              {errors.qualification && (
+                <div className="error-message">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <circle cx="7" cy="7" r="6" fill="currentColor" opacity="0.1"/>
+                    <path d="M7 4v3M7 9.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                  {errors.qualification}
+                </div>
+              )}
             </div>
 
-            {form.qualification === "other" && (
+            {(form.qualification === "other" || form.qualification === "Other") && (
               <div className="input-group">
                 <label className="input-label">Custom Qualification</label>
                 <input
@@ -678,6 +832,32 @@ export default function PostJob() {
                     <path d="M7 4v3M7 9.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                   </svg>
                   {errors.numberOfOpenings}
+                </div>
+              )}
+            </div>
+
+            {/* 🔥 NEW: Active Until field */}
+            <div className="input-group">
+              <label className="input-label">Active Until (Date)</label>
+              <input
+                name="activeUntil"
+                type="date"
+                value={form.activeUntil}
+                onChange={handleChange}
+                disabled={disabled}
+                min={todayStr}
+                className={`input-field ${errors.activeUntil ? 'input-error' : ''}`}
+              />
+              <small style={{ color: "#6b7280", fontSize: 12, marginTop: 4 }}>
+                Job will auto-expire after this date. Leave blank for no expiry.
+              </small>
+              {errors.activeUntil && (
+                <div className="error-message">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <circle cx="7" cy="7" r="6" fill="currentColor" opacity="0.1"/>
+                    <path d="M7 4v3M7 9.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                  {errors.activeUntil}
                 </div>
               )}
             </div>
@@ -1029,7 +1209,7 @@ export default function PostJob() {
               </div>
 
               <div className="input-group">
-              <label className="input-label">Password</label>
+                <label className="input-label">Password</label>
                 <div style={{ position: 'relative' }}>
                   <input
                     value={login.password}
@@ -1201,31 +1381,10 @@ export default function PostJob() {
           box-shadow: 0 8px 16px rgba(245, 158, 11, 0.3);
         }
 
-        .callout-content {
-          flex: 1;
-        }
-
-        .callout-title {
-          font-size: 20px;
-          font-weight: 800;
-          color: var(--gray-900);
-          margin: 0 0 8px 0;
-          letter-spacing: -0.01em;
-        }
-
-        .callout-description {
-          font-size: 15px;
-          color: var(--gray-600);
-          margin: 0 0 20px 0;
-          line-height: 1.6;
-          font-weight: 500;
-        }
-
-        .callout-actions {
-          display: flex;
-          gap: 12px;
-          flex-wrap: wrap;
-        }
+        .callout-content { flex: 1; }
+        .callout-title { font-size: 20px; font-weight: 800; color: var(--gray-900); margin: 0 0 8px 0; letter-spacing: -0.01em; }
+        .callout-description { font-size: 15px; color: var(--gray-600); margin: 0 0 20px 0; line-height: 1.6; font-weight: 500; }
+        .callout-actions { display: flex; gap: 12px; flex-wrap: wrap; }
 
         .postjob-card {
           max-width: 1000px;
@@ -1239,13 +1398,8 @@ export default function PostJob() {
           animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s backwards;
         }
 
-        .form-section {
-          margin-bottom: 48px;
-        }
-
-        .form-section:last-of-type {
-          margin-bottom: 32px;
-        }
+        .form-section { margin-bottom: 48px; }
+        .form-section:last-of-type { margin-bottom: 32px; }
 
         .section-header {
           display: flex;
@@ -1269,20 +1423,8 @@ export default function PostJob() {
           box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
         }
 
-        .section-title {
-          font-size: 20px;
-          font-weight: 700;
-          color: var(--gray-900);
-          margin: 0 0 4px 0;
-          letter-spacing: -0.01em;
-        }
-
-        .section-description {
-          font-size: 14px;
-          color: var(--gray-500);
-          margin: 0;
-          font-weight: 500;
-        }
+        .section-title { font-size: 20px; font-weight: 700; color: var(--gray-900); margin: 0 0 4px 0; letter-spacing: -0.01em; }
+        .section-description { font-size: 14px; color: var(--gray-500); margin: 0; font-weight: 500; }
 
         .form-grid {
           display: grid;
@@ -1290,10 +1432,7 @@ export default function PostJob() {
           gap: 24px;
         }
 
-        .input-group {
-          display: flex;
-          flex-direction: column;
-        }
+        .input-group { display: flex; flex-direction: column; }
 
         .input-label {
           display: flex;
@@ -1320,35 +1459,12 @@ export default function PostJob() {
           font-family: 'DM Sans', sans-serif;
         }
 
-        .input-field::placeholder {
-          color: var(--gray-400);
-          font-weight: 500;
-        }
-
-        .input-field:hover:not(:disabled) {
-          border-color: var(--gray-300);
-        }
-
-        .input-field:focus {
-          border-color: var(--primary);
-          box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.1);
-        }
-
-        .input-field:disabled {
-          background: var(--gray-50);
-          color: var(--gray-500);
-          cursor: not-allowed;
-          opacity: 0.6;
-        }
-
-        .input-field.input-error {
-          border-color: var(--error);
-          background: rgba(239, 68, 68, 0.02);
-        }
-
-        .input-field.input-error:focus {
-          box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
-        }
+        .input-field::placeholder { color: var(--gray-400); font-weight: 500; }
+        .input-field:hover:not(:disabled) { border-color: var(--gray-300); }
+        .input-field:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.1); }
+        .input-field:disabled { background: var(--gray-50); color: var(--gray-500); cursor: not-allowed; opacity: 0.6; }
+        .input-field.input-error { border-color: var(--error); background: rgba(239, 68, 68, 0.02); }
+        .input-field.input-error:focus { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1); }
 
         select.input-field {
           cursor: pointer;
@@ -1359,415 +1475,125 @@ export default function PostJob() {
           padding-right: 44px;
         }
 
-        .error-message {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          margin-top: 8px;
-          font-size: 13px;
-          font-weight: 600;
-          color: var(--error);
-        }
+        .error-message { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 13px; font-weight: 600; color: var(--error); }
+        .error-message svg { flex-shrink: 0; }
 
-        .error-message svg {
-          flex-shrink: 0;
-        }
-
-        .checkbox-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 12px;
-        }
-
+        .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
         .checkbox-item {
-          position: relative;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 14px 16px;
-          background: var(--gray-50);
-          border: 2px solid var(--gray-200);
-          border-radius: 12px;
-          cursor: pointer;
+          position: relative; display: flex; align-items: center; gap: 12px;
+          padding: 14px 16px; background: var(--gray-50);
+          border: 2px solid var(--gray-200); border-radius: 12px; cursor: pointer;
           transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
+        .checkbox-item:hover:not(.checkbox-disabled) { border-color: var(--primary); background: rgba(22, 163, 74, 0.05); }
+        .checkbox-item input[type="checkbox"] { position: absolute; opacity: 0; pointer-events: none; }
+        .checkbox-item input[type="checkbox"]:checked + .checkbox-label { color: var(--primary); font-weight: 600; }
+        .checkbox-item input[type="checkbox"]:checked ~ .checkbox-icon { opacity: 1; color: var(--primary); }
+        .checkbox-item:has(input:checked) { border-color: var(--primary); background: rgba(22, 163, 74, 0.05); }
+        .checkbox-label { flex: 1; font-size: 14px; font-weight: 500; color: var(--gray-700); transition: all 0.2s ease; }
+        .checkbox-icon { opacity: 0; transition: opacity 0.2s ease; flex-shrink: 0; }
+        .checkbox-disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
 
-        .checkbox-item:hover:not(.checkbox-disabled) {
-          border-color: var(--primary);
-          background: rgba(22, 163, 74, 0.05);
-        }
-
-        .checkbox-item input[type="checkbox"] {
-          position: absolute;
-          opacity: 0;
-          pointer-events: none;
-        }
-
-        .checkbox-item input[type="checkbox"]:checked + .checkbox-label {
-          color: var(--primary);
-          font-weight: 600;
-        }
-
-        .checkbox-item input[type="checkbox"]:checked ~ .checkbox-icon {
-          opacity: 1;
-          color: var(--primary);
-        }
-
-        .checkbox-item:has(input:checked) {
-          border-color: var(--primary);
-          background: rgba(22, 163, 74, 0.05);
-        }
-
-        .checkbox-label {
-          flex: 1;
-          font-size: 14px;
-          font-weight: 500;
-          color: var(--gray-700);
-          transition: all 0.2s ease;
-        }
-
-        .checkbox-icon {
-          opacity: 0;
-          transition: opacity 0.2s ease;
-          flex-shrink: 0;
-        }
-
-        .checkbox-disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-          pointer-events: none;
-        }
-
-        .form-actions {
-          display: flex;
-          justify-content: flex-end;
-          padding-top: 24px;
-          border-top: 1px solid var(--gray-200);
-        }
+        .form-actions { display: flex; justify-content: flex-end; padding-top: 24px; border-top: 1px solid var(--gray-200); }
 
         .btn-primary {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 14px 28px;
-          font-size: 15px;
-          font-weight: 700;
-          color: white;
+          display: inline-flex; align-items: center; gap: 8px;
+          padding: 14px 28px; font-size: 15px; font-weight: 700; color: white;
           background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-          border: none;
-          border-radius: 12px;
-          cursor: pointer;
+          border: none; border-radius: 12px; cursor: pointer;
           transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
           box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
-          font-family: 'DM Sans', sans-serif;
-          letter-spacing: -0.01em;
+          font-family: 'DM Sans', sans-serif; letter-spacing: -0.01em;
         }
-
-        .btn-primary:hover:not(:disabled) {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 20px rgba(22, 163, 74, 0.4);
-        }
-
-        .btn-primary:active:not(:disabled) {
-          transform: translateY(0);
-        }
-
-        .btn-primary:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-          transform: none !important;
-        }
+        .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(22, 163, 74, 0.4); }
+        .btn-primary:active:not(:disabled) { transform: translateY(0); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
 
         .btn-secondary {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 14px 28px;
-          font-size: 15px;
-          font-weight: 700;
-          color: var(--gray-700);
-          background: white;
-          border: 2px solid var(--gray-300);
-          border-radius: 12px;
-          cursor: pointer;
+          display: inline-flex; align-items: center; gap: 8px;
+          padding: 14px 28px; font-size: 15px; font-weight: 700;
+          color: var(--gray-700); background: white;
+          border: 2px solid var(--gray-300); border-radius: 12px; cursor: pointer;
           transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-          font-family: 'DM Sans', sans-serif;
-          letter-spacing: -0.01em;
+          font-family: 'DM Sans', sans-serif; letter-spacing: -0.01em;
         }
-
-        .btn-secondary:hover {
-          background: var(--gray-50);
-          border-color: var(--gray-400);
-        }
+        .btn-secondary:hover { background: var(--gray-50); border-color: var(--gray-400); }
 
         .success-message {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 12px;
-          margin-top: 24px;
-          padding: 16px 24px;
+          display: flex; align-items: center; justify-content: center;
+          gap: 12px; margin-top: 24px; padding: 16px 24px;
           background: linear-gradient(135deg, rgba(22, 163, 74, 0.1) 0%, rgba(21, 128, 61, 0.05) 100%);
-          border: 2px solid var(--primary);
-          border-radius: 12px;
-          color: var(--primary-dark);
-          font-weight: 700;
-          font-size: 15px;
+          border: 2px solid var(--primary); border-radius: 12px;
+          color: var(--primary-dark); font-weight: 700; font-size: 15px;
           animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .modal-overlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(0, 0, 0, 0.6);
-          backdrop-filter: blur(8px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 20px;
-          z-index: 1000;
-          animation: fadeIn 0.3s ease;
+          position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6);
+          backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center;
+          padding: 20px; z-index: 1000; animation: fadeIn 0.3s ease;
         }
-
         .modal-content {
-          width: 100%;
-          max-width: 480px;
-          background: white;
-          border-radius: 24px;
-          padding: 32px;
+          width: 100%; max-width: 480px; background: white;
+          border-radius: 24px; padding: 32px;
           box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
           animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
-
-        .modal-header {
-          display: flex;
-          align-items: flex-start;
-          gap: 16px;
-          margin-bottom: 28px;
-        }
-
+        .modal-header { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 28px; }
         .modal-icon {
-          width: 48px;
-          height: 48px;
-          border-radius: 12px;
+          width: 48px; height: 48px; border-radius: 12px;
           background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-          color: white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-          box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+          color: white; display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
         }
-
-        .modal-title {
-          font-size: 22px;
-          font-weight: 800;
-          color: var(--gray-900);
-          margin: 0 0 4px 0;
-          letter-spacing: -0.01em;
-        }
-
-        .modal-description {
-          font-size: 14px;
-          color: var(--gray-500);
-          margin: 0;
-          font-weight: 500;
-        }
-
+        .modal-title { font-size: 22px; font-weight: 800; color: var(--gray-900); margin: 0 0 4px 0; letter-spacing: -0.01em; }
+        .modal-description { font-size: 14px; color: var(--gray-500); margin: 0; font-weight: 500; }
         .modal-close {
-          margin-left: auto;
-          width: 36px;
-          height: 36px;
-          border-radius: 8px;
-          background: var(--gray-100);
-          border: none;
-          color: var(--gray-600);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          flex-shrink: 0;
+          margin-left: auto; width: 36px; height: 36px; border-radius: 8px;
+          background: var(--gray-100); border: none; color: var(--gray-600);
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer; transition: all 0.2s ease; flex-shrink: 0;
         }
-
-        .modal-close:hover {
-          background: var(--gray-200);
-        }
-
-        .modal-form {
-          display: flex;
-          flex-direction: column;
-          gap: 20px;
-        }
-
+        .modal-close:hover { background: var(--gray-200); }
+        .modal-form { display: flex; flex-direction: column; gap: 20px; }
         .login-error {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 12px 16px;
-          background: rgba(239, 68, 68, 0.05);
-          border: 1px solid rgba(239, 68, 68, 0.2);
-          border-radius: 10px;
-          color: var(--error);
-          font-size: 14px;
-          font-weight: 600;
+          display: flex; align-items: center; gap: 8px; padding: 12px 16px;
+          background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2);
+          border-radius: 10px; color: var(--error); font-size: 14px; font-weight: 600;
         }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px; }
 
-        .modal-actions {
-          display: flex;
-          justify-content: flex-end;
-          gap: 12px;
-          margin-top: 8px;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-
-        @keyframes fadeInDown {
-          from {
-            opacity: 0;
-            transform: translateY(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes modalSlideUp {
-          from {
-            opacity: 0;
-            transform: translateY(40px) scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-
-        @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes modalSlideUp { from { opacity: 0; transform: translateY(40px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
         @media (max-width: 768px) {
-          .postjob-container {
-            padding: 24px 16px;
-          }
-
-          .postjob-header {
-            flex-direction: column;
-            gap: 16px;
-            margin-bottom: 24px;
-          }
-
-          .header-title {
-            font-size: 24px;
-          }
-
-          .status-badge {
-            align-self: flex-start;
-          }
-
-          .access-callout {
-            flex-direction: column;
-            padding: 24px;
-          }
-
-          .postjob-card {
-            padding: 28px 24px;
-            border-radius: 20px;
-          }
-
-          .form-section {
-            margin-bottom: 40px;
-          }
-
-          .section-header {
-            gap: 12px;
-            margin-bottom: 24px;
-          }
-
-          .section-icon {
-            width: 40px;
-            height: 40px;
-          }
-
-          .section-title {
-            font-size: 18px;
-          }
-
-          .form-grid {
-            grid-template-columns: 1fr;
-            gap: 20px;
-          }
-
-          .checkbox-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .form-actions {
-            flex-direction: column;
-          }
-
-          .btn-primary,
-          .btn-secondary {
-            width: 100%;
-            justify-content: center;
-          }
-
-          .callout-actions {
-            flex-direction: column;
-          }
-
-          .callout-actions .btn-primary,
-          .callout-actions .btn-secondary {
-            width: 100%;
-            justify-content: center;
-          }
-
-          .modal-content {
-            padding: 24px;
-          }
-
-          .modal-header {
-            margin-bottom: 24px;
-          }
-
-          .modal-actions {
-            flex-direction: column-reverse;
-          }
-
-          .modal-actions .btn-primary,
-          .modal-actions .btn-secondary {
-            width: 100%;
-            justify-content: center;
-          }
+          .postjob-container { padding: 24px 16px; }
+          .postjob-header { flex-direction: column; gap: 16px; margin-bottom: 24px; }
+          .header-title { font-size: 24px; }
+          .status-badge { align-self: flex-start; }
+          .access-callout { flex-direction: column; padding: 24px; }
+          .postjob-card { padding: 28px 24px; border-radius: 20px; }
+          .form-section { margin-bottom: 40px; }
+          .section-header { gap: 12px; margin-bottom: 24px; }
+          .section-icon { width: 40px; height: 40px; }
+          .section-title { font-size: 18px; }
+          .form-grid { grid-template-columns: 1fr; gap: 20px; }
+          .checkbox-grid { grid-template-columns: 1fr; }
+          .form-actions { flex-direction: column; }
+          .btn-primary, .btn-secondary { width: 100%; justify-content: center; }
+          .callout-actions { flex-direction: column; }
+          .callout-actions .btn-primary, .callout-actions .btn-secondary { width: 100%; justify-content: center; }
+          .modal-content { padding: 24px; }
+          .modal-header { margin-bottom: 24px; }
+          .modal-actions { flex-direction: column-reverse; }
+          .modal-actions .btn-primary, .modal-actions .btn-secondary { width: 100%; justify-content: center; }
         }
 
         @media (prefers-reduced-motion: reduce) {
-          *,
-          *::before,
-          *::after {
+          *, *::before, *::after {
             animation-duration: 0.01ms !important;
             animation-iteration-count: 1 !important;
             transition-duration: 0.01ms !important;
