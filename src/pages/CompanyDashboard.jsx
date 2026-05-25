@@ -247,12 +247,12 @@ export default function CompanyDashboard() {
   <button onClick={() => navigate(`/job-applicants/${job.id}`)} style={btnPrimarySmall}>
     View Applicants
   </button>
-  <button
+  {/* <button
     onClick={() => navigate(`/jobs?jobId=${job.id}`)}
     style={{ ...btnPrimarySmall, background: "#0ea5e9" }}
   >
     View JD
-  </button>
+  </button> */}
   <button
     onClick={() => navigate(`/post-job?editId=${job.id}`)}
     style={{ ...btnPrimarySmall, background: "#f59e0b" }}
