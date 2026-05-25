@@ -243,7 +243,23 @@ export default function CompanyDashboard() {
                         <div style={{ color: "#6b7280", fontSize: 14, marginBottom: 8 }}>
                           Posted on {new Date(job.createdAt || Date.now()).toLocaleDateString()} • {job.company}
                         </div>
-                        <button onClick={() => navigate(`/job-applicants/${job.id}`)} style={btnPrimarySmall}>View Applicants</button>
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+  <button onClick={() => navigate(`/job-applicants/${job.id}`)} style={btnPrimarySmall}>
+    View Applicants
+  </button>
+  <button
+    onClick={() => navigate(`/jobs?jobId=${job.id}`)}
+    style={{ ...btnPrimarySmall, background: "#0ea5e9" }}
+  >
+    View JD
+  </button>
+  <button
+    onClick={() => navigate(`/post-job?editId=${job.id}`)}
+    style={{ ...btnPrimarySmall, background: "#f59e0b" }}
+  >
+    Edit JD
+  </button>
+</div>
                       </div>
                       <div style={{ minWidth: 46, height: 46, borderRadius: "50%", background: "#e0f2fe", display: "flex", justifyContent: "center", alignItems: "center", fontWeight: 700, color: "#0369a1", fontSize: "0.95em", boxShadow: "0 3px 8px rgba(0,0,0,0.1)" }}>
                         {applicantCount}

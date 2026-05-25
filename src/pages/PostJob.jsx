@@ -1,6 +1,6 @@
 // src/pages/PostJob.jsx
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 // =========================
 // JOB TITLES MASTER LIST (MP/India + global)
@@ -239,24 +239,62 @@ function SearchableJobTitle({ value, onChange, disabled }) {
 
 export default function PostJob() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get("editId");
+  const isEditMode = !!editId;
 
   // who's here?
   const [user, setUser] = useState(() => {
     try { return JSON.parse(localStorage.getItem("currentUser")) || null; } catch { return null; }
   });
 
+  // 🔥 Pre-fill form when editing an existing job
   useEffect(() => {
-    const read = () => {
-      try { setUser(JSON.parse(localStorage.getItem("currentUser")) || null); } catch {}
-    };
-    window.addEventListener("authChanged", read);
-    window.addEventListener("storage", read);
-    return () => {
-      window.removeEventListener("authChanged", read);
-      window.removeEventListener("storage", read);
-    };
-  }, []);
+    if (!editId) return;
+    try {
+      const jobs = JSON.parse(localStorage.getItem("jobs")) || [];
+      const job = jobs.find((j) => String(j.id) === String(editId));
+      if (!job) return;
 
+      // Parse back ranges saved as "min - max" strings
+      const parseRange = (str) => {
+        if (!str) return ["", ""];
+        const parts = String(str).split("-").map(s => s.trim());
+        return [parts[0] || "", parts[1] || ""];
+      };
+      const [salMin, salMaxRaw] = parseRange((job.salary || "").replace(/LPA/i, ""));
+      const salMax = (salMaxRaw || "").trim();
+      const [passFrom, passTo] = parseRange(job.passingYearRange);
+      const [expFrom, expTo] = parseRange(job.experienceRange);
+
+      // Determine if title is in default list or custom
+      const isCustomTitle = !!job.title; // we'll let SearchableJobTitle handle it
+      
+      setForm({
+        jobTitle: job.title || "Software Engineer",
+        customJobTitle: "",
+        jobType: job.jobType || "Full-time",
+        qualification: job.qualification || "B.Tech",
+        customQualification: "",
+        location: job.location || "",
+        salaryMin: salMin || "",
+        salaryMax: salMax || "",
+        hiringProcess: Array.isArray(job.hiringProcess) ? job.hiringProcess : [],
+        passFrom: passFrom || "",
+        passTo: passTo || "",
+        expFrom: expFrom || "",
+        expTo: expTo || "",
+        cgpa: job.cgpa || "",
+        gender: job.gender || "Any",
+        description: job.description || "",
+        numberOfOpenings: job.numberOfOpenings || "",
+      });
+    } catch (err) {
+      console.error("Failed to load job for editing:", err);
+    }
+  }, [editId]);
+
+  
   const canPost = useMemo(() => !!user && user.userType === "recruiter", [user]);
 
   const [form, setForm] = useState({
@@ -322,46 +360,75 @@ export default function PostJob() {
     e.preventDefault();
     if (!canPost) return;
     if (!validate()) return;
-    
-    const title = form.jobTitle === "Other" ? form.customJobTitle.trim() : form.jobTitle;
 
-    // Persist custom job title so it appears in future suggestions
+    const title = form.jobTitle === "Other" ? form.customJobTitle.trim() : form.jobTitle;
+    const qualification = form.qualification === "other" ? form.customQualification.trim() : form.qualification;
+
+    // Persist custom job title for future suggestions
     if (form.jobTitle === "Other" && title) {
       try {
-        const existing = JSON.parse(localStorage.getItem("customJobTitles")) || [];
+        const existingTitles = JSON.parse(localStorage.getItem("customJobTitles")) || [];
         const normalized = title.charAt(0).toUpperCase() + title.slice(1);
-        const alreadyExists = existing.some(t => t.toLowerCase() === normalized.toLowerCase());
+        const alreadyExists = existingTitles.some(t => t.toLowerCase() === normalized.toLowerCase());
         if (!alreadyExists) {
-          existing.push(normalized);
-          localStorage.setItem("customJobTitles", JSON.stringify(existing));
+          existingTitles.push(normalized);
+          localStorage.setItem("customJobTitles", JSON.stringify(existingTitles));
         }
       } catch {}
     }
-    const qualification = form.qualification === "other" ? form.customQualification.trim() : form.qualification;
-
-    const job = {
-      id: Date.now(),
-      title,
-      jobType: form.jobType,
-      qualification,
-      location: form.location.trim(),
-      salary: `${form.salaryMin} - ${form.salaryMax} LPA`,
-      hiringProcess: form.hiringProcess,
-      passingYearRange: `${form.passFrom} - ${form.passTo}`,
-      experienceRange: `${form.expFrom} - ${form.expTo}`,
-      cgpa: form.cgpa,
-      gender: form.gender,
-      description: form.description.trim(),
-      numberOfOpenings: form.numberOfOpenings,
-      postedBy: user.id,
-      company: user.company || user.name || "Unknown Company",
-      posterEmail: user.email,
-      createdAt: new Date().toISOString(),
-      status: "pending",
-    };
 
     const existing = JSON.parse(localStorage.getItem("jobs")) || [];
-    localStorage.setItem("jobs", JSON.stringify([job, ...existing]));
+
+    if (isEditMode) {
+      // 🔥 UPDATE existing job — preserve id, createdAt, status, postedBy
+      const idx = existing.findIndex((j) => String(j.id) === String(editId));
+      if (idx === -1) {
+        alert("Job not found.");
+        return;
+      }
+      const updated = {
+        ...existing[idx], // preserve id, createdAt, status, postedBy, etc.
+        title,
+        jobType: form.jobType,
+        qualification,
+        location: form.location.trim(),
+        salary: `${form.salaryMin} - ${form.salaryMax} LPA`,
+        hiringProcess: form.hiringProcess,
+        passingYearRange: `${form.passFrom} - ${form.passTo}`,
+        experienceRange: `${form.expFrom} - ${form.expTo}`,
+        cgpa: form.cgpa,
+        gender: form.gender,
+        description: form.description.trim(),
+        numberOfOpenings: form.numberOfOpenings,
+        updatedAt: new Date().toISOString(),
+      };
+      existing[idx] = updated;
+      localStorage.setItem("jobs", JSON.stringify(existing));
+    } else {
+      // CREATE new job
+      const job = {
+        id: Date.now(),
+        title,
+        jobType: form.jobType,
+        qualification,
+        location: form.location.trim(),
+        salary: `${form.salaryMin} - ${form.salaryMax} LPA`,
+        hiringProcess: form.hiringProcess,
+        passingYearRange: `${form.passFrom} - ${form.passTo}`,
+        experienceRange: `${form.expFrom} - ${form.expTo}`,
+        cgpa: form.cgpa,
+        gender: form.gender,
+        description: form.description.trim(),
+        numberOfOpenings: form.numberOfOpenings,
+        postedBy: user.id,
+        company: user.company || user.name || "Unknown Company",
+        posterEmail: user.email,
+        createdAt: new Date().toISOString(),
+        status: "pending",
+      };
+      localStorage.setItem("jobs", JSON.stringify([job, ...existing]));
+    }
+
     try { window.dispatchEvent(new Event("jobsChanged")); } catch {}
 
     setShowSuccess(true);
@@ -425,8 +492,12 @@ export default function PostJob() {
       {/* HEADER */}
       <div className="postjob-header">
         <div>
-          <h1 className="header-title">Post a New Job</h1>
-          <p className="header-subtitle">Fill in the details below to create a new job opening</p>
+        <h1 className="header-title">{isEditMode ? "Edit Job" : "Post a New Job"}</h1>
+<p className="header-subtitle">
+  {isEditMode
+    ? "Update the details below and save your changes"
+    : "Fill in the details below to create a new job opening"}
+</p>
         </div>
         {canPost ? (
           <div className="status-badge status-active">
@@ -903,7 +974,7 @@ export default function PostJob() {
             disabled={disabled}
             className="btn-primary btn-submit"
           >
-            <span>Post Job</span>
+            <span>{isEditMode ? "Save Changes" : "Post Job"}</span>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="9 18 15 12 9 6"/>
             </svg>
@@ -915,7 +986,7 @@ export default function PostJob() {
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
-            Job posted successfully! Redirecting...
+            {isEditMode ? "Job updated successfully! Redirecting..." : "Job posted successfully! Redirecting..."}
           </div>
         )}
       </form>
