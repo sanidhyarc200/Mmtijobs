@@ -301,17 +301,24 @@ export default function LandingPage() {
 
     const filtered = allJobs.filter((job) => {
       const kw = keyword.toLowerCase();
+      const jobTitle = (job.title || '').toLowerCase();
+      const jobTags = Array.isArray(job.tags)
+        ? job.tags
+        : Array.isArray(job.hiringProcess) ? job.hiringProcess : [];
       const matchesKeyword =
-        job.title.toLowerCase().includes(kw) ||
-        job.tags.some((tag) => tag.toLowerCase().includes(kw));
-      const matchesLocation = location ? job.location.toLowerCase().includes(location.toLowerCase()) : true;
+        jobTitle.includes(kw) ||
+        jobTags.some((tag) => String(tag).toLowerCase().includes(kw));
+      const matchesLocation = location ? (job.location || '').toLowerCase().includes(location.toLowerCase()) : true;
 
       let matchesExperience = true;
       if (experience && experienceMap[experience]) {
         const [minExp, maxExp] = experienceMap[experience];
-        const [jobMinExp, jobMaxExp] = job.experience.split(' ')[0].split('-').map(Number);
-        matchesExperience =
-          (jobMinExp >= minExp && jobMinExp <= maxExp) || (jobMaxExp >= minExp && jobMaxExp <= maxExp);
+        const expString = job.experience || job.experienceRange || '0-0';
+        const [jobMinExp, jobMaxExp] = String(expString).split(' ')[0].split('-').map(Number);
+        if (!isNaN(jobMinExp) && !isNaN(jobMaxExp)) {
+          matchesExperience =
+            (jobMinExp >= minExp && jobMinExp <= maxExp) || (jobMaxExp >= minExp && jobMaxExp <= maxExp);
+        }
       }
 
       return matchesKeyword && matchesLocation && matchesExperience;
@@ -392,7 +399,7 @@ export default function LandingPage() {
 
     const users = JSON.parse(localStorage.getItem('users')) || [];
     const user = users.find(
-      (u) => u.email === loginData.email && u.password === loginData.password
+      (u) => u.email?.toLowerCase() === loginData.email.toLowerCase() && u.password === loginData.password
     );
 
     if (!user) {
@@ -630,12 +637,13 @@ export default function LandingPage() {
                   <h3 className="job-title">{job.title}</h3>
                   {job.company && <div className="job-company">{job.company}</div>}
                   <div className="job-meta">
-                    <span>{job.location}</span><span>•</span>
-                    <span>{job.experience}</span><span>•</span>
-                    <span>{job.salary}</span>
+                    <span>{job.location || '—'}</span><span>•</span>
+                    <span>{job.experience || job.experienceRange || '—'}</span><span>•</span>
+                    <span>{job.salary || '—'}</span>
                   </div>
                   <div className="job-tags">
-                    {job.tags.map((tag, idx) => <span key={idx} className="job-tag">{tag}</span>)}
+                    {(Array.isArray(job.tags) ? job.tags : Array.isArray(job.hiringProcess) ? job.hiringProcess : [])
+                      .map((tag, idx) => <span key={idx} className="job-tag">{tag}</span>)}
                   </div>
                   <p className="job-description">{job.description}</p>
                   <div className="job-buttons">
@@ -741,10 +749,10 @@ export default function LandingPage() {
               <button className="modal-close" onClick={() => setShowViewModal(false)}>✕</button>
             </div>
 
-            <div style={{ marginBottom: 10 }}><strong>Location:</strong> {selectedJob.location}</div>
-            <div style={{ marginBottom: 10 }}><strong>Experience:</strong> {selectedJob.experience}</div>
-            <div style={{ marginBottom: 10 }}><strong>Salary:</strong> {selectedJob.salary}</div>
-            <div style={{ marginBottom: 10 }}><strong>Skills:</strong> {selectedJob.tags.join(', ')}</div>
+            <div style={{ marginBottom: 10 }}><strong>Location:</strong> {selectedJob.location || '—'}</div>
+            <div style={{ marginBottom: 10 }}><strong>Experience:</strong> {selectedJob.experience || selectedJob.experienceRange || '—'}</div>
+            <div style={{ marginBottom: 10 }}><strong>Salary:</strong> {selectedJob.salary || '—'}</div>
+            <div style={{ marginBottom: 10 }}><strong>Skills:</strong> {(Array.isArray(selectedJob.tags) ? selectedJob.tags : Array.isArray(selectedJob.hiringProcess) ? selectedJob.hiringProcess : []).join(', ') || '—'}</div>
             <div style={{ marginBottom: 12 }}><strong>Description:</strong></div>
             <p style={{ color: '#4b5563', lineHeight: 1.5, marginBottom: 16 }}>{selectedJob.description}</p>
 
