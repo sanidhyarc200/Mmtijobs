@@ -469,6 +469,7 @@ export default function AdminDashboard() {
     list[index] = {
       ...j,
       status: j.status === "active" ? "inactive" : "active",
+      statusChangedAt: Date.now(), // 🔥 timestamp for sorting
     };
     setJobs(list);
     saveJobs(list);

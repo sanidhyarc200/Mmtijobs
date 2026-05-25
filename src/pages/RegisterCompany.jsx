@@ -346,8 +346,14 @@ export default function RegisterCompany() {
       createdAt: new Date().toISOString(),
     };
 
-    localStorage.setItem("registeredCompany", JSON.stringify(companyData));
-    upsertRecruiterUser(companyData);
+// Save to array (so all companies persist), and also single key for backward compatibility
+const existing = JSON.parse(localStorage.getItem("registeredCompanies")) || [];
+const filtered = existing.filter(
+  (c) => c.email?.toLowerCase() !== companyData.email?.toLowerCase()
+); // remove duplicate if same email re-registers
+filtered.push(companyData);
+localStorage.setItem("registeredCompanies", JSON.stringify(filtered));
+localStorage.setItem("registeredCompany", JSON.stringify(companyData)); // keep for backward compat    upsertRecruiterUser(companyData);
 
     // success modal ONLY on fresh creation — never anywhere else
     setShowSuccess(true);

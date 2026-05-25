@@ -322,16 +322,15 @@ export default function PostJob() {
     e.preventDefault();
     if (!canPost) return;
     if (!validate()) return;
-
+    
     const title = form.jobTitle === "Other" ? form.customJobTitle.trim() : form.jobTitle;
 
     // Persist custom job title so it appears in future suggestions
     if (form.jobTitle === "Other" && title) {
       try {
         const existing = JSON.parse(localStorage.getItem("customJobTitles")) || [];
-        const normalized = title.charAt(0).toUpperCase() + title.slice(1); // capitalize first letter
-        const alreadyExists = existing.some(t => t.toLowerCase() === normalized.toLowerCase())
-          || JOB_TITLES.some(t => t.toLowerCase() === normalized.toLowerCase());
+        const normalized = title.charAt(0).toUpperCase() + title.slice(1);
+        const alreadyExists = existing.some(t => t.toLowerCase() === normalized.toLowerCase());
         if (!alreadyExists) {
           existing.push(normalized);
           localStorage.setItem("customJobTitles", JSON.stringify(existing));

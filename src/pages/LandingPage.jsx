@@ -237,6 +237,49 @@ export default function LandingPage() {
     };
   }, []);
 
+  
+
+  // ---------- live jobs from storage (refreshes on status change) ----------
+  const [allJobs, setAllJobs] = useState(defaultJobs);
+
+  useEffect(() => {
+    const loadJobs = () => {
+      let stored = [];
+      try {
+        stored = JSON.parse(localStorage.getItem('jobs')) || [];
+      } catch {}
+
+      // Filter defaultJobs: if it has a status field, must be active; if no status field, keep it
+      const visibleDefaults = defaultJobs.filter(
+        (j) => !j.status || j.status === 'active'
+      );
+
+      // Filter stored jobs: only show active ones
+      const visibleStored = stored.filter((j) => j.status === 'active');
+
+      // Merge — avoid duplicate IDs (stored takes priority), then sort newest first
+      const storedIds = new Set(visibleStored.map((j) => j.id));
+      const merged = [
+        ...visibleStored,
+        ...visibleDefaults.filter((j) => !storedIds.has(j.id)),
+      ].sort((a, b) => {
+        const aTime = a.statusChangedAt || new Date(a.createdAt || 0).getTime();
+        const bTime = b.statusChangedAt || new Date(b.createdAt || 0).getTime();
+        return bTime - aTime; // newest first — newly activated jobs go to top
+      });
+      setAllJobs(merged);
+    };
+
+    loadJobs();
+    // Re-load when admin toggles status (same tab via custom event, other tabs via storage event)
+    window.addEventListener('jobsChanged', loadJobs);
+    window.addEventListener('storage', loadJobs);
+    return () => {
+      window.removeEventListener('jobsChanged', loadJobs);
+      window.removeEventListener('storage', loadJobs);
+    };
+  }, []);
+
   // ---------- filtering ----------
   useEffect(() => {
     const storedTitles = JSON.parse(sessionStorage.getItem('searchedTitles')) || [];
@@ -256,7 +299,7 @@ export default function LandingPage() {
       '5+ years': [5, Infinity],
     };
 
-    const filtered = defaultJobs.filter((job) => {
+    const filtered = allJobs.filter((job) => {
       const kw = keyword.toLowerCase();
       const matchesKeyword =
         job.title.toLowerCase().includes(kw) ||
@@ -275,7 +318,7 @@ export default function LandingPage() {
     });
 
     setFilteredJobs(filtered);
-  }, [keyword, location, experience]);
+  }, [keyword, location, experience, allJobs]);
 
   // ---------- application helpers ----------
   const applyToJob = (job, user) => {
