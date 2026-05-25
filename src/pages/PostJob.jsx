@@ -324,6 +324,7 @@ export default function PostJob() {
   const [showLogin, setShowLogin] = useState(false);
   const [login, setLogin] = useState({ email: "", password: "" });
   const [loginErr, setLoginErr] = useState("");
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -1028,15 +1029,30 @@ export default function PostJob() {
               </div>
 
               <div className="input-group">
-                <label className="input-label">Password</label>
-                <input
-                  value={login.password}
-                  onChange={(e) => setLogin({ ...login, password: e.target.value })}
-                  className="input-field"
-                  type="password"
-                  placeholder="••••••••"
-                  required
-                />
+              <label className="input-label">Password</label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    value={login.password}
+                    onChange={(e) => setLogin({ ...login, password: e.target.value })}
+                    className="input-field"
+                    type={showLoginPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    required
+                    style={{ paddingRight: '42px' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowLoginPassword(p => !p)}
+                    style={{
+                      position: 'absolute', right: '10px', top: '50%',
+                      transform: 'translateY(-50%)', background: 'none',
+                      border: 'none', cursor: 'pointer', color: '#6b7280',
+                      padding: '4px', fontSize: '16px'
+                    }}
+                  >
+                    {showLoginPassword ? '🙈' : '👁️'}
+                  </button>
+                </div>
               </div>
 
               {loginErr && (

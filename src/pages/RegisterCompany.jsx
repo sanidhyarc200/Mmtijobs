@@ -350,18 +350,23 @@ export default function RegisterCompany() {
     const existing = JSON.parse(localStorage.getItem("registeredCompanies")) || [];
     const filtered = existing.filter(
       (c) => c.email?.toLowerCase() !== companyData.email?.toLowerCase()
-    ); // remove duplicate if same email re-registers
+    );
     filtered.push(companyData);
     localStorage.setItem("registeredCompanies", JSON.stringify(filtered));
-    localStorage.setItem("registeredCompany", JSON.stringify(companyData)); // keep for backward compat    upsertRecruiterUser(companyData);
+    localStorage.setItem("registeredCompany", JSON.stringify(companyData));
 
-    // success modal ONLY on fresh creation — never anywhere else
+    // 🔥 Create the recruiter user AND auto-login them
+    const recruiterUser = upsertRecruiterUser(companyData);
+    localStorage.setItem("currentUser", JSON.stringify(recruiterUser));
+    try { window.dispatchEvent(new Event("authChanged")); } catch {}
+
+    // success modal — now they're already logged in
     setShowSuccess(true);
     setShowInlineLogin(false);
     setLoginData({ email: companyData.email, password: "" });
     setLoginError("");
   };
-
+  
   // =========================
   // INLINE LOGIN
   // =========================
