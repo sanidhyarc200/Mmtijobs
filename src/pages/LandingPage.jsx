@@ -11,6 +11,18 @@ const defaultTitles = [
 ];
 
 const defaultJobs = [
+  
+  {
+    id: 0,
+    title: 'Test Job 1',
+    company: '[TEST] Do Not Publish',
+    location: 'Test City',
+    experience: '0 years',
+    salary: '₹0 – ₹0',
+    tags: ['TEST', 'QA', 'Ignore'],
+    description: '[TEST ENTRY] This is a dummy job listing used for development and testing purposes only. Do not display in production.',
+    createdAt: 9999999999999, 
+  },
   {
     id: 1,
     title: 'HR & Operations Executive',
