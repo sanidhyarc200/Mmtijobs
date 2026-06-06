@@ -641,8 +641,8 @@ export default function LandingPage() {
       <section className="job-listings">
         <h3>Latest Job Opportunities</h3>
         <div className="job-listings-container">
-          {filteredJobs.length > 0 ? (
-            filteredJobs.map((job) => {
+        {filteredJobs.length > 0 ? (
+            filteredJobs.slice(0, 10).map((job) => {
               const isApplied = appliedJobIds.has(job.id);
               return (
                 <div key={job.id} className="job-card">

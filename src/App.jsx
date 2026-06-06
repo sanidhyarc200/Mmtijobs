@@ -1,5 +1,6 @@
 // src/App.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { seedOnce } from './data/seedData';
 import {
   BrowserRouter as Router,
   Routes,
@@ -247,9 +248,13 @@ function CompanyLoginModal({ onClose }) {
 /* ------------------------------------------------------------------ */
 /* ------------------------------ App -------------------------------- */
 /* ------------------------------------------------------------------ */
-
 export default function App() {
   const [showPostJobModal, setShowPostJobModal] = useState(false);
+
+  // One-time seed of demo clients + jobs into localStorage
+  useEffect(() => {
+    seedOnce();
+  }, []);
 
   return (
     <Router>
