@@ -6,6 +6,32 @@
     <link rel="icon" type="image/x-icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Eo_circle_blue_letter-m.svg/1200px-Eo_circle_blue_letter-m.svg.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MMTIJOBS : Find your dream job || Find you dream employees all at one place</title>
+    <style id="theme-style">
+      html.dark-mode {
+        filter: invert(1) hue-rotate(180deg);
+        background: #fff;
+      }
+      /* Counter-invert media so photos/logos/videos look normal */
+      html.dark-mode img,
+      html.dark-mode video,
+      html.dark-mode iframe,
+      html.dark-mode [data-no-invert] {
+        filter: invert(1) hue-rotate(180deg);
+      }
+      html.dark-mode {
+        transition: filter 0.25s ease;
+      }
+    </style>
+    <script>
+      // Apply saved theme before React loads (prevents flash)
+      (function () {
+        try {
+          if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark-mode');
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

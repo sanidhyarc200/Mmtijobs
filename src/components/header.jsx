@@ -18,6 +18,18 @@ export default function Header({ onPostJobClick }) {
   const [showContactForm, setShowContactForm] = useState(false);
   const [showChatBot, setShowChatBot] = useState(false);
   const [contactSubmitted, setContactSubmitted] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    try { return localStorage.getItem('theme') === 'dark'; } catch { return false; }
+  });
+
+  const toggleTheme = () => {
+    const next = !isDark;
+    setIsDark(next);
+    try {
+      localStorage.setItem('theme', next ? 'dark' : 'light');
+      document.documentElement.classList.toggle('dark-mode', next);
+    } catch {}
+  };
   const [contactData, setContactData] = useState({
     name: '',
     company: '',
@@ -223,8 +235,16 @@ export default function Header({ onPostJobClick }) {
     </nav>
   </div>
 
-  {/* Right: Login / Signup or User Actions */}
-  <div className="nav-right">
+{/* Right: Login / Signup or User Actions */}
+<div className="nav-right">
+    <button
+      className="theme-toggle-btn"
+      onClick={toggleTheme}
+      aria-label="Toggle dark mode"
+      title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+    >
+      {isDark ? '☀️' : '🌙'}
+    </button>
   <button
       className="mobile-menu-btn"
       onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -1010,6 +1030,23 @@ export default function Header({ onPostJobClick }) {
 
     .as-button { display: inline-block; }
     .wfull { width: 100%; }
+    .theme-toggle-btn {
+      background: transparent;
+      border: 1px solid rgba(0,0,0,0.12);
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      font-size: 16px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: transform 0.2s ease, background 0.2s ease;
+      margin-right: 8px;
+    }
+    .theme-toggle-btn:hover {
+      background: rgba(0,0,0,0.06);
+      transform: scale(1.08);
+    }
 
     /* ======= Mobile menu ======= */
     .mobile-menu-btn {
@@ -1379,6 +1416,23 @@ export default function Header({ onPostJobClick }) {
     overflow-x: hidden;
   }
 }
+  .theme-toggle-btn {
+          background: transparent;
+          border: 1px solid rgba(0,0,0,0.12);
+          border-radius: 50%;
+          width: 38px;
+          height: 38px;
+          font-size: 16px;
+          cursor: pointer;
+          display: grid;
+          place-items: center;
+          transition: transform 0.2s ease, background 0.2s ease;
+          margin-right: 8px;
+        }
+        .theme-toggle-btn:hover {
+          background: rgba(0,0,0,0.06);
+          transform: scale(1.08);
+        }
 
 
 `}</style>
