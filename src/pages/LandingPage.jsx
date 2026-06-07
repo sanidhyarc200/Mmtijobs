@@ -669,20 +669,12 @@ export default function LandingPage() {
             </div>
           )}
         </div>
-        {/* Explore More Jobs button (students only) */}
-        {currentUser?.userType !== 'recruiter' && (
+ {/* Explore More Jobs button (students only) */}
+ {currentUser?.userType !== 'recruiter' && (
           <div style={{ textAlign: 'center', marginTop: 20 }}>
             <button
               className="search-button"
-              onClick={() => {
-                if (!currentUser) {
-                  setPendingJob(null);
-                  setRequireRecruiter(false);
-                  setShowAuthPrompt(true);
-                } else if (currentUser.userType === 'candidate') {
-                  navigate('/jobs');
-                }
-              }}
+              onClick={() => navigate('/jobs')}
             >
               Explore More Jobs ...
             </button>
