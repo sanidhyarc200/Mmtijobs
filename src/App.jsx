@@ -46,8 +46,11 @@ function Layout({ onPostJobClick, children }) {
     '/auth/hr',
     '/auth/hr-recruiter',
   ];
-  
-  const hideHeader = headerHiddenRoutes.includes(location.pathname);
+
+  // Resume builder routes — always full screen, no header
+  const hideHeader =
+    headerHiddenRoutes.includes(location.pathname) ||
+    location.pathname.startsWith('/resume-builder');
 
   return (
     <>
