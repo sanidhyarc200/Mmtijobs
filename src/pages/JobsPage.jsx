@@ -68,24 +68,41 @@ export default function JobsPage() {
   /* ----------------------
      Data loading and events
      ---------------------- */
-  const loadJobs = () => {
-    const stored = (JSON.parse(localStorage.getItem("jobs")) || []).filter((j) => j.status === "active");
-    const normalized = stored.map(j => ({
-      id: j.id,
-      title: j.title || j.jobTitle || "Untitled Role",
-      company: j.company || "Unknown Company",
-      location: j.location || "—",
-      experience: j.experience || j.experienceRange || "—",
-      salary: j.salary || (j.salaryMin && j.salaryMax ? `${j.salaryMin}-${j.salaryMax} LPA` : "—"),
-      tags: Array.isArray(j.tags) ? j.tags : (Array.isArray(j.hiringProcess) ? j.hiringProcess : []),
-      description: j.description || "—",
-      createdAt: j.createdAt || new Date().toISOString(),
-    })).sort((a,b) => (new Date(b.createdAt)) - (new Date(a.createdAt)));
-
-    const combined = normalized.length ? normalized.concat(fallbackJobs) : fallbackJobs;
-    setJobs(combined);
-  };
-
+     const loadJobs = () => {
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const stored = (JSON.parse(localStorage.getItem("jobs")) || []).filter((j) => {
+        if (j.status !== "active") return false;
+        if (j.activeUntil) {
+          const expiry = new Date(j.activeUntil);
+          if (!isNaN(expiry.getTime()) && expiry < today) return false;
+        }
+        return true;
+      });
+      const normalized = stored.map(j => ({
+        id: j.id,
+        title: j.title || j.jobTitle || "Untitled Role",
+        company: j.company || "Unknown Company",
+        location: j.location || "—",
+        experience: j.experience || j.experienceRange || "—",
+        salary: j.salary || (j.salaryMin && j.salaryMax ? `${j.salaryMin}-${j.salaryMax} LPA` : "—"),
+        tags: Array.isArray(j.tags) ? j.tags : (Array.isArray(j.hiringProcess) ? j.hiringProcess : []),
+        description: j.description || "—",
+        numberOfOpenings: j.numberOfOpenings || "",   // 🔥 keep openings
+        qualification: j.qualification || "",          // bonus: keep for modal later
+        activeUntil: j.activeUntil || null,
+        seedPriority: j.seedPriority || 0,             // keep seed ordering
+        createdAt: j.createdAt || new Date().toISOString(),
+      })).sort((a, b) => {
+        const aP = a.seedPriority || 0;
+        const bP = b.seedPriority || 0;
+        if (aP !== bP) return bP - aP;                 // seeded jobs on top
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+  
+      const combined = normalized.length ? normalized.concat(fallbackJobs) : fallbackJobs;
+      setJobs(combined);
+    };
+    
   const refreshAppliedSet = (u) => {
     const me = u ?? user;
     if (!me) { setAppliedSet(new Set()); return; }
@@ -422,26 +439,103 @@ export default function JobsPage() {
         </div>
       </div>
 
-      {/* View Job Modal */}
       {showViewModal && selectedJob && (
         <Modal onClose={() => setShowViewModal(false)}>
-          <div style={modal.header}>
-            <div style={modal.brand}>M</div>
-            <div>
-              <h2 style={modal.title}>{selectedJob.title}</h2>
-              <div style={modal.subtitle}>{selectedJob.company} • {selectedJob.location}</div>
+          <div style={{ margin: '-20px -20px 0', borderRadius: '12px 12px 0 0', overflow: 'hidden' }}>
+            {/* Header band */}
+            <div style={{
+              position: 'relative',
+              background: 'linear-gradient(135deg, #0a66c2, #004182)',
+              color: '#fff', padding: '26px 24px 22px',
+            }}>
+              <button
+                onClick={() => setShowViewModal(false)}
+                style={{
+                  position: 'absolute', top: 16, right: 16, width: 32, height: 32,
+                  borderRadius: 8, background: 'rgba(255,255,255,0.2)', border: 'none',
+                  color: '#fff', fontSize: 15, cursor: 'pointer',
+                }}
+              >✕</button>
+              <div style={{
+                width: 40, height: 40, borderRadius: 10, background: 'rgba(255,255,255,0.2)',
+                display: 'grid', placeItems: 'center', fontWeight: 800, fontSize: 18, marginBottom: 12,
+              }}>M</div>
+              <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, lineHeight: 1.25 }}>
+                {selectedJob.title}
+              </h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, fontSize: 14, opacity: 0.95, fontWeight: 500 }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/>
+                </svg>
+                {selectedJob.company}{selectedJob.location ? ` • ${selectedJob.location}` : ''}
+              </div>
             </div>
-            <CloseBtn onClick={() => setShowViewModal(false)} />
           </div>
 
-          <KV label="Experience" value={selectedJob.experience} />
-          <KV label="Salary" value={selectedJob.salary} />
-          {!!selectedJob.tags?.length && <KV label="Skills" value={selectedJob.tags.join(', ')} />}
+          {/* Body */}
+          <div style={{ padding: '20px 0 4px' }}>
+            {/* Quick-fact boxes */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 22 }}>
+              {[
+                ['📍', 'Location', selectedJob.location || '—'],
+                ['💼', 'Experience', selectedJob.experience || selectedJob.experienceRange || '—'],
+                ['💰', 'Salary', selectedJob.salary || '—'],
+                ...(selectedJob.numberOfOpenings ? [['👥', 'Openings', selectedJob.numberOfOpenings]] : []),
+              ].map(([icon, label, value], i) => (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  background: '#f8fafc', border: '1px solid #eef2f7',
+                  borderRadius: 12, padding: '12px 14px',
+                }}>
+                  <span style={{ fontSize: 20 }}>{icon}</span>
+                  <div>
+                    <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4 }}>{label}</div>
+                    <div style={{ fontSize: 14, color: '#1f2937', fontWeight: 600, marginTop: 1 }}>{value}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
 
-          <div style={{ marginTop: 12, fontWeight: 700 }}><strong>Description</strong></div>
-          <p style={{ color: '#4b5563', lineHeight: 1.6 }}>{selectedJob.description}</p>
+            {/* Skills */}
+            {(() => {
+              const skills = Array.isArray(selectedJob.tags)
+                ? selectedJob.tags
+                : Array.isArray(selectedJob.hiringProcess) ? selectedJob.hiringProcess : [];
+              return skills.length ? (
+                <div style={{ marginBottom: 20 }}>
+                  <div style={{
+                    fontSize: 13, fontWeight: 700, color: '#0a66c2', textTransform: 'uppercase',
+                    letterSpacing: 0.5, marginBottom: 10, paddingBottom: 6, borderBottom: '2px solid #eef2f7',
+                  }}>Skills & Tags</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {skills.map((s, i) => (
+                      <span key={i} style={{
+                        background: '#eaf2fb', color: '#0a66c2', fontSize: 12.5, fontWeight: 600,
+                        padding: '6px 12px', borderRadius: 100,
+                      }}>{s}</span>
+                    ))}
+                  </div>
+                </div>
+              ) : null;
+            })()}
 
-          <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
+            {/* Description */}
+            <div style={{ marginBottom: 4 }}>
+              <div style={{
+                fontSize: 13, fontWeight: 700, color: '#0a66c2', textTransform: 'uppercase',
+                letterSpacing: 0.5, marginBottom: 10, paddingBottom: 6, borderBottom: '2px solid #eef2f7',
+              }}>Job Description</div>
+              <p style={{ color: '#4b5563', lineHeight: 1.6, fontSize: 14.5, margin: 0, whiteSpace: 'pre-line' }}>
+                {selectedJob.description || 'No description provided.'}
+              </p>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div style={{
+            display: 'flex', gap: 10, justifyContent: 'flex-end',
+            paddingTop: 16, marginTop: 16, borderTop: '1px solid #eef2f7',
+          }}>
             <button style={modal.secondary} onClick={() => setShowViewModal(false)}>Close</button>
             <button
               style={{
@@ -452,7 +546,7 @@ export default function JobsPage() {
               disabled={isRecruiter || appliedSet.has(selectedJob.id)}
               onClick={() => { setShowViewModal(false); handleApply(selectedJob); }}
             >
-              {appliedSet.has(selectedJob.id) ? 'Applied' : 'Apply'}
+              {appliedSet.has(selectedJob.id) ? '✓ Applied' : 'Apply'}
             </button>
           </div>
         </Modal>
@@ -770,7 +864,8 @@ const modal = {
     display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: 16,
   },
   box: {
-    background: '#fff', padding: 20, borderRadius: 14, width: '92%', maxWidth: 560,
+    background: '#fff', padding: 20, borderRadius: 16, width: '92%', maxWidth: 720,
+    maxHeight: '88vh', overflowY: 'auto',
     boxShadow: '0 20px 60px rgba(0,0,0,0.3)', border: '1px solid #e5e7eb',
   },
   header: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 },

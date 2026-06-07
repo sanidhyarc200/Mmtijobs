@@ -547,6 +547,79 @@ export default function LandingPage() {
         @media (min-width: 1200px) {
           .job-listings-container { align-items: flex-start; padding-right: 400px; }
         }
+          /* ===== Upgraded Job View Modal ===== */
+        .job-modal {
+          background: #fff;
+          width: 92%;
+          max-width: 720px;
+          max-height: 88vh;
+          border-radius: 16px;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+          animation: pop 0.18s ease-out;
+        }
+        .job-modal-header {
+          position: relative;
+          background: linear-gradient(135deg, #0a66c2, #004182);
+          color: #fff;
+          padding: 26px 24px 22px;
+        }
+        .job-modal-brand {
+          width: 40px; height: 40px; border-radius: 10px;
+          background: rgba(255,255,255,0.2); backdrop-filter: blur(6px);
+          display: grid; place-items: center; font-weight: 800; font-size: 18px;
+          margin-bottom: 12px;
+        }
+        .job-modal-title { margin: 0; font-size: 22px; font-weight: 800; line-height: 1.25; }
+        .job-modal-company {
+          display: flex; align-items: center; gap: 6px;
+          margin-top: 6px; font-size: 14px; opacity: 0.95; font-weight: 500;
+        }
+        .job-modal-close {
+          position: absolute; top: 16px; right: 16px;
+          width: 32px; height: 32px; border-radius: 8px;
+          background: rgba(255,255,255,0.2); border: none; color: #fff;
+          font-size: 15px; cursor: pointer; transition: background 0.2s;
+        }
+        .job-modal-close:hover { background: rgba(255,255,255,0.35); }
+
+        .job-modal-body { padding: 22px 24px; overflow-y: auto; }
+
+        .job-fact-grid {
+          display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 22px;
+        }
+        .job-fact {
+          display: flex; align-items: center; gap: 10px;
+          background: #f8fafc; border: 1px solid #eef2f7;
+          border-radius: 12px; padding: 12px 14px;
+        }
+        .job-fact-icon { font-size: 20px; }
+        .job-fact-label { font-size: 11px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+        .job-fact-value { font-size: 14px; color: #1f2937; font-weight: 600; margin-top: 1px; }
+
+        .job-section { margin-bottom: 20px; }
+        .job-section-title {
+          font-size: 13px; font-weight: 700; color: #0a66c2;
+          text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;
+          padding-bottom: 6px; border-bottom: 2px solid #eef2f7;
+        }
+        .job-skill-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
+        .job-skill-pill {
+          background: #eaf2fb; color: #0a66c2; font-size: 12.5px; font-weight: 600;
+          padding: 6px 12px; border-radius: 100px;
+        }
+        .job-desc-text { color: #4b5563; line-height: 1.6; font-size: 14.5px; margin: 0; white-space: pre-line; }
+
+        .job-modal-footer {
+          display: flex; gap: 10px; justify-content: flex-end;
+          padding: 16px 24px; border-top: 1px solid #eef2f7; background: #fafbfc;
+        }
+        @media (max-width: 600px) {
+          .job-fact-grid { grid-template-columns: 1fr; }
+          .job-modal-title { font-size: 19px; }
+        }
       `}</style>
 
       {/* Hero */}
@@ -729,27 +802,85 @@ export default function LandingPage() {
         <div><p>© {year} MMtijobs — All rights reserved.</p></div>
       </footer>
 
-      {/* View Job Modal */}
-      {showViewModal && selectedJob && (
+ {/* View Job Modal — upgraded */}
+ {showViewModal && selectedJob && (
         <div className="modal-overlay" onClick={() => setShowViewModal(false)}>
-          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <div className="brand-circle">M</div>
-              <div>
-                <h2 className="modal-title">{selectedJob.title}</h2>
-                {selectedJob.company && <p className="modal-subtitle">{selectedJob.company}</p>}
-              </div>
-              <button className="modal-close" onClick={() => setShowViewModal(false)}>✕</button>
+          <div className="job-modal" onClick={(e) => e.stopPropagation()}>
+            {/* Header band */}
+            <div className="job-modal-header">
+              <button className="job-modal-close" onClick={() => setShowViewModal(false)}>✕</button>
+              <div className="job-modal-brand">M</div>
+              <h2 className="job-modal-title">{selectedJob.title}</h2>
+              {selectedJob.company && (
+                <div className="job-modal-company">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/>
+                  </svg>
+                  {selectedJob.company}
+                </div>
+              )}
             </div>
 
-            <div style={{ marginBottom: 10 }}><strong>Location:</strong> {selectedJob.location || '—'}</div>
-            <div style={{ marginBottom: 10 }}><strong>Experience:</strong> {selectedJob.experience || selectedJob.experienceRange || '—'}</div>
-            <div style={{ marginBottom: 10 }}><strong>Salary:</strong> {selectedJob.salary || '—'}</div>
-            <div style={{ marginBottom: 10 }}><strong>Skills:</strong> {(Array.isArray(selectedJob.tags) ? selectedJob.tags : Array.isArray(selectedJob.hiringProcess) ? selectedJob.hiringProcess : []).join(', ') || '—'}</div>
-            <div style={{ marginBottom: 12 }}><strong>Description:</strong></div>
-            <p style={{ color: '#4b5563', lineHeight: 1.5, marginBottom: 16 }}>{selectedJob.description}</p>
+            {/* Body */}
+            <div className="job-modal-body">
+              {/* Quick-fact boxes */}
+              <div className="job-fact-grid">
+                <div className="job-fact">
+                  <span className="job-fact-icon">📍</span>
+                  <div>
+                    <div className="job-fact-label">Location</div>
+                    <div className="job-fact-value">{selectedJob.location || '—'}</div>
+                  </div>
+                </div>
+                <div className="job-fact">
+                  <span className="job-fact-icon">💼</span>
+                  <div>
+                    <div className="job-fact-label">Experience</div>
+                    <div className="job-fact-value">{selectedJob.experience || selectedJob.experienceRange || '—'}</div>
+                  </div>
+                </div>
+                <div className="job-fact">
+                  <span className="job-fact-icon">💰</span>
+                  <div>
+                    <div className="job-fact-label">Salary</div>
+                    <div className="job-fact-value">{selectedJob.salary || '—'}</div>
+                  </div>
+                </div>
+                {selectedJob.numberOfOpenings && (
+                  <div className="job-fact">
+                    <span className="job-fact-icon">👥</span>
+                    <div>
+                      <div className="job-fact-label">Openings</div>
+                      <div className="job-fact-value">{selectedJob.numberOfOpenings}</div>
+                    </div>
+                  </div>
+                )}
+              </div>
 
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              {/* Skills */}
+              {(() => {
+                const skills = Array.isArray(selectedJob.tags)
+                  ? selectedJob.tags
+                  : Array.isArray(selectedJob.hiringProcess) ? selectedJob.hiringProcess : [];
+                return skills.length ? (
+                  <div className="job-section">
+                    <div className="job-section-title">Skills & Tags</div>
+                    <div className="job-skill-wrap">
+                      {skills.map((s, i) => <span key={i} className="job-skill-pill">{s}</span>)}
+                    </div>
+                  </div>
+                ) : null;
+              })()}
+
+              {/* Description */}
+              <div className="job-section">
+                <div className="job-section-title">Job Description</div>
+                <p className="job-desc-text">{selectedJob.description || 'No description provided.'}</p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="job-modal-footer">
               <button className="btn-secondary" onClick={() => setShowViewModal(false)}>Close</button>
               {(() => {
                 const isApplied = appliedJobIds.has(selectedJob.id);
@@ -758,12 +889,9 @@ export default function LandingPage() {
                     className="btn-primary"
                     disabled={isRecruiter || isApplied}
                     title={isRecruiter ? 'Recruiters cannot apply' : isApplied ? 'You have already applied' : ''}
-                    onClick={() => {
-                      setShowViewModal(false);
-                      handleApply(selectedJob);
-                    }}
+                    onClick={() => { setShowViewModal(false); handleApply(selectedJob); }}
                   >
-                    {isRecruiter ? 'Apply (disabled)' : isApplied ? 'Applied' : 'Apply Now'}
+                    {isRecruiter ? 'Apply (disabled)' : isApplied ? '✓ Applied' : 'Apply Now'}
                   </button>
                 );
               })()}
