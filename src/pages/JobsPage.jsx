@@ -371,60 +371,48 @@ export default function JobsPage() {
               const isNew = isFresh(job.createdAt, 3);
 
               return (
-                <div key={job.id} style={styles.card} className="mmt-card">
-                  <div style={styles.cardHeader}>
-                    <div style={styles.jobInfo}>
-                      <div style={styles.titleRow}>
-                        <h3 style={styles.jobTitle}>{job.title}</h3>
-                        {isNew && <span style={styles.newBadge} aria-label="New">NEW</span>}
-                      </div>
-
-                      <p style={styles.companyInfo}>
-                        <strong>Company:</strong> {job.company} • {job.location} • {job.salary}
-                      </p>
-                      <p style={{ margin: '4px 0 0' }}><strong>Experience:</strong> {job.experience}</p>
-
-                      {!!job.tags?.length && (
-                        <div style={styles.tagWrap} aria-label="Skills">
-                          {job.tags.map((t, i) => <span key={i} style={styles.tagPill}>{t}</span>)}
-                        </div>
-                      )}
-                    </div>
-
-                    <div style={styles.buttonContainer}>
-  <button
-    style={styles.shareBtn}
-    onClick={() => handleShare(job)}
-    title="Share job"
-  >
-    🔗
-  </button>
-
-  <button
-    style={styles.viewBtn}
-    onClick={() => openView(job)}
-  >
-    View
-  </button>
-
-  <button
-    style={{
-      ...styles.applyBtn,
-      ...(applyDisabled ? disabledBtn : {}),
-      ...(alreadyApplied ? appliedBtn : {}),
-    }}
-    disabled={applyDisabled}
-    onClick={() => handleApply(job)}
-  >
-    {alreadyApplied ? 'Applied' : 'Apply'}
-  </button>
-</div>
-
+<div key={job.id} style={styles.card} className="mmt-card">
+                  <div style={styles.titleRow}>
+                    <h3 style={styles.jobTitle}>{job.title}</h3>
+                    {isNew && <span style={styles.newBadge} aria-label="New">NEW</span>}
                   </div>
 
-                  <div style={styles.divider} />
+                  {job.company && (
+                    <div style={{ color: '#4b5563', fontSize: '0.9em', margin: '2px 0 6px' }}>
+                      {job.company}
+                    </div>
+                  )}
 
-                  <div style={styles.details}>{job.description}</div>
+                  <div style={{ color: '#4b5563', fontSize: '0.85em', display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 6 }}>
+                    <span>{job.location || '—'}</span><span>•</span>
+                    <span>{job.experience || job.experienceRange || '—'}</span><span>•</span>
+                    <span>{job.salary || '—'}</span>
+                  </div>
+
+                  {!!(Array.isArray(job.tags) ? job.tags : job.hiringProcess)?.length && (
+                    <div style={styles.tagWrap} aria-label="Skills">
+                      {(Array.isArray(job.tags) ? job.tags : (job.hiringProcess || []))
+                        .map((t, i) => <span key={i} style={styles.tagPill}>{t}</span>)}
+                    </div>
+                  )}
+
+                  <div style={styles.detailsClamped}>{job.description}</div>
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 12 }}>
+                    <button style={styles.shareBtn} onClick={() => handleShare(job)} title="Share job">🔗</button>
+                    <button style={styles.viewBtn} onClick={() => openView(job)}>View</button>
+                    <button
+                      style={{
+                        ...styles.applyBtn,
+                        ...(applyDisabled ? disabledBtn : {}),
+                        ...(alreadyApplied ? appliedBtn : {}),
+                      }}
+                      disabled={applyDisabled}
+                      onClick={() => handleApply(job)}
+                    >
+                      {alreadyApplied ? 'Applied' : 'Apply'}
+                    </button>
+                  </div>
                 </div>
               );
             })
@@ -721,7 +709,16 @@ const styles = {
   },
   divider: { height: 1, background: 'linear-gradient(to right, transparent, #e5e7eb, transparent)', margin: '10px 0' },
   details: { paddingTop: 2, color: '#4b5563', lineHeight: 1.55 },
-
+  detailsClamped: {
+    paddingTop: 2,
+    color: '#4b5563',
+    lineHeight: 1.55,
+    display: '-webkit-box',
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: 'vertical',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
   buttonContainer: { display: 'flex', gap: 8, flexShrink: 0 },
   shareBtn: {
     width: 38,
