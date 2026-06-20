@@ -442,9 +442,7 @@ export default function LandingPage() {
         .search-input,
         .search-container select {
           flex: 1;
-          min-width: 0;
-          width: 100%;
-
+          min-width: 380px;
           height: 44px;
           padding: 10px 14px;
           border: 1.8px solid #d1d5db;
@@ -546,21 +544,8 @@ export default function LandingPage() {
           .search-row { flex-wrap: nowrap; }
           .job-card { padding: 15px 20px; }
         }
-        @media (max-width: 1024px) {
-          .search-row { flex-wrap: wrap; }
-          .search-input, .search-container select { min-width: 200px; }
-        }
-        @media (max-width: 600px) {
-          .search-row { flex-direction: column; }
-          .search-input, .search-container select, .search-button {
-            width: 100%; min-width: 0;
-          }
-        }
-       @media (min-width: 1200px) {
-          .job-listings-container { align-items: flex-start; padding-right: 380px; }
-        }
-        @media (max-width: 1199px) {
-          .job-listings-container { padding-right: 0; align-items: center; }
+        @media (min-width: 1200px) {
+          .job-listings-container { align-items: flex-start; padding-right: 400px; }
         }
           /* ===== Upgraded Job View Modal ===== */
         .job-modal {
