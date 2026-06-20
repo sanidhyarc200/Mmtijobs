@@ -441,8 +441,8 @@ export default function LandingPage() {
         .hero-subtitle { font-size: 1.1em; margin-bottom: 20px; text-shadow: 1px 1px 5px rgba(0,0,0,0.3); opacity: 0.95; font-weight: 400; }
         .search-input,
         .search-container select {
-          flex: 1;
-          min-width: 380px;
+          flex: 1 1 280px;
+          min-width: 0;
           height: 44px;
           padding: 10px 14px;
           border: 1.8px solid #d1d5db;
@@ -546,6 +546,18 @@ export default function LandingPage() {
         }
         @media (min-width: 1200px) {
           .job-listings-container { align-items: flex-start; padding-right: 400px; }
+        }
+        @media (max-width: 1199px) {
+          .job-listings-container { padding-right: 0; align-items: center; }
+        }
+        @media (max-width: 700px) {
+          .search-row { flex-direction: column; }
+          .search-input,
+          .search-container select,
+          .search-button {
+            width: 100%;
+            flex: 1 1 auto;
+          }
         }
           /* ===== Upgraded Job View Modal ===== */
         .job-modal {
