@@ -1041,8 +1041,7 @@ export default function HRManagerDashboard() {
 .pill.inactive{color:#dc2626;font-weight:700}
 
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:50}
-.job-modal{background:#fff;width:720px;max-height:90vh;border-radius:16px;overflow:hidden;position:relative}
-.job-modal-header{background:linear-gradient(135deg,#0a66c2,#0047a8);color:#fff;padding:24px}
+.job-modal{background:#fff;width:92%;max-width:720px;max-height:90vh;border-radius:16px;overflow:hidden;position:relative}.job-modal-header{background:linear-gradient(135deg,#0a66c2,#0047a8);color:#fff;padding:24px}
 .job-modal-body{padding:24px}
 .job-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
 .job-meta div{background:#f8fafc;padding:12px;border-radius:10px}
@@ -1062,7 +1061,8 @@ export default function HRManagerDashboard() {
 /* ===== EDIT MODAL ===== */
 .edit-modal{
   background:#fff;
-  width:620px;
+   width:92%;max-width:620px;
+
   max-height:85vh;
   border-radius:18px;
   overflow:hidden;
@@ -1123,7 +1123,7 @@ export default function HRManagerDashboard() {
 }
   .company-view-modal{
   background:#fff;
-  width:900px;
+  width:92%;max-width:900px;
   max-height:90vh;
   border-radius:16px;
   overflow:hidden;

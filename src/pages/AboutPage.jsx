@@ -66,7 +66,7 @@ export default function AboutPage() {
 
         .hero-img {
           flex: 1;
-          min-width: 320px;
+          min-width: 0;
           border-radius: 16px;
           overflow: hidden;
           box-shadow: 0 18px 35px rgba(0,0,0,0.08);
@@ -83,7 +83,7 @@ export default function AboutPage() {
         .hero-content {
           flex: 1;
           padding: 0 40px;
-          min-width: 320px;
+          min-width: 0;
         }
 
         .hero-content h1 {

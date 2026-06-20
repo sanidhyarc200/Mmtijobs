@@ -5,6 +5,11 @@
   padding: 0;
 }
 
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;          /* kill stray horizontal scroll */
+}
+
 body {
   font-family: 'Inter', sans-serif;
   background-color: #f5f7fa;
@@ -12,6 +17,13 @@ body {
   line-height: 1.6;
 }
 
+/* Safety net: media/long content never forces width */
+img, video, canvas, svg, table { max-width: 100%; }
+
+/* Make the .container fluid on smaller desktops */
+.container {
+  width: 100%;
+}
 /* Container */
 .container {
   max-width: 1200px;
