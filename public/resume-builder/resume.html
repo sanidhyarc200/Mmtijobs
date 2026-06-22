@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&family=Merriweather:wght@400;700&family=Lora:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&family=Poppins:wght@400;500;600;700&family=Georgia&display=swap" rel="stylesheet">
   <style>
     :root {
       --app-bg: #020617;
@@ -693,6 +693,97 @@
     }
 
     /* Print */
+    /* ===== NEW TEMPLATE: ELEGANT SERIF ===== */
+    .tpl-elegant .resume-inner { padding: 30px 34px; }
+    .tpl-elegant .elegant-header {
+      display: flex; align-items: center; gap: 18px;
+      border-bottom: 3px double var(--accent); padding-bottom: 16px; margin-bottom: 16px;
+    }
+    .tpl-elegant .elegant-photo {
+      width: 78px; height: 78px; border-radius: 50%; object-fit: cover;
+      border: 2px solid var(--accent); flex-shrink: 0;
+    }
+    .tpl-elegant .resume-name { font-size: 26px; font-weight: 700; letter-spacing: 0.5px; color: #1f2937; }
+    .tpl-elegant .resume-title { font-size: 13px; color: var(--accent); font-weight: 600; margin-top: 2px; }
+    .tpl-elegant .elegant-contact { font-size: 10.5px; color: #64748b; margin-top: 6px; }
+    .tpl-elegant .resume-body { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+    .tpl-elegant .resume-section-title {
+      font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px;
+      color: var(--accent); border-bottom: 1px solid #e5e7eb; padding-bottom: 3px; margin-bottom: 7px;
+    }
+
+    /* ===== NEW TEMPLATE: TIMELINE ===== */
+    .tpl-timeline .resume-inner { padding: 28px 32px; }
+    .tpl-timeline .resume-header { text-align: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--accent); }
+    .tpl-timeline .resume-name { font-size: 24px; font-weight: 800; }
+    .tpl-timeline .resume-title { font-size: 13px; color: var(--accent); font-weight: 600; }
+    .tpl-timeline .resume-contact { justify-content: center; gap: 14px; margin-top: 8px; }
+    .tpl-timeline .tl-section .resume-item {
+      position: relative; padding-left: 18px; border-left: 2px solid var(--accent-soft); margin-bottom: 12px;
+    }
+    .tpl-timeline .tl-section .resume-item::before {
+      content: ""; position: absolute; left: -6px; top: 4px;
+      width: 10px; height: 10px; border-radius: 50%; background: var(--accent);
+    }
+    .tpl-timeline .resume-section-title {
+      font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 8px;
+    }
+
+    /* ===== NEW TEMPLATE: TWO COLUMN PRO ===== */
+    .tpl-twocol .resume-inner { display: grid; grid-template-columns: 0.36fr 0.64fr; padding: 0; min-height: 100%; }
+    .tpl-twocol .twocol-left {
+      background: var(--accent); color: #fff; padding: 26px 18px; display: flex; flex-direction: column; gap: 14px;
+    }
+    .tpl-twocol .twocol-photo {
+      width: 96px; height: 96px; border-radius: 12px; object-fit: cover;
+      border: 3px solid rgba(255,255,255,0.4); align-self: center;
+    }
+    .tpl-twocol .twocol-name { font-size: 21px; font-weight: 800; line-height: 1.15; }
+    .tpl-twocol .twocol-title { font-size: 12px; opacity: 0.9; margin-top: -6px; }
+    .tpl-twocol .twocol-left .sidebar-section-title {
+      font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+      border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 3px; margin-bottom: 6px;
+    }
+    .tpl-twocol .twocol-left .sidebar-pill {
+      background: rgba(255,255,255,0.18); color: #fff; padding: 2px 8px;
+      border-radius: 999px; font-size: 10px; display: inline-block; margin: 2px;
+    }
+    .tpl-twocol .twocol-left .sidebar-pill-list { display: flex; flex-wrap: wrap; gap: 3px; }
+    .tpl-twocol .twocol-right { padding: 26px 24px; }
+    .tpl-twocol .twocol-right .resume-section-title {
+      font-size: 13px; font-weight: 700; color: var(--accent);
+      border-bottom: 1px solid #e5e7eb; padding-bottom: 3px; margin-bottom: 8px;
+    }
+
+    /* ===== ATS / RESUME STRENGTH PANEL ===== */
+    .ats-panel {
+      margin-top: 14px; padding: 14px; border-radius: 14px;
+      background: radial-gradient(circle at top left, rgba(30,64,175,0.22), rgba(15,23,42,0.95));
+      border: 1px solid rgba(30,64,175,0.5);
+    }
+    .ats-score-row { display: flex; align-items: center; gap: 14px; }
+    .ats-ring {
+      width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0;
+      display: grid; place-items: center;
+    }
+    .ats-ring-inner {
+      width: 50px; height: 50px; border-radius: 50%; background: #0f172a;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 17px; line-height: 1;
+    }
+    .ats-ring-inner small { font-size: 8px; color: #9ca3af; font-weight: 500; }
+    .ats-title { font-size: 13px; font-weight: 700; color: #e5e7eb; }
+    .ats-sub { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+    .ats-tips-title {
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em;
+      color: #9ca3af; margin: 12px 0 6px;
+    }
+    .ats-tips { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+    .ats-tips li {
+      font-size: 11px; color: #cbd5f5; padding-left: 16px; position: relative; line-height: 1.4;
+    }
+    .ats-tips li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+
     @media print {
       body { background: #ffffff; }
       .sidebar, .topbar, .panel.form-panel { display: none !important; }
@@ -732,10 +823,12 @@
         <li><button class="nav-item-btn" data-jump="sec-projects">Projects<span>work</span></button></li>
         <li><button class="nav-item-btn" data-jump="sec-skills">Skills<span>stack</span></button></li>
         <li><button class="nav-item-btn" data-jump="sec-achievements">Achievements<span>brag</span></button></li>
+        <li><button class="nav-item-btn" data-jump="sec-certifications">Certifications<span>proof</span></button></li>
         <li><button class="nav-item-btn" data-jump="sec-languages">Languages<span>extra</span></button></li>
         <li><button class="nav-item-btn" data-jump="sec-links">Links<span>profiles</span></button></li>
       </ul>
     </div>
+    <div class="ats-panel" id="ats-panel"></div>
     <div class="sidebar-actions">
       <button class="primary" id="btn-sample">⚡ Load sample resume</button>
       <button class="secondary" id="btn-clear">🗑 Clear everything</button>
@@ -765,6 +858,18 @@
           <option value="minimal">Template: Minimalist Clean</option>
           <option value="bold">Template: Bold Header</option>
           <option value="compact">Template: Compact Tech</option>
+          <option value="elegant">Template: Elegant Serif</option>
+          <option value="timeline">Template: Timeline</option>
+          <option value="twocol">Template: Two Column Pro</option>
+        </select>
+        <select id="font-select" class="select-sm">
+          <option value="'Source Sans 3', sans-serif">Font: Source Sans</option>
+          <option value="'Inter', sans-serif">Font: Inter</option>
+          <option value="'Roboto', sans-serif">Font: Roboto</option>
+          <option value="'Poppins', sans-serif">Font: Poppins</option>
+          <option value="'Lora', serif">Font: Lora (Serif)</option>
+          <option value="'Merriweather', serif">Font: Merriweather (Serif)</option>
+          <option value="Georgia, serif">Font: Georgia (Serif)</option>
         </select>
         <select id="accent-select" class="select-sm">
           <option value="#2563eb">Blue accent</option>
@@ -772,6 +877,13 @@
           <option value="#22c55e">Green accent</option>
           <option value="#f97316">Orange accent</option>
           <option value="#6b21a8">Purple accent</option>
+          <option value="#0d9488">Teal accent</option>
+          <option value="#dc2626">Red accent</option>
+          <option value="#4f46e5">Indigo accent</option>
+          <option value="#475569">Slate accent</option>
+          <option value="#b45309">Amber accent</option>
+          <option value="#0891b2">Cyan accent</option>
+          <option value="#7c2d12">Maroon accent</option>
         </select>
         <button class="btn-sm" id="btn-print">⬇ Export / Print PDF</button>
       </div>
@@ -839,6 +951,16 @@
                   <label>GitHub</label>
                   <input id="personal-github" placeholder="github.com/yourhandle"
                          oninput="updateField('personal','github', this.value)">
+                </div>
+              </div>
+              <div class="field-row" style="grid-template-columns: 1fr;">
+                <div class="field">
+                  <label>Profile Photo <span style="color:#94a3b8;font-weight:400;">(optional · used in templates that support it)</span></label>
+                  <input id="personal-photo" type="file" accept="image/*" onchange="handlePhotoUpload(event)">
+                  <div id="photo-preview-row" style="display:none;align-items:center;gap:10px;margin-top:8px;">
+                    <img id="photo-preview" alt="preview" style="width:46px;height:46px;border-radius:10px;object-fit:cover;border:1px solid var(--border-subtle);">
+                    <button type="button" class="btn-sm" onclick="removePhoto()" style="padding:6px 10px;">Remove photo</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -951,6 +1073,22 @@
             </div>
           </section>
 
+          <!-- CERTIFICATIONS -->
+          <section class="form-section open" id="sec-certifications">
+            <div class="form-section-header">
+              <div class="form-section-title">Certifications</div>
+              <div class="chevron">▶</div>
+            </div>
+            <div class="form-section-body">
+              <div class="field">
+                <label>Certifications / Courses</label>
+                <textarea id="certifications-list"
+                   placeholder="Each line becomes a bullet.&#10;AWS Certified Solutions Architect · 2024&#10;Google Data Analytics · Coursera"
+                   oninput="updateField('certifications','list', this.value)"></textarea>
+              </div>
+            </div>
+          </section>
+
           <!-- LANGUAGES -->
           <section class="form-section open" id="sec-languages">
             <div class="form-section-header">
@@ -1007,6 +1145,7 @@
     theme: {
       accent: "#2563eb",
       template: "classic",
+      font: "'Source Sans 3', sans-serif",
     },
     personal: {
       fullName: "",
@@ -1017,6 +1156,7 @@
       website: "",
       linkedin: "",
       github: "",
+      photo: "",
     },
     summary: { text: "" },
     experience: [],
@@ -1024,6 +1164,7 @@
     projects: [],
     skills: { list: "", groups: "" },
     achievements: { list: "" },
+    certifications: { list: "" },
     languages: { list: "" },
     links: { list: "" },
   };
@@ -1037,7 +1178,22 @@
       if (!raw) return;
       const parsed = JSON.parse(raw);
       if (parsed && typeof parsed === "object") {
-        resumeData = Object.assign({}, resumeData, parsed);
+        // Deep-merge so newly added sections (certifications, photo, font)
+        // always exist even if old saved data predates them.
+        const defaults = resumeData;
+        resumeData = {
+          theme: Object.assign({}, defaults.theme, parsed.theme),
+          personal: Object.assign({}, defaults.personal, parsed.personal),
+          summary: Object.assign({}, defaults.summary, parsed.summary),
+          experience: Array.isArray(parsed.experience) ? parsed.experience : defaults.experience,
+          education: Array.isArray(parsed.education) ? parsed.education : defaults.education,
+          projects: Array.isArray(parsed.projects) ? parsed.projects : defaults.projects,
+          skills: Object.assign({}, defaults.skills, parsed.skills),
+          achievements: Object.assign({}, defaults.achievements, parsed.achievements),
+          certifications: Object.assign({}, defaults.certifications, parsed.certifications),
+          languages: Object.assign({}, defaults.languages, parsed.languages),
+          links: Object.assign({}, defaults.links, parsed.links),
+        };
       }
     } catch {}
   }
@@ -1046,6 +1202,97 @@
     resumeData[section][field] = value;
     saveToStorage();
     renderPreview();
+  }
+
+  // ---- Photo upload ----
+  function handlePhotoUpload(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      resumeData.personal.photo = reader.result;
+      saveToStorage();
+      syncPhotoPreview();
+      renderPreview();
+    };
+    reader.readAsDataURL(file);
+  }
+  function removePhoto() {
+    resumeData.personal.photo = "";
+    const input = document.getElementById("personal-photo");
+    if (input) input.value = "";
+    saveToStorage();
+    syncPhotoPreview();
+    renderPreview();
+  }
+  function syncPhotoPreview() {
+    const row = document.getElementById("photo-preview-row");
+    const img = document.getElementById("photo-preview");
+    if (!row || !img) return;
+    if (resumeData.personal.photo) {
+      img.src = resumeData.personal.photo;
+      row.style.display = "flex";
+    } else {
+      row.style.display = "none";
+    }
+  }
+
+  // ---- ATS / completeness score ----
+  function computeAtsScore() {
+    const d = resumeData;
+    let score = 0;
+    const tips = [];
+    // Personal essentials
+    if (d.personal.fullName) score += 8; else tips.push("Add your full name");
+    if (d.personal.title) score += 8; else tips.push("Add a headline / title");
+    if (d.personal.email) score += 8; else tips.push("Add an email");
+    if (d.personal.phone) score += 6; else tips.push("Add a phone number");
+    if (d.personal.location) score += 4; else tips.push("Add your location");
+    // Summary
+    if (d.summary.text && d.summary.text.length > 60) score += 12;
+    else tips.push("Write a 2–4 line summary (60+ chars)");
+    // Experience
+    if (d.experience.length >= 1) score += 14; else tips.push("Add at least one work experience");
+    if (d.experience.length >= 2) score += 4;
+    // Education
+    if (d.education.length >= 1) score += 8; else tips.push("Add your education");
+    // Skills
+    const skillCount = (d.skills.list || "").split(",").map(s=>s.trim()).filter(Boolean).length;
+    if (skillCount >= 5) score += 12;
+    else tips.push("List at least 5 skills (comma separated)");
+    // Projects
+    if (d.projects.length >= 1) score += 6; else tips.push("Add a project to stand out");
+    // Links / profiles
+    if (d.personal.linkedin || d.personal.github) score += 6;
+    else tips.push("Add LinkedIn or GitHub");
+    // Certifications bonus
+    if ((d.certifications.list || "").trim()) score += 4;
+    if (score > 100) score = 100;
+    return { score, tips };
+  }
+
+  function renderAtsPanel() {
+    const el = document.getElementById("ats-panel");
+    if (!el) return;
+    const { score, tips } = computeAtsScore();
+    let color = "#ef4444";
+    if (score >= 80) color = "#22c55e";
+    else if (score >= 55) color = "#f59e0b";
+    const tipsHtml = tips.length
+      ? tips.slice(0, 5).map(t => `<li>${escapeHtml(t)}</li>`).join("")
+      : "<li>Looking great — your resume covers all the essentials! 🎉</li>";
+    el.innerHTML = `
+      <div class="ats-score-row">
+        <div class="ats-ring" style="background:conic-gradient(${color} ${score*3.6}deg, rgba(148,163,184,0.18) 0deg);">
+          <div class="ats-ring-inner"><span style="color:${color};">${score}</span><small>/100</small></div>
+        </div>
+        <div class="ats-meta">
+          <div class="ats-title">Resume Strength</div>
+          <div class="ats-sub">${score >= 80 ? "Strong & ATS-friendly" : score >= 55 ? "Good — a few tweaks left" : "Needs more detail"}</div>
+        </div>
+      </div>
+      <div class="ats-tips-title">Suggestions to improve</div>
+      <ul class="ats-tips">${tipsHtml}</ul>`;
   }
 
   function handleTitleChange(value) {
@@ -1489,6 +1736,16 @@
       </div>`;
   }
 
+  function buildCertificationsHTML() {
+    const html = bulletsFromText(resumeData.certifications.list || "");
+    if (!html) return "";
+    return `
+      <div class="resume-section">
+        <div class="resume-section-title">Certifications</div>
+        ${html}
+      </div>`;
+  }
+
   function buildLanguagesHTML() {
     const list = resumeData.languages.list;
     if (!list) return "";
@@ -1524,6 +1781,8 @@
     const t = resumeData.theme.template || "classic";
     const d = resumeData;
     document.documentElement.style.setProperty("--accent", d.theme.accent || "#2563eb");
+    document.documentElement.style.setProperty("--resume-font", d.theme.font || "'Source Sans 3', sans-serif");
+    renderAtsPanel();
 
     page.className = "resume-page tpl-" + t;
 
@@ -1539,6 +1798,7 @@
     const prj = buildProjectsHTML();
     const skills = buildSkillsHTML();
     const ach = buildAchievementsHTML();
+    const cert = buildCertificationsHTML();
     const lang = buildLanguagesHTML();
     const links = buildLinksHTML();
 
@@ -1595,6 +1855,7 @@
           <section>
             ${skills}
             ${ach}
+            ${cert}
             ${lang}
             ${links}
           </section>
@@ -1682,6 +1943,7 @@
               : ""
           }
           ${ach}
+            ${cert}
           ${links}
         </div>`;
     } else if (t === "minimal") {
@@ -1718,6 +1980,7 @@
           }
           ${skills}
           ${ach}
+            ${cert}
           ${lang}
           ${links}
           <div style="margin-top:10px;font-size:10px;color:#9ca3af;">
@@ -1769,6 +2032,7 @@
           <section>
             ${skills}
             ${ach}
+            ${cert}
             ${lang}
             ${links}
           </section>
@@ -1811,9 +2075,94 @@
                  </div>`
               : ""}
             ${ach}
+            ${cert}
             ${lang}
             ${links}
           </section>
+        </div>`;
+    } else if (t === "elegant") {
+      const photo = d.personal.photo
+        ? `<img class="elegant-photo" src="${d.personal.photo}" alt="">`
+        : "";
+      html = `
+        <div class="elegant-header">
+          ${photo}
+          <div class="elegant-headtext">
+            <div class="resume-name">${escapeHtml(fullName)}</div>
+            <div class="resume-title">${escapeHtml(title)}</div>
+            <div class="elegant-contact">
+              ${[d.personal.email, d.personal.phone, d.personal.location, d.personal.linkedin]
+                .filter(Boolean).map(escapeHtml).join(" &nbsp;•&nbsp; ")}
+            </div>
+          </div>
+        </div>
+        ${summaryHtml ? `<div class="resume-section"><div class="resume-section-title">Profile</div>${summaryHtml}</div>` : ""}
+        <div class="resume-body">
+          <section>
+            ${exp ? `<div class="resume-section"><div class="resume-section-title">Experience</div>${exp}</div>` : ""}
+            ${prj ? `<div class="resume-section"><div class="resume-section-title">Projects</div>${prj}</div>` : ""}
+          </section>
+          <section>
+            ${edu ? `<div class="resume-section"><div class="resume-section-title">Education</div>${edu}</div>` : ""}
+            ${skills}
+            ${ach}
+            ${cert}
+            ${lang}
+            ${links}
+          </section>
+        </div>`;
+    } else if (t === "timeline") {
+      html = `
+        <div class="resume-header">
+          <div class="resume-name">${escapeHtml(fullName)}</div>
+          <div class="resume-title">${escapeHtml(title)}</div>
+          ${contactBlock}
+          ${summaryHtml}
+        </div>
+        <div class="resume-body">
+          ${exp ? `<div class="resume-section tl-section"><div class="resume-section-title">Experience</div>${exp}</div>` : ""}
+          ${edu ? `<div class="resume-section tl-section"><div class="resume-section-title">Education</div>${edu}</div>` : ""}
+          ${prj ? `<div class="resume-section"><div class="resume-section-title">Projects</div>${prj}</div>` : ""}
+          ${skills}
+          ${ach}
+          ${cert}
+          ${lang}
+          ${links}
+        </div>`;
+    } else if (t === "twocol") {
+      const photo = d.personal.photo
+        ? `<img class="twocol-photo" src="${d.personal.photo}" alt="">`
+        : "";
+      const skillsPills = (d.skills.list || "")
+        .split(",").map(s => s.trim()).filter(Boolean)
+        .map(s => "<span class='sidebar-pill'>" + escapeHtml(s) + "</span>").join("");
+      html = `
+        <div class="twocol-left">
+          ${photo}
+          <div class="twocol-name">${escapeHtml(fullName)}</div>
+          <div class="twocol-title">${escapeHtml(title)}</div>
+          <div class="sidebar-section">
+            <div class="sidebar-section-title">Contact</div>
+            <div style="font-size:11px;line-height:1.6;word-break:break-word;">
+              ${d.personal.email ? escapeHtml(d.personal.email) + "<br>" : ""}
+              ${d.personal.phone ? escapeHtml(d.personal.phone) + "<br>" : ""}
+              ${d.personal.location ? escapeHtml(d.personal.location) + "<br>" : ""}
+              ${d.personal.linkedin ? escapeHtml(d.personal.linkedin) + "<br>" : ""}
+              ${d.personal.github ? escapeHtml(d.personal.github) + "<br>" : ""}
+              ${d.personal.website ? escapeHtml(d.personal.website) : ""}
+            </div>
+          </div>
+          ${skillsPills ? `<div class="sidebar-section"><div class="sidebar-section-title">Skills</div><div class="sidebar-pill-list">${skillsPills}</div></div>` : ""}
+          ${lang ? `<div class="sidebar-section"><div class="sidebar-section-title">Languages</div><div style="font-size:11px;">${escapeHtml(d.languages.list || "").replace(/\n/g, "<br>")}</div></div>` : ""}
+          ${(d.certifications.list || "").trim() ? `<div class="sidebar-section"><div class="sidebar-section-title">Certifications</div><div style="font-size:11px;">${escapeHtml(d.certifications.list || "").replace(/\n/g, "<br>")}</div></div>` : ""}
+        </div>
+        <div class="twocol-right">
+          ${summaryHtml ? `<div class="resume-section"><div class="resume-section-title">Profile</div>${summaryHtml}</div>` : ""}
+          ${exp ? `<div class="resume-section"><div class="resume-section-title">Experience</div>${exp}</div>` : ""}
+          ${prj ? `<div class="resume-section"><div class="resume-section-title">Projects</div>${prj}</div>` : ""}
+          ${edu ? `<div class="resume-section"><div class="resume-section-title">Education</div>${edu}</div>` : ""}
+          ${ach}
+          ${links}
         </div>`;
     }
 
@@ -1965,12 +2314,14 @@
     setVal("skills-list", resumeData.skills.list);
     setVal("skills-groups", resumeData.skills.groups);
     setVal("achievements-list", resumeData.achievements.list);
+    setVal("certifications-list", resumeData.certifications.list);
     setVal("languages-list", resumeData.languages.list);
     setVal("links-list", resumeData.links.list);
 
     renderExperienceForm();
     renderEducationForm();
     renderProjectsForm();
+    syncPhotoPreview();
 
     const accentSelect = document.getElementById("accent-select");
     if (accentSelect && resumeData.theme.accent) {
@@ -1980,19 +2331,24 @@
     if (tplSelect && resumeData.theme.template) {
       tplSelect.value = resumeData.theme.template;
     }
+    const fontSelect = document.getElementById("font-select");
+    if (fontSelect && resumeData.theme.font) {
+      fontSelect.value = resumeData.theme.font;
+    }
   }
 
   function clearEverything() {
     if (!confirm("Reset all data? This clears the stored resume in this browser.")) return;
     resumeData = {
-      theme: { accent: "#2563eb", template: "classic" },
-      personal: { fullName: "", title: "", email: "", phone: "", location: "", website: "", linkedin: "", github: "" },
+      theme: { accent: "#2563eb", template: "classic", font: "'Source Sans 3', sans-serif" },
+      personal: { fullName: "", title: "", email: "", phone: "", location: "", website: "", linkedin: "", github: "", photo: "" },
       summary: { text: "" },
       experience: [],
       education: [],
       projects: [],
       skills: { list: "", groups: "" },
       achievements: { list: "" },
+      certifications: { list: "" },
       languages: { list: "" },
       links: { list: "" },
     };
@@ -2018,6 +2374,14 @@
       saveToStorage();
       renderPreview();
     });
+    const fontSel = document.getElementById("font-select");
+    if (fontSel) {
+      fontSel.addEventListener("change", (e) => {
+        resumeData.theme.font = e.target.value;
+        saveToStorage();
+        renderPreview();
+      });
+    }
   }
 
   document.addEventListener("DOMContentLoaded", () => {
