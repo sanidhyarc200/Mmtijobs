@@ -41,6 +41,23 @@ export const SEED_COMPANIES = [
     createdAt: new Date().toISOString(),
     __seeded: true,
   },
+  {
+    id: BASE + 3,
+    name: "Solar Energy Company",
+    email: "hr@solarenergy.example",   // placeholder — update with client's real email
+    contact: "9993826661",             // placeholder — portal contact used in JD
+    streetAddress: "",
+    city: "Bhopal",
+    state: "Madhya Pradesh",
+    pincode: "",
+    gstNumber: "",
+    industryType: "Renewable Energy / Solar",
+    numberOfEmployees: "11-50 employees",
+    companyWebsite: "",
+    profilePic: null,
+    createdAt: new Date().toISOString(),
+    __seeded: true,
+  },
 ];
 
 // Helper to keep job objects consistent with what the app expects.
@@ -63,7 +80,10 @@ const makeJob = (over, idx) => ({
   activeUntil: null,
   description: "",
   // stagger so they sort newest-first but stay above older demo data
-  createdAt: new Date(now - idx * 60000).toISOString(),
+  // Future-dated so seeded jobs always sort above default/static jobs,
+  // and idx keeps them stable in the order given (first = newest).
+  createdAt: new Date(now + (1000 - idx) * 60000).toISOString(),
+  seedPriority: 1000 - idx, // explicit ordering hint (higher = top)
   __seeded: true,
   ...over,
 });
@@ -234,6 +254,84 @@ export const SEED_JOBS = [
     },
     8
   ),
+
+  // ---------- Client 3: Solar Energy Company ----------
+  makeJob(
+    {
+      title: "Sales Executive – Solar",
+      company: "Solar Energy Company",
+      seedPriority: 1004,  // force Solar (newest) on top
+      companyEmail: "hr@solarenergy.example",
+      location: "Bhopal",
+      experience: "0-2 years",
+      salary: "₹10,000 – ₹14,000/month + Incentives",
+      qualification: "12th Pass / Graduate (preferred)",
+      tags: ["Sales", "Solar", "Lead Generation", "Customer Handling"],
+      hiringProcess: ["Face-to-Face", "Telephonic"],
+      numberOfOpenings: "3",
+      gender: "Any",
+      description:
+        "Sales Executive – Solar Company. Timing: 10:30 AM to 6:00 PM.\n\nJob Responsibilities:\n• Generate leads and identify potential customers for solar solutions.\n• Meet residential, commercial, and industrial clients.\n• Explain solar products and services to customers.\n• Conduct site visits and customer presentations.\n• Prepare quotations and follow up with prospects.\n• Achieve monthly sales targets.\n• Maintain customer relationships and provide after-sales support.\n• Coordinate with the installation team for smooth project execution.\n• Update sales records and reports regularly.\n\nRequirements:\n• Minimum 12th Pass / Graduate preferred.\n• Good communication and negotiation skills.\n• Target-oriented approach.\n\nContact: 9993826661",
+    },
+    9
+  ),
+  makeJob(
+    {
+      title: "Site Installation Manager – Solar",
+      company: "Solar Energy Company",
+      seedPriority: 1003,  // force Solar (newest) on top
+      companyEmail: "hr@solarenergy.example",
+      location: "Bhopal",
+      experience: "1-3 years",
+      salary: "₹18,000 – ₹20,000/month",
+      qualification: "Diploma / B.Tech (Electrical, Mechanical, Civil)",
+      tags: ["Solar Installation", "Site Management", "Electrical", "Project Execution", "HSE"],
+      hiringProcess: ["Face-to-Face"],
+      numberOfOpenings: "1",
+      gender: "Any",
+      description:
+        "Site Installation Manager – Solar Company. Timing: 10:30 AM to 6:00 PM. Reporting To: Vikas Kumar.\n\nJob Description:\n• Manage on-site solar panel installation projects.\n• Supervise technicians, electricians, and subcontractors.\n• Plan daily work schedules and allocate manpower effectively.\n• Ensure installations meet quality, technical, and safety standards.\n• Coordinate with engineering, procurement, and project teams.\n• Monitor project progress and resolve site-related issues.\n• Maintain site reports, work records, and material consumption records.\n• Conduct technical site surveys, shadow analysis, and feasibility assessments.\n• Ensure compliance with local regulations and safety guidelines.\n• Manage material dispatch and return of unused materials.\n• Ensure plant cleanliness and proper site housekeeping.\n• Maintain daily logbooks and follow company SOPs.\n\nRequirements:\n• Diploma/B.Tech in Electrical, Mechanical, Civil, or related field.\n• 1–3 years in solar installation, electrical projects, or site management.\n• Knowledge of rooftop solar systems and installation procedures.\n• Ability to manage field teams and coordinate multiple sites.\n• Strong problem-solving and communication skills.\n• Two-wheeler preferred; willingness to travel.\n\nKRAs: Project planning & execution, team supervision, quality assurance & compliance, HSE, cost control, customer coordination, documentation & reporting, commissioning & handover, continuous improvement.\n\nContact: 9993826661",
+    },
+    10
+  ),
+  makeJob(
+    {
+      title: "Sales Manager – Solar",
+      company: "Solar Energy Company",
+      seedPriority: 1002,  // force Solar (newest) on top
+      companyEmail: "hr@solarenergy.example",
+      location: "Bhopal",
+      experience: "2-5 years",
+      salary: "₹20,000 – ₹25,000/month + Incentives",
+      qualification: "Graduate / MBA (Sales, Marketing, Business Admin)",
+      tags: ["Sales Management", "Solar", "Team Leadership", "Business Development", "CRM"],
+      hiringProcess: ["Face-to-Face", "Telephonic"],
+      numberOfOpenings: "1",
+      gender: "Any",
+      description:
+        "Sales Manager – Solar Company. Timing: 10:30 AM to 6:00 PM.\n\nJob Responsibilities:\n• Develop and execute sales strategies to achieve monthly, quarterly, and annual targets.\n• Identify new business opportunities in residential, commercial, industrial, and government sectors.\n• Build and maintain a strong sales pipeline.\n• Conduct client meetings, site visits, and product presentations.\n• Prepare proposals, BOQs, quotations, and techno-commercial offers.\n• Negotiate pricing, contracts, and payment terms.\n• Lead, train, motivate, and guide the sales team.\n• Track market trends, government policies, subsidies, and MNRE guidelines.\n• Analyze competitor activities and provide market intelligence.\n• Coordinate with engineering, procurement, accounts, and finance.\n• Submit MIS reports, sales forecasts, and performance reports.\n\nRequirements:\n• Graduate/MBA in Sales, Marketing, Business Administration, or related field.\n• 2–5 years of sales experience, preferably in Solar, Electrical, Energy, or EPC.\n• Strong leadership, communication, and negotiation skills.\n• Knowledge of solar products, government schemes, and industry trends preferred.\n• Proficiency in MS Office and CRM software.\n• Two-wheeler and willingness to travel.\n\nKRAs: Revenue & target achievement, team management, business development, sales planning & strategy, customer relationship management, reporting & documentation, coordination & compliance.\n\nContact: 9993826661",
+    },
+    11
+  ),
+  makeJob(
+    {
+      title: "Tele Caller / Back Office Executive (Female)",
+      company: "Solar Energy Company",
+      seedPriority: 1001,  // force Solar (newest) on top
+      companyEmail: "hr@solarenergy.example",
+      location: "Bhopal",
+      experience: "1-2 years",
+      salary: "₹12,000 – ₹15,000/month",
+      qualification: "Graduate (Mandatory)",
+      tags: ["Telecalling", "Back Office", "Data Entry", "MS Excel", "Customer Handling"],
+      hiringProcess: ["Telephonic", "Face-to-Face"],
+      numberOfOpenings: "1",
+      gender: "Female",
+      description:
+        "We Are Hiring – Tele Caller / Back Office Executive (Female). Solar Energy Company.\n\nGender: Female Only | Age Limit: Below 30 Years | Qualification: Graduate (Mandatory)\nExperience: Telecalling, Back Office Operations, Data Management, Customer Handling.\nOffice Timing: 10:30 AM – 6:00 PM | Weekly Off: Sunday | Preferred within 5–10 KM of office.\n\nJob Responsibilities:\n• Daily marketing data calling and customer follow-up\n• Coordination with Sales & Operations Team\n• Handle emails, calls, and office support activities\n• Maintain calling records and Excel databases\n• Data Entry & Record Maintenance; prepare Customer Detail Files (CDF)\n• Feedback calling & customer support\n• Maintain files, documents, and office records\n• Follow company SOPs and maintain professionalism\n\nKRAs: Data entry & record management, MIS & reporting support, coordination & communication, billing & documentation support, process compliance & accuracy, administrative support.\n\nRequired Skills:\n• Excellent communication • Telecalling experience • Back office operations\n• MS Excel & computer proficiency • Data entry & documentation • Customer handling & follow-up • Organized & detail-oriented\n\nContact: 9993826661 / 9516422456\nEmail: mmtijobs@gmail.com",
+    },
+    12
+  ),
 ];
 
 // ===========================================================
@@ -241,7 +339,7 @@ export const SEED_JOBS = [
 // merging with anything already there, guarded by a version flag.
 // Bump SEED_VERSION if you change the seed data and want it re-applied.
 // ===========================================================
-export const SEED_VERSION = "v1";
+export const SEED_VERSION = "v4";
 
 export function seedOnce() {
   try {
