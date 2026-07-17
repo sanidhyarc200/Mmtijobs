@@ -121,6 +121,25 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
 }
 
+# ---- Email (Brevo SMTP) ----
+# Set BREVO_SMTP_LOGIN + BREVO_SMTP_KEY (from Brevo → SMTP & API) to send
+# real mail. Without them, emails are printed to the console — handy in dev.
+BREVO_SMTP_LOGIN = os.environ.get("BREVO_SMTP_LOGIN", "")
+BREVO_SMTP_KEY = os.environ.get("BREVO_SMTP_KEY", "")
+
+if BREVO_SMTP_LOGIN and BREVO_SMTP_KEY:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = "smtp-relay.brevo.com"
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = BREVO_SMTP_LOGIN
+    EMAIL_HOST_PASSWORD = BREVO_SMTP_KEY
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+# Must be a sender address verified in the Brevo account.
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "no-reply@mmtijobs.com")
+
 # ---- CORS ----
 # Local Vite dev servers are always allowed; add the deployed frontend
 # origin(s) via FRONTEND_ORIGINS (comma-separated), e.g.

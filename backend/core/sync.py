@@ -11,6 +11,10 @@ from django.db import transaction
 from .models import Application, Company, Job, KeyValueEntry, Person
 
 
+def _application_key(record):
+    return (record.get("jobId"), record.get("userId"))
+
+
 def _int_or_none(value):
     try:
         return int(value)
@@ -86,9 +90,30 @@ def replace_collection(key, records):
         build_row(rec if isinstance(rec, dict) else {"value": rec}, i)
         for i, rec in enumerate(records)
     ]
+
+    # Notify companies about applications that weren't there before.
+    new_applications = []
+    if key == "jobApplications":
+        existing = {
+            _application_key(row.data)
+            for row in Application.objects.all()
+        }
+        new_applications = [
+            rec for rec in records
+            if isinstance(rec, dict) and _application_key(rec) not in existing
+        ]
+
     with transaction.atomic():
         model.objects.all().delete()
         model.objects.bulk_create(rows)
+
+    if new_applications:
+        # Import here to avoid a models<->emails import cycle at app load.
+        from .emails import send_application_notification
+
+        for rec in new_applications:
+            send_application_notification(rec)
+
     return len(rows)
 
 
