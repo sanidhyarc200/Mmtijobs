@@ -16,10 +16,9 @@ services:
         generateValue: true
       - key: DJANGO_DEBUG
         value: "false"
-      # Set this to your deployed frontend origin(s), comma-separated,
-      # e.g. https://mmtjobs.vercel.app
+      # Deployed frontend origins (CORS allow-list), comma-separated
       - key: FRONTEND_ORIGINS
-        value: ""
+        value: "https://www.mmtijobs.com,https://mmtijobs.com,https://mmtijobs.vercel.app"
       # Paste a persistent Postgres URL (free: https://neon.tech) in the
       # dashboard. Without it the API falls back to SQLite on Render's
       # ephemeral disk and data resets on every deploy.
