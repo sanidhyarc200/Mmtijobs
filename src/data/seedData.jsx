@@ -44,8 +44,8 @@ export const SEED_COMPANIES = [
   {
     id: BASE + 3,
     name: "Solar Energy Company",
-    email: "hr@solarenergy.example",   // placeholder — update with client's real email
-    contact: "9993826661",             // placeholder — portal contact used in JD
+    email: "humanresourcesgos@gmail.com",
+    contact: "9993826661",             // portal contact used in JD
     streetAddress: "",
     city: "Bhopal",
     state: "Madhya Pradesh",
@@ -261,7 +261,7 @@ export const SEED_JOBS = [
       title: "Sales Executive – Solar",
       company: "Solar Energy Company",
       seedPriority: 1004,  // force Solar (newest) on top
-      companyEmail: "hr@solarenergy.example",
+      companyEmail: "humanresourcesgos@gmail.com",
       location: "Bhopal",
       experience: "0-2 years",
       salary: "₹10,000 – ₹14,000/month + Incentives",
@@ -280,7 +280,7 @@ export const SEED_JOBS = [
       title: "Site Installation Manager – Solar",
       company: "Solar Energy Company",
       seedPriority: 1003,  // force Solar (newest) on top
-      companyEmail: "hr@solarenergy.example",
+      companyEmail: "humanresourcesgos@gmail.com",
       location: "Bhopal",
       experience: "1-3 years",
       salary: "₹18,000 – ₹20,000/month",
@@ -299,7 +299,7 @@ export const SEED_JOBS = [
       title: "Sales Manager – Solar",
       company: "Solar Energy Company",
       seedPriority: 1002,  // force Solar (newest) on top
-      companyEmail: "hr@solarenergy.example",
+      companyEmail: "humanresourcesgos@gmail.com",
       location: "Bhopal",
       experience: "2-5 years",
       salary: "₹20,000 – ₹25,000/month + Incentives",
@@ -318,7 +318,7 @@ export const SEED_JOBS = [
       title: "Tele Caller / Back Office Executive (Female)",
       company: "Solar Energy Company",
       seedPriority: 1001,  // force Solar (newest) on top
-      companyEmail: "hr@solarenergy.example",
+      companyEmail: "humanresourcesgos@gmail.com",
       location: "Bhopal",
       experience: "1-2 years",
       salary: "₹12,000 – ₹15,000/month",

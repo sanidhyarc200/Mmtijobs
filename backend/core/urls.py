@@ -13,5 +13,7 @@ urlpatterns = [
     path("health/", views.health),
     path("bootstrap/", views.bootstrap),
     path("collections/<str:key>/", views.collection),
+    path("password-reset/request/", views.password_reset_request),
+    path("password-reset/confirm/", views.password_reset_confirm),
     path("", include(router.urls)),
 ]

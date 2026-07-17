@@ -514,6 +514,41 @@ export default function AdminDashboard() {
   }
 
   // -----------------------
+  // Login as a company (admin impersonation): switch currentUser to the
+  // company's recruiter account and open their dashboard.
+  // -----------------------
+  function loginAsCompany(c) {
+    const email = (c.email || "").toLowerCase();
+    const name = c.companyName || c.name || "";
+    const users = readJSON("users", []);
+
+    let recruiter = users.find(
+      (u) =>
+        u.userType === "recruiter" &&
+        ((u.email || "").toLowerCase() === email ||
+          (name && (u.company || "") === name))
+    );
+
+    if (!recruiter) {
+      recruiter = {
+        id: Date.now(),
+        userType: "recruiter",
+        email: c.email || "",
+        name,
+        company: name,
+        contact: c.contact || c.phone || "",
+        createdAt: new Date().toISOString(),
+      };
+      users.push(recruiter);
+      writeJSON("users", users);
+    }
+
+    writeJSON("currentUser", recruiter);
+    window.dispatchEvent(new Event("authChanged"));
+    navigate("/company-dashboard");
+  }
+
+  // -----------------------
   // New: Open company view modal
   // -----------------------
   function openCompanyView(company) {
@@ -776,6 +811,14 @@ export default function AdminDashboard() {
                           onClick={() => openCompanyView(c)}
                         >
                           👁️ View
+                        </button>
+                        <button
+                          className="btn secondary"
+                          title="Open this company's dashboard as them"
+                          style={{ background: "#0a66c2", color: "#fff" }}
+                          onClick={() => loginAsCompany(c)}
+                        >
+                          → Login as
                         </button>
                         <button
                           className="btn secondary"

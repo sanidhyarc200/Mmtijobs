@@ -28,6 +28,7 @@ import ResumeBuilder from './pages/ResumeBilder';
 import HRDashboard from './pages/HRDashboard';
 import HRRecruiterDashboard from './pages/HRRecruiterDashboard';
 import AdminLogin from './pages/auth/AdminLogin';
+import ResetPassword from './pages/ResetPassword';
 import HRManagerLogin from './pages/auth/HRManagerLogin';
 import HRLogin from './pages/auth/HRLogin';
 import HRRecruiterLogin from './pages/auth/HRRecruiterLogin'; 
@@ -48,10 +49,11 @@ function Layout({ onPostJobClick, children }) {
     '/auth/hr-recruiter',
   ];
 
-  // Resume builder routes — always full screen, no header
+  // Resume builder + reset password routes — always full screen, no header
   const hideHeader =
     headerHiddenRoutes.includes(location.pathname) ||
-    location.pathname.startsWith('/resume-builder');
+    location.pathname.startsWith('/resume-builder') ||
+    location.pathname.startsWith('/reset-password');
 
   return (
     <>
@@ -251,6 +253,16 @@ function CompanyLoginModal({ onClose }) {
         </div>
         {error && <p style={styles.error}>{error}</p>}
         <button onClick={handleLogin} style={styles.primaryBtn}>Login</button>
+        <button
+          type="button"
+          onClick={() => { onClose(); navigate('/reset-password'); }}
+          style={{
+            width: '100%', background: 'none', border: 'none', color: '#0a66c2',
+            fontSize: 14, fontWeight: 600, cursor: 'pointer', marginBottom: 10, padding: 0,
+          }}
+        >
+          Forgot password?
+        </button>
         <button onClick={onClose} style={styles.cancelBtn}>Cancel</button>
       </div>
     </div>
@@ -312,6 +324,7 @@ export default function App() {
           <Route path="/hr-dashboard" element={<HRDashboard />} />
           <Route path="/hr-recruiter-dashboard" element={<HRRecruiterDashboard />} />
           <Route path="/hr-manager-dashboard" element={<HRManagerDashboard />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/auth/admin" element={<AdminLogin />} />
           <Route path="/auth/hr-manager" element={<HRManagerLogin />} />
           <Route path="/auth/hr" element={<HRLogin />} />
