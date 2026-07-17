@@ -1,0 +1,35 @@
+# Render Blueprint — deploys the Django API as a free web service.
+# In the Render dashboard: New + → Blueprint → point at this repo.
+services:
+  - type: web
+    name: mmtjobs-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate && (python manage.py createsuperuser --noinput || true)
+    startCommand: gunicorn mmtjobs_api.wsgi:application --workers 2 --bind 0.0.0.0:$PORT
+    healthCheckPath: /api/health/
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.6
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "false"
+      # Set this to your deployed frontend origin(s), comma-separated,
+      # e.g. https://mmtjobs.vercel.app
+      - key: FRONTEND_ORIGINS
+        value: ""
+      # Paste a persistent Postgres URL (free: https://neon.tech) in the
+      # dashboard. Without it the API falls back to SQLite on Render's
+      # ephemeral disk and data resets on every deploy.
+      - key: DATABASE_URL
+        sync: false
+      # Django admin account, auto-created on deploy (change anytime in
+      # the dashboard; the password is only used if the user doesn't exist yet).
+      - key: DJANGO_SUPERUSER_USERNAME
+        sync: false
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false
+      - key: DJANGO_SUPERUSER_EMAIL
+        sync: false

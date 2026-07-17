@@ -1,6 +1,7 @@
 // src/App.jsx
 import React, { useState, useEffect } from 'react';
 import { seedOnce } from './data/seedData';
+import { initApiStore } from './data/apiStore';
 import {
   BrowserRouter as Router,
   Routes,
@@ -178,13 +179,21 @@ function CompanyLoginModal({ onClose }) {
   const navigate = useNavigate();
 
   const handleLogin = () => {
-    const savedCompany = JSON.parse(localStorage.getItem('registeredCompany'));
+    // Check the synced list first (works across devices), then fall back to
+    // the legacy single-company key.
+    const companies = JSON.parse(localStorage.getItem('registeredCompanies')) || [];
+    const legacy = JSON.parse(localStorage.getItem('registeredCompany'));
+    const candidates = legacy ? [...companies, legacy] : companies;
 
-    if (
-      savedCompany &&
-      savedCompany.email.toLowerCase() === email.toLowerCase() &&
-      savedCompany.password === password
-    ) {
+    const savedCompany = candidates.find(
+      (c) =>
+        c &&
+        c.email &&
+        c.email.toLowerCase() === email.toLowerCase() &&
+        c.password === password
+    );
+
+    if (savedCompany) {
       const users = JSON.parse(localStorage.getItem('users')) || [];
       const recruiter = {
         id: Date.now(),
@@ -253,11 +262,34 @@ function CompanyLoginModal({ onClose }) {
 /* ------------------------------------------------------------------ */
 export default function App() {
   const [showPostJobModal, setShowPostJobModal] = useState(false);
+  const [storeReady, setStoreReady] = useState(false);
 
-  // One-time seed of demo clients + jobs into localStorage
+  // Hydrate localStorage from the backend API first, then apply the one-time
+  // demo seed (merged by id, so nothing duplicates). Pages render only after
+  // hydration so they never read stale/empty data.
   useEffect(() => {
-    seedOnce();
+    initApiStore().finally(() => {
+      seedOnce();
+      setStoreReady(true);
+    });
   }, []);
+
+  if (!storeReady) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontFamily: 'Arial, sans-serif',
+          color: '#0a66c2',
+        }}
+      >
+        Loading…
+      </div>
+    );
+  }
 
   return (
     <Router>
