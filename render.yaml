@@ -6,7 +6,7 @@ services:
     runtime: python
     plan: free
     rootDir: backend
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate && (python manage.py createsuperuser --noinput || true)
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate && (python manage.py createsuperuser --noinput || true) && python manage.py migrate_collections
     startCommand: gunicorn mmtjobs_api.wsgi:application --workers 2 --bind 0.0.0.0:$PORT
     healthCheckPath: /api/health/
     envVars:
@@ -40,4 +40,14 @@ services:
         sync: false
       # Sender address — must be verified in the Brevo account.
       - key: DEFAULT_FROM_EMAIL
+        sync: false
+      # v2 API staff logins (hashed server-side). Set in the dashboard to
+      # enable each role; leave blank to skip creating that account.
+      - key: STAFF_ADMIN_PASSWORD
+        sync: false
+      - key: STAFF_HR_PASSWORD
+        sync: false
+      - key: STAFF_HR_MANAGER_PASSWORD
+        sync: false
+      - key: STAFF_HR_RECRUITER_PASSWORD
         sync: false
