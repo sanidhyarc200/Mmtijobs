@@ -58,6 +58,40 @@ export const SEED_COMPANIES = [
     createdAt: new Date().toISOString(),
     __seeded: true,
   },
+  {
+    id: BASE + 4,
+    name: "Bharat Airtel",
+    email: "",                          // TODO: client's real email
+    contact: "9993826661",              // portal contact
+    streetAddress: "",
+    city: "Bhopal",
+    state: "Madhya Pradesh",
+    pincode: "",
+    gstNumber: "",
+    industryType: "Telecom / Broadband",
+    numberOfEmployees: "51-200 employees",
+    companyWebsite: "",
+    profilePic: null,
+    createdAt: new Date().toISOString(),
+    __seeded: true,
+  },
+  {
+    id: BASE + 5,
+    name: "Avenue Supermarts Ltd",
+    email: "",                          // TODO: client's real email
+    contact: "9993826661",              // portal contact
+    streetAddress: "",
+    city: "Indore",
+    state: "Madhya Pradesh",
+    pincode: "",
+    gstNumber: "",
+    industryType: "Retail / Supermarket",
+    numberOfEmployees: "201-500 employees",
+    companyWebsite: "",
+    profilePic: null,
+    createdAt: new Date().toISOString(),
+    __seeded: true,
+  },
 ];
 
 // Helper to keep job objects consistent with what the app expects.
@@ -89,6 +123,90 @@ const makeJob = (over, idx) => ({
 });
 
 export const SEED_JOBS = [
+  // ---------- Client 4: Bharat Airtel (newest — force on top everywhere) ----------
+  makeJob(
+    {
+      title: "CRA Customer Recovery Advisor",
+      company: "Bharat Airtel",
+      seedPriority: 1013,
+      createdAt: new Date(now + 1103 * 60000).toISOString(),
+      companyEmail: "",
+      location: "Bhopal",
+      experience: "0-2 years",
+      salary: "₹13,000 – ₹15,000/month",
+      qualification: "12th Pass / Graduate / Diploma",
+      tags: ["Customer Relationship Management", "Payment Recovery", "Negotiation", "Field Operations", "Communication"],
+      hiringProcess: ["Face-to-Face", "Telephonic"],
+      numberOfOpenings: "2",
+      gender: "Any",
+      description:
+        "CRA – Customer Recovery Advisor | Bharat Airtel, Bhopal.\n\nKey Responsibilities:\n• Visit customers with overdue broadband accounts and assist in payment recovery.\n• Build positive relationships with customers while resolving payment-related concerns.\n• Educate customers about available payment options and service continuity.\n• Coordinate with internal teams to ensure timely issue resolution.\n• Maintain accurate records of customer visits, collections, and recovery status.\n• Achieve assigned recovery and collection targets.\n• Ensure all recovery activities comply with company policies and ethical standards.\n\nEligibility:\n• 12th Pass, Graduate, or Diploma holders can apply.\n• Freshers and experienced candidates are welcome.\n• Good communication and negotiation skills.\n• Willingness to travel within the assigned area.\n• Basic knowledge of smartphones and digital payment methods is preferred.\n\nRequired Skills: Customer Relationship Management • Negotiation & Persuasion • Communication Skills • Problem Solving • Time Management • Documentation & Reporting • Field Operations\n\nContact: 9993826661 / 9516422456\nEmail: mmtijobs@gmail.com",
+    },
+    20
+  ),
+  makeJob(
+    {
+      title: "Installation Engineer",
+      company: "Bharat Airtel",
+      seedPriority: 1012,
+      createdAt: new Date(now + 1102 * 60000).toISOString(),
+      companyEmail: "",
+      location: "Bhopal",
+      experience: "0-3 years",
+      salary: "₹20,500 – ₹24,300/month",
+      qualification: "ITI / Diploma / Graduate (Electronics, Electrical, CS, Networking)",
+      tags: ["Broadband Installation", "Fiber", "Router Configuration", "Networking", "Troubleshooting"],
+      hiringProcess: ["Face-to-Face"],
+      numberOfOpenings: "2",
+      gender: "Any",
+      description:
+        "Installation Engineer | Bharat Airtel, Bhopal.\n\nKey Responsibilities:\n• Install Airtel Broadband and Fiber connections at customer locations.\n• Configure Wi-Fi routers, ONTs, and networking devices.\n• Test internet connectivity and ensure service quality.\n• Troubleshoot installation and connectivity issues.\n• Provide customers with a demonstration of broadband setup and usage.\n• Complete installation reports and service documentation.\n• Coordinate with the technical support team for issue resolution.\n• Follow company safety standards and installation procedures.\n\nEligibility:\n• ITI/Diploma/Graduate in Electronics, Electrical, Computer Science, Networking, or any relevant field.\n• Freshers and experienced candidates are welcome to apply.\n• Basic knowledge of networking, routers, and fiber installation is preferred.\n• Good communication and customer-handling skills.\n• Willingness to travel within the assigned area.\n\nSkills Required: Basic Networking Knowledge • Fiber Broadband Installation • Router Configuration • Troubleshooting Skills • Customer Service • Time Management • Teamwork\n\nContact: 9993826661 / 9516422456\nEmail: mmtijobs@gmail.com",
+    },
+    21
+  ),
+
+  // ---------- Client 5: Avenue Supermarts Ltd ----------
+  makeJob(
+    {
+      title: "Credit Card Sales",
+      company: "Avenue Supermarts Ltd",
+      seedPriority: 1011,
+      createdAt: new Date(now + 1101 * 60000).toISOString(),
+      companyEmail: "",
+      location: "Indore",
+      experience: "0-3 years",
+      salary: "₹14,000 – ₹18,000/month",
+      qualification: "High School / Graduate (Business Administration preferred)",
+      tags: ["Sales", "Credit Cards", "Financial Products", "Negotiation", "Customer Service"],
+      hiringProcess: ["Face-to-Face", "Telephonic"],
+      numberOfOpenings: "3",
+      gender: "Any",
+      description:
+        "Credit Card Sales | Avenue Supermarts Ltd, Indore.\n\nKey Responsibilities:\n• Identify potential customers for credit card sales through various channels.\n• Explain the features and benefits of different credit card products to customers.\n• Persuade customers to purchase credit cards and complete the application process.\n• Achieve or exceed monthly sales targets set by management.\n• Provide excellent customer service and promote a positive company image.\n• Follow up with customers to ensure satisfaction and obtain feedback.\n• Keep up to date with product knowledge and market trends.\n• Maintain accurate and timely records of sales activities and customer interactions.\n\nQualifications:\n• High school diploma or equivalent; Bachelor's degree in Business Administration or related field is preferred.\n• Proven experience in sales, preferably in financial products or services.\n• Strong communication, negotiation, and interpersonal skills.\n• Customer-focused with the ability to understand and meet customers' needs.\n• Ability to work independently and as part of a team.\n• Results-oriented with a strong drive to achieve sales targets.\n\nSkills: Sales techniques • Customer relationship management • Communication skills • Negotiation • Product knowledge • Time management • Analytical thinking • Problem-solving\n\nContact: 9993826661 / 9516422456\nEmail: mmtijobs@gmail.com",
+    },
+    22
+  ),
+  makeJob(
+    {
+      title: "Cashier (Shop)",
+      company: "Avenue Supermarts Ltd",
+      seedPriority: 1010,
+      createdAt: new Date(now + 1100 * 60000).toISOString(),
+      companyEmail: "",
+      location: "Indore",
+      experience: "0-2 years",
+      salary: "₹12,000 – ₹14,000/month",
+      qualification: "12th Pass / Graduate",
+      tags: ["Cashier", "POS", "Billing", "Retail", "Customer Service"],
+      hiringProcess: ["Face-to-Face"],
+      numberOfOpenings: "2",
+      gender: "Any",
+      description:
+        "Cashier (Shop) | Avenue Supermarts Ltd, Indore.\n\nKey Responsibilities:\n• Transaction Management: Scan products, weigh items, apply discounts/coupons, and process cash, card, and digital payments.\n• Customer Service: Greet customers warmly, assist with inquiries, and handle merchandise returns or exchanges according to store policy.\n• Till Reconciliation: Count the cash drawer at the beginning and end of the shift to ensure the balance matches daily sales reports.\n• Inventory & Store Support: Maintain a clean, organized checkout area, assist with restocking shelves, and alert management to low-stock items.\n\nRequired Skills:\n• Basic Mathematics: Ability to calculate change, discounts, and percentages quickly and accurately.\n• Technical Proficiency: Familiarity with POS systems, barcode scanners, and digital payment apps like UPI.\n• Interpersonal Skills: A friendly, patient attitude with excellent verbal communication skills.\n• Attention to Detail: High accuracy in handling money and balancing registers.\n\nContact: 9993826661 / 9516422456\nEmail: mmtijobs@gmail.com",
+    },
+    23
+  ),
+
   // ---------- Client 1: Bhoomika Investment Service (BIC Infra) ----------
   makeJob(
     {
@@ -339,7 +457,7 @@ export const SEED_JOBS = [
 // merging with anything already there, guarded by a version flag.
 // Bump SEED_VERSION if you change the seed data and want it re-applied.
 // ===========================================================
-export const SEED_VERSION = "v4";
+export const SEED_VERSION = "v5";
 
 export function seedOnce() {
   try {
