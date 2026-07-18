@@ -13,7 +13,7 @@ export default function HRManagerLogin() {
     e.preventDefault();
     setError('');
 
-    if (email.toLowerCase() === 'hrmanagermmti@gmail.com' && password === 'HrManager@123') {
+    if (email.toLowerCase() === 'sanidhyakoranne123+hrmanager@gmail.com' && password === 'mmtihelp@49') {
     const hrManagerUser = {
         id: 'hr-manager-1',
         name: 'HR Manager',

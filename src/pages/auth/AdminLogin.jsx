@@ -13,7 +13,7 @@ export default function AdminLogin() {
 
     if (
       email.toLowerCase() === 'sanidhyakoranne123@gmail.com' &&
-      password === 'Mmti@help49'
+      password === 'mmtihelp@49'
     ) {
       const adminUser = {
         id: 'admin-1',

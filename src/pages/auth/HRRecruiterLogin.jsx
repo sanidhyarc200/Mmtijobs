@@ -13,7 +13,7 @@ export default function HRRecruiterLogin() {
     e.preventDefault();
     setError('');
 
-    if (email.toLowerCase() === 'hrrecruiter@gmail.com' && password === 'Recruiter@123') {
+    if (email.toLowerCase() === 'sanidhyakoranne123+hrrecruiter@gmail.com' && password === 'mmtihelp@49') {
 
     const user = {
         id: 'hr-recruiter-1',

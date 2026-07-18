@@ -4,11 +4,12 @@ One-time migration: legacy localStorage-mirror collections (core app)
 
 Safe to re-run: matches by email/client_id and only creates what's missing.
 
-Also seeds the four staff accounts the frontend used to hardcode, using
-env vars for their passwords:
-  STAFF_ADMIN_PASSWORD, STAFF_HR_PASSWORD,
-  STAFF_HR_MANAGER_PASSWORD, STAFF_HR_RECRUITER_PASSWORD
-(accounts are skipped when the corresponding env var is unset)
+Also seeds the four staff accounts (all owned by the site admin; the HR
+roles use Gmail plus-addresses of the same inbox). Passwords come from
+env: STAFF_SHARED_PASSWORD for all of them, or the per-role vars
+STAFF_ADMIN_PASSWORD / STAFF_HR_PASSWORD / STAFF_HR_MANAGER_PASSWORD /
+STAFF_HR_RECRUITER_PASSWORD to override individually. Accounts are
+skipped while no password is configured.
 """
 
 import os
@@ -25,9 +26,9 @@ from domain.models import Account, CompanyProfile, JobApplication, JobPost
 
 STAFF_ACCOUNTS = [
     ("admin", "sanidhyakoranne123@gmail.com", "Administrator", "STAFF_ADMIN_PASSWORD"),
-    ("hr", "hrmmti@gmail.com", "HR", "STAFF_HR_PASSWORD"),
-    ("hr_manager", "hrmanagermmti@gmail.com", "HR Manager", "STAFF_HR_MANAGER_PASSWORD"),
-    ("hr_recruiter", "hrrecruiter@gmail.com", "HR Recruiter", "STAFF_HR_RECRUITER_PASSWORD"),
+    ("hr", "sanidhyakoranne123+hr@gmail.com", "HR", "STAFF_HR_PASSWORD"),
+    ("hr_manager", "sanidhyakoranne123+hrmanager@gmail.com", "HR Manager", "STAFF_HR_MANAGER_PASSWORD"),
+    ("hr_recruiter", "sanidhyakoranne123+hrrecruiter@gmail.com", "HR Recruiter", "STAFF_HR_RECRUITER_PASSWORD"),
 ]
 
 
@@ -170,8 +171,9 @@ class Command(BaseCommand):
                 created["applications"] += 1
 
         # ---- Staff accounts (passwords from env, never hardcoded) ----
+        shared_password = os.environ.get("STAFF_SHARED_PASSWORD", "")
         for role, email, name, env_var in STAFF_ACCOUNTS:
-            password = os.environ.get(env_var)
+            password = os.environ.get(env_var) or shared_password
             if not password:
                 continue
             account, was_created = Account.objects.get_or_create(
