@@ -536,6 +536,30 @@ export default function PostJob() {
         updatedAt: new Date().toISOString(),
       };
       localStorage.setItem("jobs", JSON.stringify(existing));
+
+      // Mirror the edit into the v2 backend (fire-and-forget)
+      import("../data/apiV2").then(async (m) => {
+        const v2Id = await m.v2JobIdFor(existing[idx].id);
+        if (v2Id) {
+          await m.updateJob(v2Id, {
+            title,
+            job_type: form.jobType,
+            qualification,
+            location: form.location.trim(),
+            salary: `${form.salaryMin} - ${form.salaryMax} LPA`,
+            hiring_process: form.hiringProcess,
+            experience: `${form.expFrom} - ${form.expTo}`,
+            gender: form.gender,
+            description: form.description.trim(),
+            number_of_openings: String(form.numberOfOpenings || ""),
+            active_until: form.activeUntil || null,
+            extra: {
+              passingYearRange: `${form.passFrom} - ${form.passTo}`,
+              cgpa: form.cgpa,
+            },
+          });
+        }
+      }).catch(() => {});
     } else {
       // CREATE new job — server first (v2: lands as "pending" until admin
       // approves), then mirror into the legacy collection with the same id.

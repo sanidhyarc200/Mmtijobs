@@ -26,6 +26,17 @@ export default function HRManagerLogin() {
       localStorage.setItem('currentUser', JSON.stringify(hrManagerUser));
       window.dispatchEvent(new Event('authChanged'));
 
+      // Real server session so approve/deactivate calls are authorized.
+      // (Token only — keep the local hrManagerUser as currentUser so the
+      // dashboard's role checks behave exactly as before.)
+      import('../../data/apiV2')
+        .then(async (m) => {
+          const cu = localStorage.getItem('currentUser');
+          await m.login(email, password).catch(() => {});
+          if (cu) localStorage.setItem('currentUser', cu);
+        })
+        .catch(() => {});
+
       navigate('/hr-manager-dashboard'); // ✅ CORRECT
       return;
     }

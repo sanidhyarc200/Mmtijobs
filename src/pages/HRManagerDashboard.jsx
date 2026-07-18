@@ -144,17 +144,26 @@ export default function HRManagerDashboard() {
   /* =========================================================
      JOB ACTIONS
   ========================================================= */
+  const pushStatusToServer = (job, status) => {
+    // Keep the v2 backend in sync with HR decisions (fire-and-forget).
+    import("../data/apiV2").then(async (m) => {
+      const v2Id = await m.v2JobIdFor(job.id);
+      if (v2Id) await m.setJobStatus(v2Id, status);
+    }).catch(() => {});
+  };
   const approveJob = (idx) => {
     const list = [...jobs];
     list[idx].status = "active";
     setJobs(list);
     writeJSON("jobs", list);
+    pushStatusToServer(list[idx], "active");
   };
   const deactivateJob = (idx) => {
     const list = [...jobs];
     list[idx].status = "inactive";
     setJobs(list);
     writeJSON("jobs", list);
+    pushStatusToServer(list[idx], "inactive");
   };
 
 
