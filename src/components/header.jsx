@@ -63,13 +63,30 @@ export default function Header({ onPostJobClick }) {
     };
   }, []);
 
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setLoginError('');
 
     const email = loginData.email.trim();
 
     const password = loginData.password;
+
+    // 👉 Server-side login (v2 API — hashed passwords, real session)
+    try {
+      const { login: v2Login } = await import('../data/apiV2');
+      const { user } = await v2Login(email, password);
+      setIsLoggedIn(true);
+      setCurrentUser(user);
+      setShowLoginModal(false);
+      navigate(user.userType === 'recruiter' ? '/company-dashboard' : '/dashboard');
+      return;
+    } catch (err) {
+      if (err && err.status === 401) {
+        setLoginError('Invalid email or password.');
+        return;
+      }
+      // API unreachable — fall back to the legacy local check below.
+    }
 
     // 👉 Admin hardcoded credentials
 // if (email === 'sanidhyakoranne123@gmail.com' && password === 'Mmti@help49') {
@@ -169,6 +186,7 @@ export default function Header({ onPostJobClick }) {
   };
 
   const handleLogout = () => {
+    import('../data/apiV2').then((m) => m.clearSession()).catch(() => {});
     localStorage.removeItem('currentUser');
     try { window.dispatchEvent(new Event('authChanged')); } catch {}
     setIsLoggedIn(false);

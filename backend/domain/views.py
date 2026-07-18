@@ -233,6 +233,10 @@ def jobs(request):
     serializer = JobSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     job = serializer.save(company=company, posted_by=request.user, status="pending")
+    # client_id mirrors pk so the legacy-collection mirror of this job and
+    # re-runs of migrate_collections stay idempotent.
+    job.client_id = job.pk
+    job.save(update_fields=["client_id"])
     return Response(JobSerializer(job).data, status=http.HTTP_201_CREATED)
 
 

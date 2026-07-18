@@ -473,6 +473,15 @@ export default function AdminDashboard() {
     };
     setJobs(list);
     saveJobs(list);
+    pushStatusToServer(list[index], list[index].status);
+  }
+
+  function pushStatusToServer(job, status) {
+    // Keep the v2 backend in sync with admin decisions (fire-and-forget).
+    import("../data/apiV2").then(async (m) => {
+      const v2Id = await m.v2JobIdFor(job.id);
+      if (v2Id) await m.setJobStatus(v2Id, status);
+    }).catch(() => {});
   }
 
   function approveJob(index) {
@@ -480,6 +489,7 @@ export default function AdminDashboard() {
     list[index] = { ...list[index], status: "active" };
     setJobs(list);
     saveJobs(list);
+    pushStatusToServer(list[index], "active");
     alert(`✅ Job "${list[index].title}" approved!`);
   }
 

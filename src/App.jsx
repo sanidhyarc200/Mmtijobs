@@ -180,7 +180,26 @@ function CompanyLoginModal({ onClose }) {
 
   const navigate = useNavigate();
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
+    // Server-side login first (v2 API); legacy local check as offline fallback.
+    try {
+      const { login: v2Login } = await import('./data/apiV2');
+      const { user } = await v2Login(email, password);
+      if (user.userType !== 'recruiter') {
+        setError('This is not a company account.');
+        return;
+      }
+      onClose();
+      navigate('/post-job');
+      return;
+    } catch (err) {
+      if (err && err.status === 401) {
+        setError('Invalid email or password');
+        return;
+      }
+      // API unreachable — fall through to local check.
+    }
+
     // Check the synced list first (works across devices), then fall back to
     // the legacy single-company key.
     const companies = JSON.parse(localStorage.getItem('registeredCompanies')) || [];

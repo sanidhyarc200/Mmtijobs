@@ -303,7 +303,7 @@ export default function RegisterCompany() {
   // =========================
   // REGISTER
   // =========================
-  const registerCompany = () => {
+  const registerCompany = async () => {
     if (!validate()) return;
 
     const users = JSON.parse(localStorage.getItem("users")) || [];
@@ -345,6 +345,18 @@ export default function RegisterCompany() {
       companyWebsite: companyWebsite.trim(),
       createdAt: new Date().toISOString(),
     };
+
+    // Server-side account + company (v2 API): hashed password, dup checks.
+    try {
+      const { registerCompany: v2Register } = await import("../data/apiV2");
+      await v2Register(companyData);
+    } catch (err) {
+      if (err && err.status === 400) {
+        setErrors({ companyEmail: err.message });
+        return;
+      }
+      // API unreachable — continue with the local-only flow.
+    }
 
     // Save to array (so all companies persist), and also single key for backward compatibility
     const existing = JSON.parse(localStorage.getItem("registeredCompanies")) || [];

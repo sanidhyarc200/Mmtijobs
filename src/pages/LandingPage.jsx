@@ -354,6 +354,11 @@ export default function LandingPage() {
     };
 
     localStorage.setItem('jobApplications', JSON.stringify([...apps, newApplication]));
+    // Record server-side too (dup-proof + emails the company).
+    import('../data/apiV2').then(async (m) => {
+      const v2Id = await m.v2JobIdFor(job.id);
+      if (v2Id) await m.applyToJob(v2Id);
+    }).catch(() => {});
     setAppliedJobIds(prev => {
       const next = new Set(prev);
       next.add(job.id);

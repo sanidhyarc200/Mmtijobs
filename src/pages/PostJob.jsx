@@ -470,7 +470,7 @@ export default function PostJob() {
     return (form.qualification || "").trim();
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!canPost) return;
     if (!validate()) return;
@@ -537,9 +537,35 @@ export default function PostJob() {
       };
       localStorage.setItem("jobs", JSON.stringify(existing));
     } else {
-      // CREATE new job
+      // CREATE new job — server first (v2: lands as "pending" until admin
+      // approves), then mirror into the legacy collection with the same id.
+      let serverId = null;
+      try {
+        const { createJob } = await import("../data/apiV2");
+        const serverJob = await createJob({
+          title,
+          job_type: form.jobType,
+          qualification,
+          location: form.location.trim(),
+          salary: `${form.salaryMin} - ${form.salaryMax} LPA`,
+          hiring_process: form.hiringProcess,
+          experience: `${form.expFrom} - ${form.expTo}`,
+          gender: form.gender,
+          description: form.description.trim(),
+          number_of_openings: String(form.numberOfOpenings || ""),
+          active_until: form.activeUntil || null,
+          extra: {
+            passingYearRange: `${form.passFrom} - ${form.passTo}`,
+            cgpa: form.cgpa,
+          },
+        });
+        serverId = serverJob.client_id ?? serverJob.id;
+      } catch {
+        // API unreachable — legacy flow still records the job locally.
+      }
+
       const job = {
-        id: Date.now(),
+        id: serverId ?? Date.now(),
         title,
         jobType: form.jobType,
         qualification,
@@ -570,9 +596,28 @@ export default function PostJob() {
   };
 
   // recruiter login
-  const doLogin = (e) => {
+  const doLogin = async (e) => {
     e.preventDefault();
     setLoginErr("");
+
+    // Server-side login first (v2 API)
+    try {
+      const { login: v2Login } = await import("../data/apiV2");
+      const { user } = await v2Login(login.email.trim(), login.password);
+      if (user.userType !== "recruiter") {
+        setLoginErr("This is a candidate account. Recruiter login required.");
+        return;
+      }
+      setShowLogin(false);
+      setLogin({ email: "", password: "" });
+      return;
+    } catch (err) {
+      if (err && err.status === 401) {
+        setLoginErr("Invalid credentials or not a recruiter.");
+        return;
+      }
+      // API unreachable — fall back to the legacy local check below.
+    }
 
     const users = JSON.parse(localStorage.getItem("users")) || [];
     let found = users.find(

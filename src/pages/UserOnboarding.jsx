@@ -289,11 +289,9 @@ export default function UserOnboarding() {
   };
 
   /* ------------------ SAVE USER ------------------ */
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateStep(5)) return;
-
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
 
     const newUser = {
       id: Date.now(),
@@ -303,6 +301,27 @@ export default function UserOnboarding() {
       createdAt: new Date().toISOString(),
     };
 
+    // Server-side account (v2 API): hashed password, duplicate checks.
+    // File objects can't travel as JSON — send the data-URI preview instead.
+    try {
+      const { registerApplicant } = await import("../data/apiV2");
+      const payload = {
+        ...newUser,
+        profilePic: formData.profilePicPreview || null,
+        profilePicPreview: undefined,
+        cv: formData.cv?.name || null,
+      };
+      const { user } = await registerApplicant(payload);
+      newUser.id = user.id; // keep the mirror row aligned with the server id
+    } catch (err) {
+      if (err && err.status === 400) {
+        setErrors((prev) => ({ ...prev, email: err.message }));
+        return;
+      }
+      // API unreachable — continue with the local-only flow.
+    }
+
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
     users.push(newUser);
     localStorage.setItem("users", JSON.stringify(users));
 

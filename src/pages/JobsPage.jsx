@@ -234,6 +234,12 @@ export default function JobsPage() {
       status: 'Applied',
     };
     localStorage.setItem('jobApplications', JSON.stringify([...apps, newApp]));
+    // Record server-side too (auth token → applicant identity, dup-proof,
+    // triggers the company notification email from the backend).
+    import('../data/apiV2').then(async (m) => {
+      const v2Id = await m.v2JobIdFor(job.id);
+      if (v2Id) await m.applyToJob(v2Id);
+    }).catch(() => {});
     try { window.dispatchEvent(new Event('applicationsChanged')); } catch {}
     setAppliedSet(new Set([...Array.from(appliedSet), job.id]));
     setAppliedJobTitle(job.title);

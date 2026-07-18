@@ -26,6 +26,11 @@ export default function AdminLogin() {
 
       localStorage.setItem('currentUser', JSON.stringify(adminUser));
       window.dispatchEvent(new Event('authChanged'));
+      // Grab a real server session too, so admin actions (approve, status
+      // changes) are authorized against the v2 API.
+      import('../../data/apiV2')
+        .then((m) => m.login(email, password))
+        .catch(() => {});
       navigate('/admin-dashboard');
       return;
     }
