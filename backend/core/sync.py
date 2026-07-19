@@ -121,16 +121,36 @@ def set_kv(key, value):
     KeyValueEntry.objects.update_or_create(key=key, defaults={"value": value})
 
 
+# Collections whose records used to carry plaintext passwords. Auth now
+# happens server-side against hashes (v2 API), so passwords are stripped
+# from everything we send to browsers.
+_CREDENTIAL_KEYS = {"users", "registeredCompanies"}
+
+
+def _redact(record):
+    if isinstance(record, dict) and "password" in record:
+        record = {k: v for k, v in record.items() if k != "password"}
+    return record
+
+
 def collection_payload(key):
     model, _ = COLLECTIONS[key]
-    return [row.data for row in model.objects.all()]
+    rows = [row.data for row in model.objects.all()]
+    if key in _CREDENTIAL_KEYS:
+        rows = [_redact(r) for r in rows]
+    return rows
 
 
 def full_snapshot():
+    # One query per collection; hasData derives from the rows already
+    # fetched (no extra EXISTS round-trips — they matter when the DB is
+    # in another region).
     collections = {key: collection_payload(key) for key in COLLECTIONS}
-    for entry in KeyValueEntry.objects.all():
-        collections[entry.key] = entry.value
-    has_data = any(
-        model.objects.exists() for model, _ in COLLECTIONS.values()
-    ) or KeyValueEntry.objects.exists()
+    kv_entries = list(KeyValueEntry.objects.all())
+    for entry in kv_entries:
+        value = entry.value
+        if entry.key == "registeredCompany":
+            value = _redact(value)
+        collections[entry.key] = value
+    has_data = bool(kv_entries) or any(collections[key] for key in COLLECTIONS)
     return {"hasData": has_data, "collections": collections}

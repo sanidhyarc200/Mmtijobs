@@ -22,6 +22,12 @@ def health(request):
 
 
 @api_view(["GET"])
+def warm(request):
+    """Keep-alive target: wakes this dyno AND the Neon database."""
+    return Response({"status": "warm", "jobs": Job.objects.count()})
+
+
+@api_view(["GET"])
 def bootstrap(request):
     """Everything the frontend needs to hydrate localStorage in one call."""
     return Response(sync.full_snapshot())
@@ -40,7 +46,10 @@ def collection(request, key):
         if key in sync.COLLECTIONS:
             return Response(sync.collection_payload(key))
         entry = sync.KeyValueEntry.objects.filter(key=key).first()
-        return Response(entry.value if entry else None)
+        value = entry.value if entry else None
+        if key == "registeredCompany":
+            value = sync._redact(value)
+        return Response(value)
 
     try:
         if key in sync.COLLECTIONS:

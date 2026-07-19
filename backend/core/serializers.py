@@ -9,6 +9,13 @@ class RecordSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ["id", "order_index", "data", "updated_at"]
 
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        data = rep.get("data")
+        if isinstance(data, dict) and "password" in data:
+            rep["data"] = {k: v for k, v in data.items() if k != "password"}
+        return rep
+
 
 class PersonSerializer(RecordSerializer):
     class Meta(RecordSerializer.Meta):
