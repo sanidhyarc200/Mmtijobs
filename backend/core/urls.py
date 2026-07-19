@@ -11,6 +11,7 @@ router.register("applications", views.ApplicationViewSet)
 
 urlpatterns = [
     path("health/", views.health),
+    path("warm/", views.warm),
     path("bootstrap/", views.bootstrap),
     path("collections/<str:key>/", views.collection),
     path("password-reset/request/", views.password_reset_request),
