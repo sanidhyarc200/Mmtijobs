@@ -120,6 +120,18 @@ export async function applyToJob(v2JobRef) {
   return request("POST", `/jobs/${v2JobRef}/apply/`, {});
 }
 
+export async function myApplications() {
+  const apps = await request("GET", "/applications/mine/");
+  // Legacy shape the dashboard renders
+  return apps.map((a) => ({
+    jobId: a.job,
+    jobTitle: a.job_title,
+    company: a.company_name,
+    appliedDate: a.applied_at,
+    status: a.status,
+  }));
+}
+
 // Legacy jobs carry client ids; v2 endpoints take pks. client_id === pk for
 // v2-created jobs; migrated jobs need a lookup, so we keep a cached map.
 let jobIdMapPromise = null;

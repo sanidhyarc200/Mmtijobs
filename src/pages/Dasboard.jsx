@@ -6,6 +6,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
   const [applications, setApplications] = useState([]);
+  const [appsSyncing, setAppsSyncing] = useState(true);
   const [savedJobs, setSavedJobs] = useState([]);
   const [showEdit, setShowEdit] = useState(false);
 
@@ -18,8 +19,16 @@ export default function Dashboard() {
 
     setCurrentUser(user);
 
+    // Instant paint from the local cache…
     const apps = JSON.parse(localStorage.getItem("jobApplications")) || [];
     setApplications(apps.filter((a) => a.userId === user.id));
+
+    // …then replace with the server's truth (works across devices).
+    import("../data/apiV2")
+      .then((m) => m.myApplications())
+      .then((serverApps) => setApplications(serverApps))
+      .catch(() => { /* offline or not a v2 session — cache stays */ })
+      .finally(() => setAppsSyncing(false));
 
     const saved = JSON.parse(localStorage.getItem("savedJobs")) || [];
     setSavedJobs(saved.filter((s) => s.userId === user.id));
@@ -178,10 +187,25 @@ export default function Dashboard() {
 
         {/* APPLICATIONS */}
         <section style={card}>
-          <h3 style={h3}>Your Applications</h3>
+          <h3 style={h3}>
+            Your Applications
+            {appsSyncing && (
+              <span style={{ marginLeft: 10, fontSize: 13, fontWeight: 600, color: "#6b7280", display: "inline-flex", alignItems: "center", gap: 6 }}>
+                <span
+                  style={{
+                    width: 14, height: 14, borderRadius: "50%",
+                    border: "2px solid #dbeafe", borderTopColor: BLUE,
+                    display: "inline-block", animation: "mmtspin 0.8s linear infinite",
+                  }}
+                />
+                syncing…
+                <style>{"@keyframes mmtspin{to{transform:rotate(360deg)}}"}</style>
+              </span>
+            )}
+          </h3>
 
           {applications.length === 0 ? (
-            <div style={emptyText}>No applications yet.</div>
+            <div style={emptyText}>{appsSyncing ? "Loading your applications…" : "No applications yet."}</div>
           ) : (
             <div style={{ display: "grid", gap: 12 }}>
               {applications.map((app, index) => (
