@@ -13,6 +13,7 @@ export default function Header({ onPostJobClick }) {
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
+  const [loginBusy, setLoginBusy] = useState(false);
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showRecruiterHelp, setShowRecruiterHelp] = useState(false);
   const [showContactForm, setShowContactForm] = useState(false);
@@ -72,6 +73,7 @@ export default function Header({ onPostJobClick }) {
     const password = loginData.password;
 
     // 👉 Server-side login (v2 API — hashed passwords, real session)
+    setLoginBusy(true);
     try {
       const { login: v2Login } = await import('../data/apiV2');
       const { user } = await v2Login(email, password);
@@ -83,9 +85,12 @@ export default function Header({ onPostJobClick }) {
     } catch (err) {
       if (err && err.status === 401) {
         setLoginError('Invalid email or password.');
+        setLoginBusy(false);
         return;
       }
       // API unreachable — fall back to the legacy local check below.
+    } finally {
+      setLoginBusy(false);
     }
 
     // 👉 Admin hardcoded credentials
@@ -451,7 +456,9 @@ export default function Header({ onPostJobClick }) {
                 <button type="button" className="btn-secondary" onClick={() => setShowLoginModal(false)}>
                   Cancel
                 </button>
-                <button type="submit" className="btn-primary">Login</button>
+                <button type="submit" className="btn-primary" disabled={loginBusy} style={loginBusy ? { opacity: 0.7, cursor: 'wait' } : undefined}>
+                  {loginBusy ? 'Logging in…' : 'Login'}
+                </button>
               </div>
             </form>
 

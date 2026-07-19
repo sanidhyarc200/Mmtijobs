@@ -177,22 +177,26 @@ function CompanyLoginModal({ onClose }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   const navigate = useNavigate();
 
   const handleLogin = async () => {
     // Server-side login first (v2 API); legacy local check as offline fallback.
+    setBusy(true);
     try {
       const { login: v2Login } = await import('./data/apiV2');
       const { user } = await v2Login(email, password);
       if (user.userType !== 'recruiter') {
         setError('This is not a company account.');
+        setBusy(false);
         return;
       }
       onClose();
       navigate('/post-job');
       return;
     } catch (err) {
+      setBusy(false);
       if (err && err.status === 401) {
         setError('Invalid email or password');
         return;
@@ -271,7 +275,13 @@ function CompanyLoginModal({ onClose }) {
           </button>
         </div>
         {error && <p style={styles.error}>{error}</p>}
-        <button onClick={handleLogin} style={styles.primaryBtn}>Login</button>
+        <button
+          onClick={handleLogin}
+          disabled={busy}
+          style={{ ...styles.primaryBtn, ...(busy ? { opacity: 0.7, cursor: 'wait' } : null) }}
+        >
+          {busy ? 'Logging in…' : 'Login'}
+        </button>
         <button
           type="button"
           onClick={() => { onClose(); navigate('/reset-password'); }}

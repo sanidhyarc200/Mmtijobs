@@ -7,6 +7,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 // =========================
 const InputField = ({ label, value, onChange, error, type = "text", placeholder, disabled, icon }) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [registerBusy, setRegisterBusy] = useState(false);
   const isPassword = type === "password";
   const inputType = isPassword ? (showPassword ? "text" : "password") : type;
 
@@ -305,6 +306,7 @@ export default function RegisterCompany() {
   // =========================
   const registerCompany = async () => {
     if (!validate()) return;
+    setRegisterBusy(true);
 
     const users = JSON.parse(localStorage.getItem("users")) || [];
     const emailLower   = companyEmail.trim().toLowerCase();
@@ -326,6 +328,7 @@ export default function RegisterCompany() {
 
     if (Object.keys(dupErrors).length > 0) {
       setErrors(dupErrors);   // show errors inline
+      setRegisterBusy(false);
       return;                 // BLOCK — no modal, no creation
     }
 
@@ -353,9 +356,12 @@ export default function RegisterCompany() {
     } catch (err) {
       if (err && err.status === 400) {
         setErrors({ companyEmail: err.message });
+        setRegisterBusy(false);
         return;
       }
       // API unreachable — continue with the local-only flow.
+    } finally {
+      setRegisterBusy(false);
     }
 
     // Save to array (so all companies persist), and also single key for backward compatibility
@@ -651,8 +657,13 @@ export default function RegisterCompany() {
         {/* ACTIONS */}
         <div className="form-actions">
           {!isOwner ? (
-            <button onClick={registerCompany} className="btn-primary">
-              <span>Complete Registration</span>
+            <button
+              onClick={registerCompany}
+              className="btn-primary"
+              disabled={registerBusy}
+              style={registerBusy ? { opacity: 0.7, cursor: "wait" } : undefined}
+            >
+              <span>{registerBusy ? "Registering…" : "Complete Registration"}</span>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="9 18 15 12 9 6"/>
               </svg>

@@ -410,6 +410,8 @@ export default function PostJob() {
   const [login, setLogin] = useState({ email: "", password: "" });
   const [loginErr, setLoginErr] = useState("");
   const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [loginBusy, setLoginBusy] = useState(false);
+  const [submitBusy, setSubmitBusy] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -564,6 +566,7 @@ export default function PostJob() {
       // CREATE new job — server first (v2: lands as "pending" until admin
       // approves), then mirror into the legacy collection with the same id.
       let serverId = null;
+      setSubmitBusy(true);
       try {
         const { createJob } = await import("../data/apiV2");
         const serverJob = await createJob({
@@ -586,6 +589,8 @@ export default function PostJob() {
         serverId = serverJob.client_id ?? serverJob.id;
       } catch {
         // API unreachable — legacy flow still records the job locally.
+      } finally {
+        setSubmitBusy(false);
       }
 
       const job = {
@@ -625,6 +630,7 @@ export default function PostJob() {
     setLoginErr("");
 
     // Server-side login first (v2 API)
+    setLoginBusy(true);
     try {
       const { login: v2Login } = await import("../data/apiV2");
       const { user } = await v2Login(login.email.trim(), login.password);
@@ -641,6 +647,8 @@ export default function PostJob() {
         return;
       }
       // API unreachable — fall back to the legacy local check below.
+    } finally {
+      setLoginBusy(false);
     }
 
     const users = JSON.parse(localStorage.getItem("users")) || [];
@@ -1221,10 +1229,11 @@ export default function PostJob() {
         <div className="form-actions">
           <button
             type="submit"
-            disabled={disabled}
+            disabled={disabled || submitBusy}
             className="btn-primary btn-submit"
+            style={submitBusy ? { opacity: 0.7, cursor: "wait" } : undefined}
           >
-            <span>{isEditMode ? "Save Changes" : "Post Job"}</span>
+            <span>{submitBusy ? "Saving…" : isEditMode ? "Save Changes" : "Post Job"}</span>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="9 18 15 12 9 6"/>
             </svg>
@@ -1318,8 +1327,8 @@ export default function PostJob() {
                 <button type="button" className="btn-secondary" onClick={() => setShowLogin(false)}>
                   Cancel
                 </button>
-                <button type="submit" className="btn-primary">
-                  <span>Sign In</span>
+                <button type="submit" className="btn-primary" disabled={loginBusy} style={loginBusy ? { opacity: 0.7, cursor: "wait" } : undefined}>
+                  <span>{loginBusy ? "Signing in…" : "Sign In"}</span>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <polyline points="9 18 15 12 9 6"/>
                   </svg>

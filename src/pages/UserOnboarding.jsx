@@ -289,9 +289,12 @@ export default function UserOnboarding() {
   };
 
   /* ------------------ SAVE USER ------------------ */
+  const [submitBusy, setSubmitBusy] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateStep(5)) return;
+    setSubmitBusy(true);
 
     const newUser = {
       id: Date.now(),
@@ -316,9 +319,12 @@ export default function UserOnboarding() {
     } catch (err) {
       if (err && err.status === 400) {
         setErrors((prev) => ({ ...prev, email: err.message }));
+        setSubmitBusy(false);
         return;
       }
       // API unreachable — continue with the local-only flow.
+    } finally {
+      setSubmitBusy(false);
     }
 
     const users = JSON.parse(localStorage.getItem("users") || "[]");
@@ -767,8 +773,10 @@ export default function UserOnboarding() {
                 <button
                   type="submit"
                   className="btn-primary btn-submit"
+                  disabled={submitBusy}
+                  style={submitBusy ? { opacity: 0.7, cursor: "wait" } : undefined}
                 >
-                  <span>Complete Registration</span>
+                  <span>{submitBusy ? "Creating account…" : "Complete Registration"}</span>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <polyline points="20 6 9 17 4 12"/>
                   </svg>
