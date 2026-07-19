@@ -295,14 +295,20 @@ export default function App() {
   const [showPostJobModal, setShowPostJobModal] = useState(false);
   const [storeReady, setStoreReady] = useState(false);
 
-  // Hydrate localStorage from the backend API first, then apply the one-time
-  // demo seed (merged by id, so nothing duplicates). Pages render only after
-  // hydration so they never read stale/empty data.
+  // Hydrate localStorage from the backend API. Returning visitors already
+  // have data cached, so they render instantly and the refresh happens in
+  // the background (initApiStore dispatches jobsChanged etc. when done).
+  // Only a first-ever visit blocks on the fetch.
   useEffect(() => {
+    const hasCachedData = Boolean(localStorage.getItem('jobs'));
     initApiStore().finally(() => {
       seedOnce();
       setStoreReady(true);
     });
+    if (hasCachedData) {
+      seedOnce();
+      setStoreReady(true);
+    }
   }, []);
 
   if (!storeReady) {
@@ -311,13 +317,29 @@ export default function App() {
         style={{
           minHeight: '100vh',
           display: 'flex',
+          flexDirection: 'column',
+          gap: 16,
           alignItems: 'center',
           justifyContent: 'center',
           fontFamily: 'Arial, sans-serif',
           color: '#0a66c2',
         }}
       >
-        Loading…
+        <style>{'@keyframes mmtspin{to{transform:rotate(360deg)}}'}</style>
+        <div
+          style={{
+            width: 44,
+            height: 44,
+            border: '4px solid #dbeafe',
+            borderTopColor: '#0a66c2',
+            borderRadius: '50%',
+            animation: 'mmtspin 0.8s linear infinite',
+          }}
+        />
+        <div style={{ fontWeight: 700 }}>MMTI Jobs</div>
+        <div style={{ fontSize: 13, color: '#6b7280' }}>
+          Waking up the server — first load can take a few seconds…
+        </div>
       </div>
     );
   }
