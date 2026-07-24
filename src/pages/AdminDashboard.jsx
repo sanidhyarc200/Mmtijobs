@@ -120,6 +120,21 @@ export default function AdminDashboard() {
   const [students, setStudents] = useState([]);
   const [jobs, setJobs] = useState([]);
 
+  // Bumped whenever background hydration refreshes localStorage, so the data
+  // effect below re-reads the fresh server data instead of the stale cache.
+  const [hydrationTick, setHydrationTick] = useState(0);
+
+  useEffect(() => {
+    const refresh = () => setHydrationTick((n) => n + 1);
+    ["storeHydrated", "jobsChanged", "authChanged", "applicationsChanged", "storage"].forEach(
+      (evt) => window.addEventListener(evt, refresh)
+    );
+    return () =>
+      ["storeHydrated", "jobsChanged", "authChanged", "applicationsChanged", "storage"].forEach(
+        (evt) => window.removeEventListener(evt, refresh)
+      );
+  }, []);
+
   const [activeSection, setActiveSection] = useState("jobs");
   const [companyFilters, setCompanyFilters] = useState({
     name: "",
@@ -378,7 +393,7 @@ export default function AdminDashboard() {
       saveJobs(updatedJobs);
       setJobs(updatedJobs);
     }
-  }, [navigate]);
+  }, [navigate, hydrationTick]);
 
   const stats = useMemo(() => {
     const totalJobs = jobs.length;
