@@ -306,18 +306,24 @@ export default function AdminDashboard() {
 
     // --- Merge static + dynamic (static always on top)
     setCompanies([...staticClients, ...storedCompanies]);
-    const storedStudents = getStudents().filter(
-      (u) => u.userType === "applicant"
-    );
-    
+    const storedStudents = getStudents()
+      .filter((u) => u.userType === "applicant")
+      // Newest registrations first, so the admin sees the latest at the top.
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt || 0).getTime() -
+          new Date(a.createdAt || 0).getTime()
+      );
+
     const alreadyExists = storedStudents.some(
       (s) => s.email === staticStudent.email
     );
-    
+
+    // Real students on top (newest first); the demo seed student sits at the end.
     const mergedStudents = alreadyExists
       ? storedStudents
-      : [staticStudent, ...storedStudents];
-    
+      : [...storedStudents, staticStudent];
+
     setStudents(mergedStudents);
     
     setJobs(getJobs());
