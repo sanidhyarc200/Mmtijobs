@@ -115,6 +115,30 @@ async function pushLocalToServer() {
   }
 }
 
+// Re-pull the latest server snapshot into localStorage without re-patching
+// or re-uploading. Used when a screen wants fresh data on demand (e.g. the
+// admin switching tabs) so the user never has to reload the whole page.
+export async function refreshFromServer() {
+  if (!API_URL) return false;
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), BOOTSTRAP_TIMEOUT_MS);
+    const res = await fetch(`${API_URL}/api/bootstrap/`, {
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const snapshot = await res.json();
+    online = true;
+    if (snapshot.hasData) hydrateFromServer(snapshot.collections || {});
+    notifyApp();
+    return true;
+  } catch (err) {
+    console.warn("[apiStore] refresh failed:", err);
+    return false;
+  }
+}
+
 export async function initApiStore() {
   if (!API_URL) {
     console.warn("[apiStore] no VITE_API_URL configured — running offline");

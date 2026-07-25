@@ -51,6 +51,20 @@ function saveStudents(list) {
   writeJSON("users", list);
 }
 
+// Admin job ordering: pending jobs first (they need approval), then newest
+// by creation date — so freshly posted jobs are always at the top.
+function sortJobsForAdmin(list) {
+  return list.slice().sort((a, b) => {
+    const ap = a.status === "pending" ? 1 : 0;
+    const bp = b.status === "pending" ? 1 : 0;
+    if (ap !== bp) return bp - ap;
+    return (
+      new Date(b.createdAt || 0).getTime() -
+      new Date(a.createdAt || 0).getTime()
+    );
+  });
+}
+
 function getJobs() {
   const arr = readJSON("jobs", []);
   if (!Array.isArray(arr)) return [];
@@ -136,6 +150,17 @@ export default function AdminDashboard() {
   }, []);
 
   const [activeSection, setActiveSection] = useState("jobs");
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Switch panels AND pull the latest server data, so the admin sees fresh
+  // records on every click without reloading the page.
+  const switchSection = (section) => {
+    setActiveSection(section);
+    setRefreshing(true);
+    import("../data/apiStore")
+      .then((m) => m.refreshFromServer())
+      .finally(() => setRefreshing(false));
+  };
   const [companyFilters, setCompanyFilters] = useState({
     name: "",
     email: "",
@@ -301,11 +326,17 @@ export default function AdminDashboard() {
     };
     
 
-    // --- Local companies (new signups)
-    const storedCompanies = getCompanies();
+    // --- Local companies (new signups), newest first ---
+    const storedCompanies = getCompanies()
+      .slice()
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt || 0).getTime() -
+          new Date(a.createdAt || 0).getTime()
+      );
 
-    // --- Merge static + dynamic (static always on top)
-    setCompanies([...staticClients, ...storedCompanies]);
+    // Real registered companies on top (newest first); demo clients at the end.
+    setCompanies([...storedCompanies, ...staticClients]);
     const storedStudents = getStudents()
       .filter((u) => u.userType === "applicant")
       // Newest registrations first, so the admin sees the latest at the top.
@@ -326,7 +357,7 @@ export default function AdminDashboard() {
 
     setStudents(mergedStudents);
     
-    setJobs(getJobs());
+    setJobs(sortJobsForAdmin(getJobs()));
     // --- Inject static jobs for admin (one-time) ---
     const existingJobs = getJobs();
 
@@ -397,7 +428,7 @@ export default function AdminDashboard() {
     if (!alreadyAdded) {
       const updatedJobs = [...staticJobs, ...existingJobs];
       saveJobs(updatedJobs);
-      setJobs(updatedJobs);
+      setJobs(sortJobsForAdmin(updatedJobs));
     }
   }, [navigate, hydrationTick]);
 
@@ -689,13 +720,31 @@ export default function AdminDashboard() {
   function Sidebar() {
     return (
       <aside className="admin-sidebar">
-        <div className="sidebar-title">Admin</div>
+        <div className="sidebar-title">
+          Admin
+          {refreshing && (
+            <span
+              style={{
+                marginLeft: 8,
+                width: 13,
+                height: 13,
+                display: "inline-block",
+                verticalAlign: "middle",
+                borderRadius: "50%",
+                border: "2px solid rgba(255,255,255,0.4)",
+                borderTopColor: "#fff",
+                animation: "mmtspin 0.8s linear infinite",
+              }}
+            />
+          )}
+          <style>{"@keyframes mmtspin{to{transform:rotate(360deg)}}"}</style>
+        </div>
         <nav className="sidebar-nav">
           <button
             className={`sidebar-btn ${
               activeSection === "recruiters" ? "active" : ""
             }`}
-            onClick={() => setActiveSection("recruiters")}
+            onClick={() => switchSection("recruiters")}
           >
             Recruiters / Clients
           </button>
@@ -703,7 +752,7 @@ export default function AdminDashboard() {
             className={`sidebar-btn ${
               activeSection === "students" ? "active" : ""
             }`}
-            onClick={() => setActiveSection("students")}
+            onClick={() => switchSection("students")}
           >
             Students
           </button>
@@ -711,7 +760,7 @@ export default function AdminDashboard() {
             className={`sidebar-btn ${
               activeSection === "jobs" ? "active" : ""
             }`}
-            onClick={() => setActiveSection("jobs")}
+            onClick={() => switchSection("jobs")}
           >
             Jobs
           </button>
