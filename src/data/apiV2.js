@@ -120,6 +120,61 @@ export async function applyToJob(v2JobRef) {
   return request("POST", `/jobs/${v2JobRef}/apply/`, {});
 }
 
+// ----- Admin / staff authoritative reads (from the real v2 tables) -----
+// These never lose records the way the legacy full-array mirror can.
+
+export async function adminApplicants() {
+  const rows = await request("GET", "/admin/applicants/");
+  // Map to the legacy student shape the dashboards render.
+  return rows.map((a) => ({
+    id: a.client_id || `v2-${a.id}`,
+    v2Id: a.id,
+    userType: "applicant",
+    email: a.email,
+    name: a.name,
+    contact: a.contact,
+    createdAt: a.created_at,
+    ...a.profile,
+  }));
+}
+
+export async function adminCompanies() {
+  const rows = await request("GET", "/companies/");
+  return rows.map((c) => ({
+    id: c.client_id || `v2-${c.id}`,
+    v2Id: c.id,
+    name: c.name,
+    companyName: c.name,
+    email: c.email,
+    contact: c.contact,
+    city: c.city,
+    state: c.state,
+    industryType: c.industry_type,
+    numberOfEmployees: c.number_of_employees,
+    createdAt: c.created_at,
+  }));
+}
+
+export async function adminJobs() {
+  const rows = await request("GET", "/jobs/");
+  return rows.map((j) => ({
+    id: j.client_id || `v2-${j.id}`,
+    v2Id: j.id,
+    title: j.title,
+    company: j.company_name,
+    companyEmail: j.company_email,
+    status: j.status,
+    location: j.location,
+    salary: j.salary,
+    experienceRange: j.experience,
+    description: j.description,
+    numberOfOpenings: j.number_of_openings,
+    tags: j.tags,
+    createdAt: j.created_at,
+    ...j.extra,
+  }));
+}
+
 export async function myApplications() {
   const apps = await request("GET", "/applications/mine/");
   // Legacy shape the dashboard renders

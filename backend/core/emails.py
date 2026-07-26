@@ -7,6 +7,7 @@ best-effort: a mail failure must never break a sync request.
 """
 
 import logging
+import os
 
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
@@ -18,6 +19,8 @@ logger = logging.getLogger(__name__)
 SITE_URL = "https://www.mmtijobs.com"
 BRAND_BLUE = "#0a66c2"
 BRAND_GREEN = "#198754"
+# Where new-signup notifications go (the platform owner / admin).
+ADMIN_NOTIFY_EMAIL = os.environ.get("ADMIN_NOTIFY_EMAIL", "sanidhyakoranne123@gmail.com")
 
 
 def _branded_html(title, intro, content_html, cta_label=None, cta_url=None):
@@ -197,3 +200,51 @@ def send_credentials_email(company_name, to_email, password):
         SITE_URL,
     )
     return _send(subject, to_email, text, html)
+
+
+# ---------------------------------------------------------------------------
+# Admin notifications (new signups)
+# ---------------------------------------------------------------------------
+
+def notify_admin_new_applicant(name, email, contact):
+    subject = f"New jobseeker registered: {name or email}"
+    rows = "".join(
+        f"<tr><td style='padding:8px 12px; color:#6b7280; font-size:14px;'>{k}</td>"
+        f"<td style='padding:8px 12px; color:#111827; font-size:14px; font-weight:600;'>{v or '-'}</td></tr>"
+        for k, v in [("Name", name), ("Email", email), ("Contact", contact)]
+    )
+    text = (
+        f"A new jobseeker just registered on MMTI Jobs.\n\n"
+        f"Name: {name}\nEmail: {email}\nContact: {contact}\n\n"
+        f"View in admin: {SITE_URL}/admin-dashboard\n\n— MMTI Jobs"
+    )
+    html = _branded_html(
+        "New jobseeker registered 👤",
+        "A new candidate just signed up on MMTI Jobs.",
+        f"<table role='presentation' width='100%' style='background:#f8fafc; border-radius:10px;'>{rows}</table>",
+        "Open Admin Dashboard",
+        f"{SITE_URL}/admin-dashboard",
+    )
+    return _send(subject, ADMIN_NOTIFY_EMAIL, text, html)
+
+
+def notify_admin_new_company(name, email, contact, city=""):
+    subject = f"New company onboarded: {name or email}"
+    rows = "".join(
+        f"<tr><td style='padding:8px 12px; color:#6b7280; font-size:14px;'>{k}</td>"
+        f"<td style='padding:8px 12px; color:#111827; font-size:14px; font-weight:600;'>{v or '-'}</td></tr>"
+        for k, v in [("Company", name), ("Email", email), ("Contact", contact), ("City", city)]
+    )
+    text = (
+        f"A new company just onboarded on MMTI Jobs.\n\n"
+        f"Company: {name}\nEmail: {email}\nContact: {contact}\nCity: {city}\n\n"
+        f"View in admin: {SITE_URL}/admin-dashboard\n\n— MMTI Jobs"
+    )
+    html = _branded_html(
+        "New company onboarded 🏢",
+        "A new client company just registered on MMTI Jobs.",
+        f"<table role='presentation' width='100%' style='background:#f8fafc; border-radius:10px;'>{rows}</table>",
+        "Open Admin Dashboard",
+        f"{SITE_URL}/admin-dashboard",
+    )
+    return _send(subject, ADMIN_NOTIFY_EMAIL, text, html)

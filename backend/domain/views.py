@@ -100,6 +100,14 @@ def register(request):
     )
     account.set_password(password)
     account.save()
+
+    try:
+        from core.emails import notify_admin_new_applicant
+
+        notify_admin_new_applicant(name, email, contact)
+    except Exception:
+        pass  # notification failures must never block signup
+
     return Response(_issue_session(account), status=http.HTTP_201_CREATED)
 
 
@@ -149,6 +157,14 @@ def register_company(request):
             website=data.get("companyWebsite", ""),
             profile_pic=data.get("profilePic") or "",
         )
+
+    try:
+        from core.emails import notify_admin_new_company
+
+        notify_admin_new_company(name, email, contact, data.get("city", ""))
+    except Exception:
+        pass  # notification failures must never block registration
+
     return Response(_issue_session(account), status=http.HTTP_201_CREATED)
 
 

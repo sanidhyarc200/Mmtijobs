@@ -170,8 +170,11 @@ class Command(BaseCommand):
             if was_created:
                 created["applications"] += 1
 
-        # ---- Staff accounts (passwords from env, never hardcoded) ----
-        shared_password = os.environ.get("STAFF_SHARED_PASSWORD", "")
+        # ---- Staff accounts ----
+        # Default to the password the frontend login pages already use, so the
+        # admin/HR v2 accounts always exist and the dashboards can authenticate
+        # to the v2 API without extra setup. Override per-role or shared via env.
+        shared_password = os.environ.get("STAFF_SHARED_PASSWORD", "mmtihelp@49")
         for role, email, name, env_var in STAFF_ACCOUNTS:
             password = os.environ.get(env_var) or shared_password
             if not password:

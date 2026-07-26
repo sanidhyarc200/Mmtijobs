@@ -157,9 +157,10 @@ export default function AdminDashboard() {
   const switchSection = (section) => {
     setActiveSection(section);
     setRefreshing(true);
-    import("../data/apiStore")
-      .then((m) => m.refreshFromServer())
-      .finally(() => setRefreshing(false));
+    Promise.all([
+      import("../data/apiStore").then((m) => m.refreshFromServer()),
+      loadFromV2(),
+    ]).finally(() => setRefreshing(false));
   };
   const [companyFilters, setCompanyFilters] = useState({
     name: "",
@@ -356,81 +357,48 @@ export default function AdminDashboard() {
       : [...storedStudents, staticStudent];
 
     setStudents(mergedStudents);
-    
     setJobs(sortJobsForAdmin(getJobs()));
-    // --- Inject static jobs for admin (one-time) ---
-    const existingJobs = getJobs();
-
-    const staticJobs = [
-      {
-        id: "static-1",
-        title: "HR & Operations Executive",
-        company: "Confidential Company",
-        location: "Bhopal, Madhya Pradesh",
-        experienceRange: "2+ years",
-        salary: "₹2,00,000 – ₹3,00,000 per annum",
-        tags: ["HR", "Operations", "Team Management", "MS Office"],
-        description:
-          "We are hiring an experienced HR & Operations Executive to handle HR functions and oversee daily office operations. Key responsibilities include recruitment, onboarding, attendance & payroll management, HR documentation, office coordination, supporting sales teams, creating reports, and ensuring smooth inter-department communication. Required skills: strong team management, communication, HR operations knowledge, MS Office proficiency, and basic understanding of sales processes. Documents required: Experience Certificate, last 3 months' pay slips, previous company offer letter, Aadhaar & PAN card.",
-        status: "active",
-        createdAt: Date.now(),
-      },
-      {
-        id: "static-2",
-        title: "Nutritionist",
-        company: "Fitness Tycoon",
-        location: "Mansarover Complex, MF-12, Bhopal",
-        experienceRange: "0-3 years",
-        salary: "₹1.5 LPA – ₹3 LPA",
-        tags: ["Nutrition", "Diet Planning", "Client Handling", "Wellness"],
-        description:
-          "Fitness Tycoon is hiring a qualified Nutritionist for a full-time office role. Responsibilities include creating customized diet plans, conducting nutritional assessments, collaborating with fitness trainers, monitoring client progress, maintaining records, educating clients on nutrition, and staying updated with latest nutrition research. Required qualifications include a Bachelor's or Master's degree in Nutrition/Dietetics, experience in personalized diet planning, and strong understanding of macro & micronutrients. Skills: excellent communication, counseling, knowledge of Indian diets, and basic computer proficiency.",
-        status: "active",
-        createdAt: Date.now(),
-      },
-      {
-        id: 910001,
-        title: "Graphic Designer",
-        company: "Paraglider Media Private Limited",
-        companyEmail: "jobs@paraglider.in",
-        location: "Bhopal",
-        experienceRange: "0–2 years",
-        salary: "As per industry standards",
-        status: "active",
-        description:
-          "Create high-quality graphics, illustrations, social media creatives, banners, posters, and marketing materials using Adobe Photoshop and Illustrator.",
-        tags: ["Photoshop", "Illustrator", "Graphic Design"],
-        createdAt: Date.now(),
-      },
-      {
-        id: 910002,
-        title: "Motion Graphics Designer (After Effects)",
-        company: "Paraglider Media Private Limited",
-        companyEmail: "jobs@paraglider.in",
-        location: "Bhopal / Indore",
-        experienceRange: "1–3 years",
-        salary: "As per industry standards",
-        status: "active",
-        description:
-          "Create motion graphics, animations, explainer videos, logo animations, and visual assets using Adobe After Effects and Premiere Pro.",
-        tags: ["After Effects", "Motion Graphics", "Animation"],
-        createdAt: Date.now(),
-      },
-    ];
-
-    // prevent duplicate injection
-    const STATIC_JOB_IDS = [910001, 910002, 900001, 900002];
-
-    const alreadyAdded = existingJobs.some((j) =>
-      STATIC_JOB_IDS.includes(j.id)
-    );
-
-    if (!alreadyAdded) {
-      const updatedJobs = [...staticJobs, ...existingJobs];
-      saveJobs(updatedJobs);
-      setJobs(sortJobsForAdmin(updatedJobs));
-    }
   }, [navigate, hydrationTick]);
+
+  // Authoritative load: pull applicants/companies/jobs straight from the v2
+  // tables (which never lose records). Falls back to the localStorage view
+  // above if the API/token is unavailable. Runs on mount and on tab switch.
+  const loadFromV2 = React.useCallback(async () => {
+    try {
+      const m = await import("../data/apiV2");
+      if (!m.getToken()) return; // no admin session yet — keep local view
+      const [apps, comps, jobsList] = await Promise.all([
+        m.adminApplicants().catch(() => null),
+        m.adminCompanies().catch(() => null),
+        m.adminJobs().catch(() => null),
+      ]);
+      if (apps) {
+        setStudents(
+          apps.sort(
+            (a, b) =>
+              new Date(b.createdAt || 0).getTime() -
+              new Date(a.createdAt || 0).getTime()
+          )
+        );
+      }
+      if (comps) {
+        setCompanies(
+          comps.sort(
+            (a, b) =>
+              new Date(b.createdAt || 0).getTime() -
+              new Date(a.createdAt || 0).getTime()
+          )
+        );
+      }
+      if (jobsList) setJobs(sortJobsForAdmin(jobsList));
+    } catch {
+      /* offline — local view already rendered */
+    }
+  }, []);
+
+  useEffect(() => {
+    loadFromV2();
+  }, [loadFromV2, hydrationTick]);
 
   const stats = useMemo(() => {
     const totalJobs = jobs.length;
