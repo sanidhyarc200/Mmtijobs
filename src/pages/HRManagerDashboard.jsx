@@ -43,6 +43,8 @@ export default function HRManagerDashboard() {
   const navigate = useNavigate();
 
   const [section, setSection] = useState("jobs");
+  const [refreshing, setRefreshing] = useState(false);
+  const [hydrationTick, setHydrationTick] = useState(0);
   const [companies, setCompanies] = useState([]);
   const [students, setStudents] = useState([]);
   const [jobs, setJobs] = useState([]);
@@ -93,7 +95,15 @@ export default function HRManagerDashboard() {
       { companyName:"Fitness Tycoon", email:"hr@fitnesstycoon.com", contact:"9000000002" },
       { companyName:"Paraglider Media Private Limited", email:"jobs@paraglider.in", contact:"8269893693" }
     ];
-    setCompanies([...staticCompanies, ...getCompanies()]);
+    // Real registered companies on top (newest first); demo clients at end.
+    const sortedCompanies = getCompanies()
+      .slice()
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt || 0).getTime() -
+          new Date(a.createdAt || 0).getTime()
+      );
+    setCompanies([...sortedCompanies, ...staticCompanies]);
 
     /* ---------- STATIC STUDENT ---------- */
     const staticStudent = {
@@ -106,11 +116,18 @@ export default function HRManagerDashboard() {
       experience:"3 Years",
       skills:"Data Analyst, Operations, Excel",
     };
-    const storedStudents = getStudents();
+    // Newest applicants first; demo seed student at the end.
+    const storedStudents = getStudents()
+      .slice()
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt || 0).getTime() -
+          new Date(a.createdAt || 0).getTime()
+      );
     setStudents(
       storedStudents.some(s => s.email === staticStudent.email)
         ? storedStudents
-        : [staticStudent, ...storedStudents]
+        : [...storedStudents, staticStudent]
     );
 
     /* ---------- STATIC JOBS ---------- */
@@ -126,9 +143,48 @@ export default function HRManagerDashboard() {
     const mergedJobs = hasStatic ? existingJobs : [...staticJobs, ...existingJobs];
     if (!hasStatic) writeJSON("jobs", mergedJobs);
 
-    setJobs(mergedJobs);
-    setApplications(getApplications());
-  }, [navigate]);
+    // Pending jobs first (need approval), then newest by creation date.
+    const sortedJobs = mergedJobs.slice().sort((a, b) => {
+      const ap = a.status === "pending" ? 1 : 0;
+      const bp = b.status === "pending" ? 1 : 0;
+      if (ap !== bp) return bp - ap;
+      return (
+        new Date(b.createdAt || 0).getTime() -
+        new Date(a.createdAt || 0).getTime()
+      );
+    });
+    setJobs(sortedJobs);
+    setApplications(
+      getApplications()
+        .slice()
+        .sort(
+          (a, b) =>
+            new Date(b.appliedDate || 0).getTime() -
+            new Date(a.appliedDate || 0).getTime()
+        )
+    );
+  }, [navigate, hydrationTick]);
+
+  // Re-read fresh data whenever background hydration updates localStorage.
+  useEffect(() => {
+    const refresh = () => setHydrationTick((n) => n + 1);
+    ["storeHydrated", "jobsChanged", "authChanged", "applicationsChanged", "storage"].forEach(
+      (evt) => window.addEventListener(evt, refresh)
+    );
+    return () =>
+      ["storeHydrated", "jobsChanged", "authChanged", "applicationsChanged", "storage"].forEach(
+        (evt) => window.removeEventListener(evt, refresh)
+      );
+  }, []);
+
+  // Switch panels AND pull the latest server data — no page reload needed.
+  const switchSection = (next) => {
+    setSection(next);
+    setRefreshing(true);
+    import("../data/apiStore")
+      .then((m) => m.refreshFromServer())
+      .finally(() => setRefreshing(false));
+  };
 
   /* =========================================================
      STATS
@@ -257,10 +313,23 @@ export default function HRManagerDashboard() {
       <div className="hr-content">
         {/* SIDEBAR (ADMIN STYLE) */}
         <aside className="hr-sidebar">
-          <div className="sidebar-title">HR Manager</div>
-          <button className={section==="jobs"?"active":""} onClick={()=>setSection("jobs")}>Jobs</button>
-          <button className={section==="companies"?"active":""} onClick={()=>setSection("companies")}>Recruiters</button>
-          <button className={section==="students"?"active":""} onClick={()=>setSection("students")}>Applicants</button>
+          <div className="sidebar-title">
+            HR Manager
+            {refreshing && (
+              <span
+                style={{
+                  marginLeft: 8, width: 13, height: 13, display: "inline-block",
+                  verticalAlign: "middle", borderRadius: "50%",
+                  border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#fff",
+                  animation: "mmtspin 0.8s linear infinite",
+                }}
+              />
+            )}
+            <style>{"@keyframes mmtspin{to{transform:rotate(360deg)}}"}</style>
+          </div>
+          <button className={section==="jobs"?"active":""} onClick={()=>switchSection("jobs")}>Jobs</button>
+          <button className={section==="companies"?"active":""} onClick={()=>switchSection("companies")}>Recruiters</button>
+          <button className={section==="students"?"active":""} onClick={()=>switchSection("students")}>Applicants</button>
         </aside>
 
         {/* MAIN */}

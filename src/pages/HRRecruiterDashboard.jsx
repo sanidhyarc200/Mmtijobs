@@ -18,6 +18,8 @@ export default function HRRecruiterDashboard() {
   const [applications, setApplications] = useState([]);
   const [search, setSearch] = useState("");
   const [activeStudent, setActiveStudent] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [hydrationTick, setHydrationTick] = useState(0);
 
   useEffect(() => {
     const user = readJSON("currentUser", null);
@@ -36,14 +38,50 @@ export default function HRRecruiterDashboard() {
       location: "Bhopal",
     };
 
-    const stored = readJSON("users", []).filter(
-      (u) => u.userType === "applicant"
-    );
+    // Newest candidates first; demo seed student at the end.
+    const stored = readJSON("users", [])
+      .filter((u) => u.userType === "applicant")
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt || 0).getTime() -
+          new Date(a.createdAt || 0).getTime()
+      );
 
-    setStudents([staticStudent, ...stored]);
+    setStudents([...stored, staticStudent]);
     setJobs(readJSON("jobs", []));
-    setApplications(readJSON("jobApplications", []));
-  }, [navigate]);
+    setApplications(
+      readJSON("jobApplications", [])
+        .slice()
+        .sort(
+          (a, b) =>
+            new Date(b.appliedDate || 0).getTime() -
+            new Date(a.appliedDate || 0).getTime()
+        )
+    );
+  }, [navigate, hydrationTick]);
+
+  // Re-read on background hydration, and pull fresh server data on mount.
+  useEffect(() => {
+    const refresh = () => setHydrationTick((n) => n + 1);
+    ["storeHydrated", "jobsChanged", "authChanged", "applicationsChanged", "storage"].forEach(
+      (evt) => window.addEventListener(evt, refresh)
+    );
+    setRefreshing(true);
+    import("../data/apiStore")
+      .then((m) => m.refreshFromServer())
+      .finally(() => setRefreshing(false));
+    return () =>
+      ["storeHydrated", "jobsChanged", "authChanged", "applicationsChanged", "storage"].forEach(
+        (evt) => window.removeEventListener(evt, refresh)
+      );
+  }, []);
+
+  const doRefresh = () => {
+    setRefreshing(true);
+    import("../data/apiStore")
+      .then((m) => m.refreshFromServer())
+      .finally(() => setRefreshing(false));
+  };
 
   const filteredStudents = useMemo(() => {
     return students.filter((s) =>
@@ -68,11 +106,36 @@ export default function HRRecruiterDashboard() {
           <h1>HR Recruiter</h1>
           <p>Candidate pipeline & applications</p>
         </div>
-        <input
-          placeholder="Search candidates…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <input
+            placeholder="Search candidates…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <button
+            onClick={doRefresh}
+            disabled={refreshing}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              padding: "8px 14px", borderRadius: 8, border: "1px solid #0a66c2",
+              background: refreshing ? "#e5edf7" : "#0a66c2",
+              color: refreshing ? "#0a66c2" : "#fff", fontWeight: 600,
+              cursor: refreshing ? "wait" : "pointer", whiteSpace: "nowrap",
+            }}
+          >
+            {refreshing && (
+              <span
+                style={{
+                  width: 13, height: 13, borderRadius: "50%",
+                  border: "2px solid #b9d3ef", borderTopColor: "#0a66c2",
+                  display: "inline-block", animation: "mmtspin 0.8s linear infinite",
+                }}
+              />
+            )}
+            {refreshing ? "Refreshing…" : "↻ Refresh"}
+          </button>
+          <style>{"@keyframes mmtspin{to{transform:rotate(360deg)}}"}</style>
+        </div>
       </header>
 
       <section className="candidate-grid">
