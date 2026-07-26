@@ -1133,7 +1133,20 @@ export default function HRManagerDashboard() {
 @media(max-width:1000px){
   .hr-content{grid-template-columns:1fr}
   .hr-stats{grid-template-columns:repeat(2,1fr)}
-  
+
+}
+
+@media (max-width: 640px) {
+  .hr-layout { padding: 10px; }
+  /* Allow grid/flex children to shrink below their content width */
+  .hr-content, .hr-content > *, .hr-sidebar { min-width: 0; }
+  .hr-content > * { overflow-x: hidden; }
+  /* Sidebar → full-width vertical button stack (clean + always tappable) */
+  .hr-sidebar { display: flex; flex-direction: column; gap: 8px; }
+  .hr-sidebar .sidebar-title { width: 100%; margin: 0 0 4px; }
+  .hr-sidebar button { width: 100%; justify-content: flex-start; margin: 0; background: #f9fafb; border: 1px solid #e5e7eb; }
+  .hr-stats { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .table { display: block; width: 100%; overflow-x: auto; white-space: nowrap; }
 }
 
 /* ===== EDIT MODAL ===== */

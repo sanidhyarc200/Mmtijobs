@@ -411,3 +411,26 @@ footer {
   box-shadow: 0 0 15px rgba(0,0,0,0.3);
 }
 
+
+/* =========================================================
+   GLOBAL MOBILE SAFETY LAYER
+   ========================================================= */
+* { box-sizing: border-box; }
+
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;   /* never allow horizontal page scroll */
+}
+
+img, svg, video { max-width: 100%; height: auto; }
+
+/* Any table anywhere scrolls inside its own box instead of breaking layout */
+@media (max-width: 640px) {
+  table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; }
+  .modal-content { width: 94%; padding: 20px; max-height: 90vh; overflow-y: auto; }
+}
+
+/* Comfortable tap targets on touch devices */
+@media (max-width: 640px) {
+  button, .btn, a.btn, input[type="submit"] { min-height: 42px; }
+}

@@ -2113,6 +2113,25 @@ export default function AdminDashboard() {
     .content-row { grid-template-columns: 1fr; }
     .form-grid { grid-template-columns: 1fr; }
   }
+
+  @media (max-width: 640px) {
+    .admin-layout { padding: 10px; gap: 12px; }
+    /* Grid/flex children must be allowed to shrink below content width */
+    .content-row, .content-row > *, .admin-main, .panel, .sidebar-nav { min-width: 0; }
+    .cards-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .card { padding: 12px; }
+    .card-value { font-size: 22px; }
+    /* Sidebar becomes a horizontal scrollable tab bar above the content */
+    .sidebar-nav { flex-direction: row; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .sidebar-btn { white-space: nowrap; flex: 0 0 auto; }
+    .panel-header { padding: 12px; }
+    .panel-header h2 { font-size: 16px; }
+    .admin-filter-grid { grid-template-columns: 1fr; }
+    /* Tables scroll horizontally instead of breaking the layout */
+    .table-wrap { display: block; width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .nice-table { white-space: nowrap; }
+    .actions { display: flex; flex-wrap: wrap; gap: 6px; }
+  }
 `}</style>
     </div>
   );
