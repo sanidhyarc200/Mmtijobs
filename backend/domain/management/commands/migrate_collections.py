@@ -182,9 +182,14 @@ class Command(BaseCommand):
             account, was_created = Account.objects.get_or_create(
                 email=email, defaults={"user_type": role, "name": name}
             )
+            # Always keep the staff password in sync with the configured value
+            # (staff log in via the fixed frontend credentials, not self-serve
+            # resets), so the admin/HR dashboards can always reach the v2 API.
+            account.user_type = role
+            account.name = account.name or name
+            account.set_password(password)
+            account.save()
             if was_created:
-                account.set_password(password)
-                account.save()
                 created["staff"] += 1
 
         self.stdout.write(self.style.SUCCESS(f"Migration complete: {created}"))
