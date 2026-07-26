@@ -35,10 +35,44 @@ STAFF_ACCOUNTS = [
 class Command(BaseCommand):
     help = "Migrate legacy sync collections into the relational v2 models."
 
-    @transaction.atomic
     def handle(self, *args, **options):
         created = {"accounts": 0, "companies": 0, "jobs": 0, "applications": 0, "staff": 0}
 
+        # Seed staff accounts FIRST, in their own transaction, so the admin/HR
+        # dashboards can always authenticate to the v2 API even if the legacy
+        # data migration below hits a snag.
+        try:
+            created["staff"] = self._seed_staff()
+        except Exception as exc:  # never fail the deploy over this
+            self.stderr.write(self.style.WARNING(f"staff seeding failed: {exc}"))
+
+        try:
+            self._migrate_data(created)
+        except Exception as exc:
+            self.stderr.write(self.style.WARNING(f"data migration failed (staff still seeded): {exc}"))
+
+        self.stdout.write(self.style.SUCCESS(f"Migration complete: {created}"))
+
+    def _seed_staff(self):
+        # The frontend login pages hardcode this exact password, so the v2
+        # staff accounts MUST match it for the dashboards to authenticate.
+        STAFF_PASSWORD = "mmtihelp@49"
+        count = 0
+        for role, email, name, _env_var in STAFF_ACCOUNTS:
+            with transaction.atomic():
+                account, was_created = Account.objects.get_or_create(
+                    email=email, defaults={"user_type": role, "name": name}
+                )
+                account.user_type = role
+                account.name = account.name or name
+                account.set_password(STAFF_PASSWORD)
+                account.save()
+            if was_created:
+                count += 1
+        return count
+
+    @transaction.atomic
+    def _migrate_data(self, created):
         # ---- Accounts from legacy users ----
         for person in LegacyPerson.objects.all():
             data = person.data
@@ -48,6 +82,11 @@ class Command(BaseCommand):
                 continue
             if Account.objects.filter(email__iexact=email).exists():
                 continue
+            cid = data.get("id")
+            # Skip if this client_id is already taken (avoids UNIQUE clashes on
+            # re-runs and when two legacy records share an id).
+            if cid is not None and Account.objects.filter(client_id=cid).exists():
+                cid = None
             user_type = data.get("userType") or "applicant"
             if user_type not in dict(Account.ROLE_CHOICES):
                 user_type = "applicant"
@@ -57,7 +96,7 @@ class Command(BaseCommand):
                 if k not in {"email", "password", "confirmPassword", "id", "userType", "name", "contact"}
             }
             account = Account(
-                client_id=data.get("id"),
+                client_id=cid,
                 email=email,
                 user_type=user_type,
                 name=data.get("name")
@@ -169,29 +208,3 @@ class Command(BaseCommand):
             )
             if was_created:
                 created["applications"] += 1
-
-        # ---- Staff accounts ----
-        # The frontend login pages hardcode this exact password, so the v2
-        # staff accounts MUST match it for the dashboards to authenticate to
-        # the v2 API. Kept as a fixed constant (not env) so the two never
-        # diverge; changing staff passwords is a coordinated frontend+backend
-        # change, not an env tweak.
-        STAFF_PASSWORD = "mmtihelp@49"
-        for role, email, name, env_var in STAFF_ACCOUNTS:
-            password = STAFF_PASSWORD
-            if not password:
-                continue
-            account, was_created = Account.objects.get_or_create(
-                email=email, defaults={"user_type": role, "name": name}
-            )
-            # Always keep the staff password in sync with the configured value
-            # (staff log in via the fixed frontend credentials, not self-serve
-            # resets), so the admin/HR dashboards can always reach the v2 API.
-            account.user_type = role
-            account.name = account.name or name
-            account.set_password(password)
-            account.save()
-            if was_created:
-                created["staff"] += 1
-
-        self.stdout.write(self.style.SUCCESS(f"Migration complete: {created}"))
