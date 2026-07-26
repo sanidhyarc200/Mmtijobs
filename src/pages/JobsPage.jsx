@@ -15,18 +15,8 @@ const defaultTitles = [
   "Customer Service/Sales Representative", "Sales Use Tax Accountant"
 ];
 
-const fallbackJobs = Array.from({ length: 12 }, (_, i) => ({
-  id: 100000 + i,
-  title: i % 2 ? "Frontend Developer" : "Backend Developer",
-  company: `Startup ${i + 1}`,
-  location: i % 3 === 0 ? "Remote" : i % 3 === 1 ? "Bangalore" : "Hyderabad",
-  salary: `${8 + i} LPA`,
-  experience: i % 3 === 0 ? "0-2 years" : i % 3 === 1 ? "3-5 years" : "6+ years",
-  tags: ["React", "Node.js", "Cloud"].slice(0, (i % 3) + 1),
-  description:
-    "Work with a modern stack, ship features fast, and learn from a supportive team. We value ownership, craft, and kindness.",
-  createdAt: new Date(Date.now() - i * 86400000).toISOString(),
-}));
+// Only real jobs are shown — no filler/demo listings.
+const fallbackJobs = [];
 
 /* ----------------------
   Component
@@ -99,8 +89,7 @@ export default function JobsPage() {
         return new Date(b.createdAt) - new Date(a.createdAt);
       });
   
-      const combined = normalized.length ? normalized.concat(fallbackJobs) : fallbackJobs;
-      setJobs(combined);
+      setJobs(normalized);
     };
     
   const refreshAppliedSet = (u) => {
