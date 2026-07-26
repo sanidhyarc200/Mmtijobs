@@ -355,6 +355,14 @@ export default function HRRecruiterDashboard() {
   color: #6b7280;
   font-size: 13px;
 }
+
+@media (max-width: 640px) {
+  .topbar { flex-direction: column; align-items: stretch; gap: 12px; }
+  .topbar h1 { font-size: 24px; }
+  .topbar > div { width: 100%; }
+  .topbar input { width: 100%; flex: 1; }
+  .candidate-grid { grid-template-columns: 1fr; gap: 12px; }
+}
       `}</style>
     </div>
   );

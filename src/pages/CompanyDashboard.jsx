@@ -179,7 +179,7 @@ export default function CompanyDashboard() {
         </div>
 
         {/* PROFILE + STATS */}
-        <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 16, marginBottom: 24 }}>
+        <div className="dash-two-col" style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 16, marginBottom: 24 }}>
 
           {/* PROFILE CARD */}
           <div style={card}>

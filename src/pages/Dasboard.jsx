@@ -128,6 +128,7 @@ export default function Dashboard() {
 
         {/* PROFILE + STATS */}
         <div
+          className="dash-two-col"
           style={{
             display: "grid",
             gridTemplateColumns: "1.2fr 1fr",

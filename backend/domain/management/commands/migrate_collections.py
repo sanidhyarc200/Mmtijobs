@@ -171,12 +171,14 @@ class Command(BaseCommand):
                 created["applications"] += 1
 
         # ---- Staff accounts ----
-        # Default to the password the frontend login pages already use, so the
-        # admin/HR v2 accounts always exist and the dashboards can authenticate
-        # to the v2 API without extra setup. Override per-role or shared via env.
-        shared_password = os.environ.get("STAFF_SHARED_PASSWORD", "mmtihelp@49")
+        # The frontend login pages hardcode this exact password, so the v2
+        # staff accounts MUST match it for the dashboards to authenticate to
+        # the v2 API. Kept as a fixed constant (not env) so the two never
+        # diverge; changing staff passwords is a coordinated frontend+backend
+        # change, not an env tweak.
+        STAFF_PASSWORD = "mmtihelp@49"
         for role, email, name, env_var in STAFF_ACCOUNTS:
-            password = os.environ.get(env_var) or shared_password
+            password = STAFF_PASSWORD
             if not password:
                 continue
             account, was_created = Account.objects.get_or_create(

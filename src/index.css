@@ -434,3 +434,8 @@ img, svg, video { max-width: 100%; height: auto; }
 @media (max-width: 640px) {
   button, .btn, a.btn, input[type="submit"] { min-height: 42px; }
 }
+
+/* Jobseeker dashboard: profile+stats stack on mobile */
+@media (max-width: 640px) {
+  .dash-two-col { grid-template-columns: 1fr !important; }
+}
