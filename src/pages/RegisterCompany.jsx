@@ -7,7 +7,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 // =========================
 const InputField = ({ label, value, onChange, error, type = "text", placeholder, disabled, icon }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [registerBusy, setRegisterBusy] = useState(false);
   const isPassword = type === "password";
   const inputType = isPassword ? (showPassword ? "text" : "password") : type;
 
@@ -122,6 +121,7 @@ export default function RegisterCompany() {
   const [showInlineLogin, setShowInlineLogin] = useState(false);
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [loginError, setLoginError] = useState("");
+  const [registerBusy, setRegisterBusy] = useState(false);
 
   // current user + ownership
   const [currentUser, setCurrentUser] = useState(null);
