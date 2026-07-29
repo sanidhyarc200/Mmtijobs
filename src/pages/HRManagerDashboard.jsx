@@ -130,21 +130,12 @@ export default function HRManagerDashboard() {
         : [...storedStudents, staticStudent]
     );
 
-    /* ---------- STATIC JOBS ---------- */
-    const staticJobs = [
-      { id:"static-1", title:"HR & Operations Executive", company:"Confidential Company", location:"Bhopal", experienceRange:"2+ years", salary:"₹2–3 LPA", status:"active" },
-      { id:"static-2", title:"Nutritionist", company:"Fitness Tycoon", location:"Bhopal", experienceRange:"0–3 years", salary:"₹1.5–3 LPA", status:"active" },
-      { id:910001, title:"Graphic Designer", company:"Paraglider Media Private Limited", location:"Bhopal", experienceRange:"0–2 years", salary:"As per industry", status:"active" },
-      { id:910002, title:"Motion Graphics Designer", company:"Paraglider Media Private Limited", location:"Bhopal / Indore", experienceRange:"1–3 years", salary:"As per industry", status:"active" },
-    ];
-
+    // Only real jobs — no demo injection (previously wrote fake jobs to
+    // storage which then synced to the server and polluted search results).
     const existingJobs = getJobs();
-    const hasStatic = existingJobs.some(j => staticJobs.some(sj => sj.id === j.id));
-    const mergedJobs = hasStatic ? existingJobs : [...staticJobs, ...existingJobs];
-    if (!hasStatic) writeJSON("jobs", mergedJobs);
 
     // Pending jobs first (need approval), then newest by creation date.
-    const sortedJobs = mergedJobs.slice().sort((a, b) => {
+    const sortedJobs = existingJobs.slice().sort((a, b) => {
       const ap = a.status === "pending" ? 1 : 0;
       const bp = b.status === "pending" ? 1 : 0;
       if (ap !== bp) return bp - ap;

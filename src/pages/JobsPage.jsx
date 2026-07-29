@@ -159,7 +159,7 @@ export default function JobsPage() {
         normalize(job.title).includes(normalize(title)) ||
         normalize(title).split(" ").every(word => normalize(job.title).includes(word));
 
-      const okLocation = !location || job.location.toLowerCase().includes(location.toLowerCase());
+      const okLocation = !location || (job.location || "").toLowerCase().includes(location.toLowerCase());
 
       const jexp = (job.experience || '').toLowerCase();
       const okExp =
