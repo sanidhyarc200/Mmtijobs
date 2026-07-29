@@ -92,6 +92,57 @@ export const SEED_COMPANIES = [
     createdAt: new Date().toISOString(),
     __seeded: true,
   },
+  {
+    id: BASE + 6,
+    name: "Paraglider Media Private Limited",
+    email: "jobs@paraglider.in",
+    contact: "8269893693",
+    streetAddress: "E2/228, E-2, Arera Colony",
+    city: "Bhopal",
+    state: "Madhya Pradesh",
+    pincode: "462016",
+    gstNumber: "",
+    industryType: "Media / Design",
+    numberOfEmployees: "11-50 employees",
+    companyWebsite: "",
+    profilePic: null,
+    createdAt: new Date().toISOString(),
+    __seeded: true,
+  },
+  {
+    id: BASE + 7,
+    name: "Confidential Company",
+    email: "",
+    contact: "9993826661",
+    streetAddress: "",
+    city: "Bhopal",
+    state: "Madhya Pradesh",
+    pincode: "",
+    gstNumber: "",
+    industryType: "HR / Operations",
+    numberOfEmployees: "11-50 employees",
+    companyWebsite: "",
+    profilePic: null,
+    createdAt: new Date().toISOString(),
+    __seeded: true,
+  },
+  {
+    id: BASE + 8,
+    name: "Fitness Tycoon",
+    email: "",
+    contact: "9993826661",
+    streetAddress: "Mansarover Complex, MF-12",
+    city: "Bhopal",
+    state: "Madhya Pradesh",
+    pincode: "",
+    gstNumber: "",
+    industryType: "Health / Wellness",
+    numberOfEmployees: "1-10 employees",
+    companyWebsite: "",
+    profilePic: null,
+    createdAt: new Date().toISOString(),
+    __seeded: true,
+  },
 ];
 
 // Helper to keep job objects consistent with what the app expects.
@@ -123,6 +174,88 @@ const makeJob = (over, idx) => ({
 });
 
 export const SEED_JOBS = [
+  // ---------- Paraglider Media / Confidential Company / Fitness Tycoon ----------
+  makeJob(
+    {
+      id: BASE + 130,
+      title: "HR & Operations Executive",
+      company: "Confidential Company",
+      companyEmail: "",
+      seedPriority: 500,
+      location: "Bhopal, Madhya Pradesh",
+      experience: "2+ years",
+      salary: "₹2,00,000 – ₹3,00,000 per annum",
+      qualification: "Graduate",
+      tags: ["HR", "Operations", "Team Management", "MS Office"],
+      hiringProcess: ["Face-to-Face"],
+      numberOfOpenings: "1",
+      gender: "Any",
+      description:
+        "We are hiring an experienced HR & Operations Executive to handle HR functions and oversee daily office operations. Key responsibilities include recruitment, onboarding, attendance & payroll management, HR documentation, office coordination, supporting sales teams, creating reports, and ensuring smooth inter-department communication. Required skills: strong team management, communication, HR operations knowledge, MS Office proficiency, and basic understanding of sales processes. Documents required: Experience Certificate, last 3 months' pay slips, previous company offer letter, Aadhaar & PAN card.",
+    },
+    130
+  ),
+  makeJob(
+    {
+      id: BASE + 131,
+      title: "Nutritionist",
+      company: "Fitness Tycoon",
+      companyEmail: "",
+      seedPriority: 499,
+      location: "Mansarover Complex, MF-12, Bhopal",
+      experience: "0-3 years",
+      salary: "₹1.5 LPA – ₹3 LPA",
+      qualification: "Bachelor's / Master's in Nutrition or Dietetics",
+      tags: ["Nutrition", "Diet Planning", "Client Handling", "Wellness"],
+      hiringProcess: ["Face-to-Face"],
+      numberOfOpenings: "1",
+      gender: "Any",
+      description:
+        "Fitness Tycoon is hiring a qualified Nutritionist for a full-time office role. Responsibilities include creating customized diet plans, conducting nutritional assessments, collaborating with fitness trainers, monitoring client progress, maintaining records, educating clients on nutrition, and staying updated with latest nutrition research. Required qualifications include a Bachelor's or Master's degree in Nutrition/Dietetics, experience in personalized diet planning, and strong understanding of macro & micronutrients. Skills: excellent communication, counseling, knowledge of Indian diets, and basic computer proficiency.",
+    },
+    131
+  ),
+  makeJob(
+    {
+      id: BASE + 132,
+      title: "Graphic Designer",
+      company: "Paraglider Media Private Limited",
+      companyEmail: "jobs@paraglider.in",
+      seedPriority: 498,
+      location: "Bhopal",
+      experience: "0-2 years",
+      salary: "As per industry standards",
+      qualification: "Any Graduate / Design Diploma",
+      tags: ["Photoshop", "Illustrator", "Graphic Design"],
+      hiringProcess: ["Face-to-Face"],
+      numberOfOpenings: "1",
+      gender: "Any",
+      description:
+        "Create high-quality graphics, illustrations, social media creatives, banners, posters, and marketing materials using Adobe Photoshop and Illustrator. Work closely with the marketing team to deliver creative assets on time and maintain brand consistency across campaigns.",
+    },
+    132
+  ),
+  makeJob(
+    {
+      id: BASE + 133,
+      title: "Motion Graphics Designer (After Effects)",
+      company: "Paraglider Media Private Limited",
+      companyEmail: "jobs@paraglider.in",
+      seedPriority: 497,
+      location: "Bhopal / Indore",
+      experience: "1-3 years",
+      salary: "As per industry standards",
+      qualification: "Any Graduate / Design Diploma",
+      tags: ["After Effects", "Motion Graphics", "Animation"],
+      hiringProcess: ["Face-to-Face"],
+      numberOfOpenings: "1",
+      gender: "Any",
+      description:
+        "Create motion graphics, animations, explainer videos, logo animations, and visual assets using Adobe After Effects and Premiere Pro. Collaborate with designers and marketers to bring concepts to life through engaging video content.",
+    },
+    133
+  ),
+
   // ---------- Client 4: Bharat Airtel (newest — force on top everywhere) ----------
   makeJob(
     {
@@ -457,7 +590,7 @@ export const SEED_JOBS = [
 // merging with anything already there, guarded by a version flag.
 // Bump SEED_VERSION if you change the seed data and want it re-applied.
 // ===========================================================
-export const SEED_VERSION = "v5";
+export const SEED_VERSION = "v6";
 
 export function seedOnce() {
   try {
