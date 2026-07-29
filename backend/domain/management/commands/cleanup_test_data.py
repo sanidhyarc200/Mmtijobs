@@ -13,7 +13,7 @@ from domain.models import Account, CompanyProfile
 TEST_EMAILS = [
     "healthcheck_probe_1785068014@example.com",
     "testregco_probe@example.com",
-    "sanidhya+aa@gmail.com",
+    "sanidhyakoranne+aa@gmail.com",
 ]
 
 
