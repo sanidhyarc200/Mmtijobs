@@ -54,6 +54,9 @@ export function adoptSession(session) {
     id: u.client_id || `v2-${u.id}`,
     v2Id: u.id,
     userType: u.user_type,
+    // Several dashboards guard on `role` (not `userType`); keep both in sync
+    // so a background v2 login never bounces a signed-in admin/HR user.
+    role: u.user_type,
     email: u.email,
     name: u.name,
     contact: u.contact,
