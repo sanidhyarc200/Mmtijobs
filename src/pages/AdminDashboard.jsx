@@ -1,6 +1,6 @@
 // PART 1/3
 // src/pages/AdminDashboard.jsx
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 
@@ -153,6 +153,8 @@ export default function AdminDashboard() {
   // Bumped whenever background hydration refreshes localStorage, so the data
   // effect below re-reads the fresh server data instead of the stale cache.
   const [hydrationTick, setHydrationTick] = useState(0);
+  // Last v2 server snapshot, so every re-paint merges the same data (no dip).
+  const v2Cache = useRef({ companies: [], students: [], jobs: [] });
 
   useEffect(() => {
     const refresh = () => setHydrationTick((n) => n + 1);
@@ -231,28 +233,28 @@ export default function AdminDashboard() {
       return;
     }
 
-    // --- Local companies (new signups), newest first ---
-    const storedCompanies = getCompanies()
-      .filter((c) => !isTestRecord(c))
-      .slice()
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt || 0).getTime() -
-          new Date(a.createdAt || 0).getTime()
-      );
+    const byNewest = (a, b) =>
+      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+    const v2 = v2Cache.current;
 
-    // Real registered companies on top (newest first); demo clients at the end.
-    setCompanies(storedCompanies);
-    const storedStudents = getStudents()
-      .filter((u) => u.userType === "applicant" && !isTestRecord(u))
-      // Newest registrations first, so the admin sees the latest at the top.
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt || 0).getTime() -
-          new Date(a.createdAt || 0).getTime()
-      );
-    setStudents(storedStudents);
-    setJobs(sortJobsForAdmin(getJobs()));
+    // Merge with the cached v2 data so this paint matches what loadFromV2
+    // produces — that way the count never dips between the two updates.
+    const companies = mergeByKey(
+      getCompanies(),
+      v2.companies,
+      (c) => (c.email || "").toLowerCase() || (c.name || c.companyName || String(c.id))
+    ).sort(byNewest);
+    setCompanies(companies);
+
+    const students = mergeByKey(
+      getStudents().filter((u) => u.userType === "applicant"),
+      v2.students,
+      (s) => (s.email || "").toLowerCase() || String(s.id)
+    ).sort(byNewest);
+    setStudents(students);
+
+    const jobsMerged = mergeByKey(getJobs(), v2.jobs, (j) => String(j.id));
+    setJobs(sortJobsForAdmin(jobsMerged));
   }, [navigate, hydrationTick]);
 
   // Authoritative load: pull applicants/companies/jobs from the v2 tables and
@@ -269,6 +271,11 @@ export default function AdminDashboard() {
         m.adminCompanies().catch(() => null),
         m.adminJobs().catch(() => null),
       ]);
+      // Cache v2 results so the localStorage-driven paint merges the same data.
+      if (apps) v2Cache.current.students = apps;
+      if (comps) v2Cache.current.companies = comps;
+      if (jobsList) v2Cache.current.jobs = jobsList;
+
       const byNewest = (a, b) =>
         new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
       if (apps) {
