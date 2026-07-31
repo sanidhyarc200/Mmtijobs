@@ -29,6 +29,18 @@ export const API_URL =
 const PUSH_DEBOUNCE_MS = 400;
 const BOOTSTRAP_TIMEOUT_MS = 6000;
 
+// Retired demo/duplicate job ids. Stripped on every read and write so a
+// browser with stale cache can never re-inject them into the shared data.
+const DEAD_JOB_IDS = new Set([910001, 910002, "static-1", "static-2", 900001, 900002]);
+
+// Remove retired records from a collection value before it is stored/synced.
+function sanitize(key, value) {
+  if (key === "jobs" && Array.isArray(value)) {
+    return value.filter((j) => j && !DEAD_JOB_IDS.has(j.id));
+  }
+  return value;
+}
+
 let online = false;
 let patched = false;
 const pushTimers = {};
@@ -66,6 +78,7 @@ async function pushKey(key) {
     console.warn(`[apiStore] '${key}' is not valid JSON, skipping push`);
     return;
   }
+  value = sanitize(key, value);
   try {
     const res = await fetch(`${API_URL}/api/collections/${key}/`, {
       method: "PUT",
@@ -104,7 +117,7 @@ function hydrateFromServer(collections) {
     if (!(key in collections)) return;
     const value = collections[key];
     if (value === null || value === undefined) return;
-    rawSetItem(key, JSON.stringify(value));
+    rawSetItem(key, JSON.stringify(sanitize(key, value)));
   });
 }
 

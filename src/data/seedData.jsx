@@ -209,7 +209,8 @@ export const SEED_JOBS = [
       title: "HR & Operations Executive",
       company: "Confidential Company",
       companyEmail: "",
-      seedPriority: 500,
+      seedPriority: 0,
+      createdAt: "2026-01-15T10:00:00.000Z",
       location: "Bhopal, Madhya Pradesh",
       experience: "2+ years",
       salary: "₹2,00,000 – ₹3,00,000 per annum",
@@ -229,7 +230,8 @@ export const SEED_JOBS = [
       title: "Nutritionist",
       company: "Fitness Tycoon",
       companyEmail: "",
-      seedPriority: 499,
+      seedPriority: 0,
+      createdAt: "2026-01-14T10:00:00.000Z",
       location: "Mansarover Complex, MF-12, Bhopal",
       experience: "0-3 years",
       salary: "₹1.5 LPA – ₹3 LPA",
@@ -249,7 +251,8 @@ export const SEED_JOBS = [
       title: "Graphic Designer",
       company: "Paraglider Media Private Limited",
       companyEmail: "jobs@paraglider.in",
-      seedPriority: 498,
+      seedPriority: 0,
+      createdAt: "2026-01-13T10:00:00.000Z",
       location: "Bhopal",
       experience: "0-2 years",
       salary: "As per industry standards",
@@ -269,7 +272,8 @@ export const SEED_JOBS = [
       title: "Motion Graphics Designer (After Effects)",
       company: "Paraglider Media Private Limited",
       companyEmail: "jobs@paraglider.in",
-      seedPriority: 497,
+      seedPriority: 0,
+      createdAt: "2026-01-12T10:00:00.000Z",
       location: "Bhopal / Indore",
       experience: "1-3 years",
       salary: "As per industry standards",
@@ -618,7 +622,7 @@ export const SEED_JOBS = [
 // merging with anything already there, guarded by a version flag.
 // Bump SEED_VERSION if you change the seed data and want it re-applied.
 // ===========================================================
-export const SEED_VERSION = "v7";
+export const SEED_VERSION = "v8";
 
 export function seedOnce() {
   try {
