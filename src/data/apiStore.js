@@ -103,7 +103,13 @@ function patchLocalStorage() {
   if (patched) return;
   patched = true;
   localStorage.setItem = (key, value) => {
-    rawSetItem(key, value);
+    // Strip retired records at the write boundary so stale callers (e.g.
+    // seedOnce re-writing a cached array) can never persist them locally.
+    let stored = value;
+    if (key === "jobs") {
+      try { stored = JSON.stringify(sanitize(key, JSON.parse(value))); } catch { /* keep as-is */ }
+    }
+    rawSetItem(key, stored);
     if (SYNC_KEYS.includes(key)) queuePush(key);
   };
   localStorage.removeItem = (key) => {
