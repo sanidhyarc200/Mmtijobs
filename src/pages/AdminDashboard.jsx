@@ -51,6 +51,12 @@ function saveStudents(list) {
   writeJSON("users", list);
 }
 
+// Leftover diagnostic/test records that should never be shown to the admin.
+function isTestRecord(x) {
+  const email = (x.email || x.companyEmail || "").toLowerCase();
+  return email.includes("healthcheck_probe") || email.includes("testregco_probe");
+}
+
 // Union two record lists, deduping by keyFn (the second list wins on a match).
 // Used so the v2 server data and the local mirror combine without anything
 // disappearing — which is what caused the "old list / new list" flicker.
@@ -58,7 +64,7 @@ function mergeByKey(localArr, serverArr, keyFn) {
   const map = new Map();
   (localArr || []).forEach((x) => { const k = keyFn(x); if (k) map.set(k, x); });
   (serverArr || []).forEach((x) => { const k = keyFn(x); if (k) map.set(k, x); });
-  return [...map.values()];
+  return [...map.values()].filter((x) => !isTestRecord(x));
 }
 
 // Admin job ordering: pending jobs first (they need approval), then newest
@@ -227,6 +233,7 @@ export default function AdminDashboard() {
 
     // --- Local companies (new signups), newest first ---
     const storedCompanies = getCompanies()
+      .filter((c) => !isTestRecord(c))
       .slice()
       .sort(
         (a, b) =>
@@ -237,7 +244,7 @@ export default function AdminDashboard() {
     // Real registered companies on top (newest first); demo clients at the end.
     setCompanies(storedCompanies);
     const storedStudents = getStudents()
-      .filter((u) => u.userType === "applicant")
+      .filter((u) => u.userType === "applicant" && !isTestRecord(u))
       // Newest registrations first, so the admin sees the latest at the top.
       .sort(
         (a, b) =>
