@@ -51,6 +51,16 @@ function saveStudents(list) {
   writeJSON("users", list);
 }
 
+// Union two record lists, deduping by keyFn (the second list wins on a match).
+// Used so the v2 server data and the local mirror combine without anything
+// disappearing — which is what caused the "old list / new list" flicker.
+function mergeByKey(localArr, serverArr, keyFn) {
+  const map = new Map();
+  (localArr || []).forEach((x) => { const k = keyFn(x); if (k) map.set(k, x); });
+  (serverArr || []).forEach((x) => { const k = keyFn(x); if (k) map.set(k, x); });
+  return [...map.values()];
+}
+
 // Admin job ordering: pending jobs first (they need approval), then newest
 // by creation date — so freshly posted jobs are always at the top.
 function sortJobsForAdmin(list) {
@@ -215,118 +225,6 @@ export default function AdminDashboard() {
       return;
     }
 
-    // --- Permanent static clients ---
-    const staticClients = [
-      {
-        companyName: "Medinatridle heath IIB",
-        email: "contact@medinitriddlehealth.com",
-        contact: "8989954397",
-        hrName: "HR Manager",
-      },
-      {
-        companyName: "Samarth Electrocare",
-        email: "samathelectrocare@gmail.com",
-        contact: "7755990767",
-        hrName: "HR Manager",
-      },
-      {
-        companyName: "Neelanj business Solution LLP",
-        email: "neelanjbusinesssolution@gmail.com",
-        contact: "7998406170",
-        hrName: "HR Manager",
-      },
-      {
-        companyName: "RAJRUDRA Enterprises pvt ltd",
-        email: "rajrudraenterprises.mandeep@gmail.com",
-        contact: "9752319442",
-        hrName: "HR Manager",
-      },
-      {
-        companyName: "Orphic Solution, Bhopal",
-        email: "hr@orphicsolution.com",
-        contact: "9584360388",
-        hrName: "HR Manager",
-      },
-      {
-        companyName: "yokohama pvt ltd engine",
-        email: "yokohama pvt ltd engine",
-        contact: "7697651756",
-        hrName: "HR Manager",
-      },
-      {
-        companyName: "Raj Seeds Trades",
-        email: "hr@rajseeds.co.in",
-        contact: "626200198",
-        hrName: "HR Manager",
-      },
-      {
-        companyName: "Sasthi Enterprises Pvt. Ltd.",
-        email: "hr@harenply.com",
-        contact: "9259538852",
-        hrName: "HR Manager",
-      },
-      {
-        companyName: "GENTRIGO SOLUTIONs",
-        email: "Info.gentrigo@gmail.com",
-        contact: "6265389979",
-        hrName: "HR Manager",
-      },
-      {
-        companyName: "Tendonifoodchemical",
-        email: "tendonifoodchemical@gmail.com",
-        contact: "6269990150",
-        hrName: "HR Manager",
-      },
-      {
-        companyName: "Confidential Company",
-        email: "confidential.hr@example.com",
-        contact: "9000000001",
-        hrName: "HR Manager",
-      },
-      {
-        companyName: "Fitness Tycoon",
-        email: "hr@fitnesstycoon.com",
-        contact: "9000000002",
-        hrName: "HR Manager",
-      },
-      {
-        companyName: "Paraglider Media Private Limited",
-        email: "jobs@paraglider.in",
-        contact: "8269893693",
-        hrName: "HR Team",
-        address: "E2/228, E-2, Arera Colony, Bhopal, Madhya Pradesh 462016",
-      },
-      
-    ];
-    const staticStudent = {
-      id: "static-student-1",
-      userType: "applicant",
-    
-      firstName: "Neelam",
-      middleName: "",
-      lastName: "Giri",
-    
-      phone: "7987480867",
-      email: "neelamgiri283@gmail.com",
-    
-      degree: "MBA",
-      passoutYear: "2022",
-      experience: "3 Years",
-      techStack: "Data Analyst / Operations",
-    
-      lastSalary: "3 LPA",
-      expectedSalary: "6–7 LPA",
-      preferredLocation: "Bhopal / Indore",
-      noticePeriod: "Immediate Joiner",
-    
-      skills: "Data Analyst, Operations, E-commerce Operations, Excel",
-      description:
-        "Experienced professional with 3 years in data analysis and operations. Strong background in e-commerce operations, reporting, Excel dashboards, and process optimization.",
-    
-      profilePic: null,
-    };
-    
-
     // --- Local companies (new signups), newest first ---
     const storedCompanies = getCompanies()
       .slice()
@@ -337,7 +235,7 @@ export default function AdminDashboard() {
       );
 
     // Real registered companies on top (newest first); demo clients at the end.
-    setCompanies([...storedCompanies, ...staticClients]);
+    setCompanies(storedCompanies);
     const storedStudents = getStudents()
       .filter((u) => u.userType === "applicant")
       // Newest registrations first, so the admin sees the latest at the top.
@@ -346,23 +244,15 @@ export default function AdminDashboard() {
           new Date(b.createdAt || 0).getTime() -
           new Date(a.createdAt || 0).getTime()
       );
-
-    const alreadyExists = storedStudents.some(
-      (s) => s.email === staticStudent.email
-    );
-
-    // Real students on top (newest first); the demo seed student sits at the end.
-    const mergedStudents = alreadyExists
-      ? storedStudents
-      : [...storedStudents, staticStudent];
-
-    setStudents(mergedStudents);
+    setStudents(storedStudents);
     setJobs(sortJobsForAdmin(getJobs()));
   }, [navigate, hydrationTick]);
 
-  // Authoritative load: pull applicants/companies/jobs straight from the v2
-  // tables (which never lose records). Falls back to the localStorage view
-  // above if the API/token is unavailable. Runs on mount and on tab switch.
+  // Authoritative load: pull applicants/companies/jobs from the v2 tables and
+  // MERGE them with the local view (union, deduped) — never replace. Merging
+  // means a record present in either source always shows, so the list never
+  // "flips" (no fluctuation) while still recovering any records the local
+  // mirror may have lost. Runs on mount and on tab switch.
   const loadFromV2 = React.useCallback(async () => {
     try {
       const m = await import("../data/apiV2");
@@ -372,25 +262,20 @@ export default function AdminDashboard() {
         m.adminCompanies().catch(() => null),
         m.adminJobs().catch(() => null),
       ]);
+      const byNewest = (a, b) =>
+        new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
       if (apps) {
-        setStudents(
-          apps.sort(
-            (a, b) =>
-              new Date(b.createdAt || 0).getTime() -
-              new Date(a.createdAt || 0).getTime()
-          )
-        );
+        const key = (s) => (s.email || "").toLowerCase() || String(s.id);
+        setStudents(mergeByKey(getStudents().filter((u) => u.userType === "applicant"), apps, key).sort(byNewest));
       }
       if (comps) {
-        setCompanies(
-          comps.sort(
-            (a, b) =>
-              new Date(b.createdAt || 0).getTime() -
-              new Date(a.createdAt || 0).getTime()
-          )
-        );
+        const key = (c) => (c.email || "").toLowerCase() || (c.name || c.companyName || String(c.id));
+        setCompanies(mergeByKey(getCompanies(), comps, key).sort(byNewest));
       }
-      if (jobsList) setJobs(sortJobsForAdmin(jobsList));
+      if (jobsList) {
+        const key = (j) => String(j.id);
+        setJobs(sortJobsForAdmin(mergeByKey(getJobs(), jobsList, key)));
+      }
     } catch {
       /* offline — local view already rendered */
     }

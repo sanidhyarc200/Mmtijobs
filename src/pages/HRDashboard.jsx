@@ -17,92 +17,11 @@ export default function HRDashboard() {
       return;
     }
 
-    const staticClients = [
-        {
-          companyName: "Medinatridle heath IIB",
-          email: "contact@medinitriddlehealth.com",
-          contact: "8989954397",
-          hrName: "HR Manager",
-        },
-        {
-          companyName: "Samarth Electrocare",
-          email: "samathelectrocare@gmail.com",
-          contact: "7755990767",
-          hrName: "HR Manager",
-        },
-        {
-          companyName: "Neelanj business Solution LLP",
-          email: "neelanjbusinesssolution@gmail.com",
-          contact: "7998406170",
-          hrName: "HR Manager",
-        },
-        {
-          companyName: "RAJRUDRA Enterprises pvt ltd",
-          email: "rajrudraenterprises.mandeep@gmail.com",
-          contact: "9752319442",
-          hrName: "HR Manager",
-        },
-        {
-          companyName: "Orphic Solution, Bhopal",
-          email: "hr@orphicsolution.com",
-          contact: "9584360388",
-          hrName: "HR Manager",
-        },
-        {
-          companyName: "yokohama pvt ltd engine",
-          email: "yokohama pvt ltd engine",
-          contact: "7697651756",
-          hrName: "HR Manager",
-        },
-        {
-          companyName: "Raj Seeds Trades",
-          email: "hr@rajseeds.co.in",
-          contact: "626200198",
-          hrName: "HR Manager",
-        },
-        {
-          companyName: "Sasthi Enterprises Pvt. Ltd.",
-          email: "hr@harenply.com",
-          contact: "9259538852",
-          hrName: "HR Manager",
-        },
-        {
-          companyName: "GENTRIGO SOLUTIONs",
-          email: "Info.gentrigo@gmail.com",
-          contact: "6265389979",
-          hrName: "HR Manager",
-        },
-        {
-          companyName: "Tendonifoodchemical",
-          email: "tendonifoodchemical@gmail.com",
-          contact: "6269990150",
-          hrName: "HR Manager",
-        },
-        {
-          companyName: "Confidential Company",
-          email: "confidential.hr@example.com",
-          contact: "9000000001",
-          hrName: "HR Manager",
-        },
-        {
-          companyName: "Fitness Tycoon",
-          email: "hr@fitnesstycoon.com",
-          contact: "9000000002",
-          hrName: "HR Manager",
-        },
-        {
-          companyName: "Paraglider Media Private Limited",
-          email: "jobs@paraglider.in",
-          contact: "8269893693",
-          hrName: "HR Team",
-          address: "E2/228, E-2, Arera Colony, Bhopal, Madhya Pradesh 462016",
-        },
-    ]
 
     const dynamic =
       JSON.parse(localStorage.getItem("registeredCompanies")) || [];
 
-    setCompanies([...staticClients, ...dynamic]);
+    setCompanies(dynamic);
   }, [navigate]);
 
   const filtered = useMemo(() => {

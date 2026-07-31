@@ -79,23 +79,8 @@ export default function HRManagerDashboard() {
       return;
     }
 
-    /* ---------- STATIC COMPANIES ---------- */
-    const staticCompanies = [
-      { companyName:"Medinatridle heath IIB", email:"contact@medinitriddlehealth.com", contact:"8989954397" },
-      { companyName:"Samarth Electrocare", email:"samathelectrocare@gmail.com", contact:"7755990767" },
-      { companyName:"Neelanj business Solution LLP", email:"neelanjbusinesssolution@gmail.com", contact:"7998406170" },
-      { companyName:"RAJRUDRA Enterprises pvt ltd", email:"rajrudraenterprises.mandeep@gmail.com", contact:"9752319442" },
-      { companyName:"Orphic Solution, Bhopal", email:"hr@orphicsolution.com", contact:"9584360388" },
-      { companyName:"yokohama pvt ltd engine", email:"yokohama pvt ltd engine", contact:"7697651756" },
-      { companyName:"Raj Seeds Trades", email:"hr@rajseeds.co.in", contact:"626200198" },
-      { companyName:"Sasthi Enterprises Pvt. Ltd.", email:"hr@harenply.com", contact:"9259538852" },
-      { companyName:"GENTRIGO SOLUTIONs", email:"Info.gentrigo@gmail.com", contact:"6265389979" },
-      { companyName:"Tendonifoodchemical", email:"tendonifoodchemical@gmail.com", contact:"6269990150" },
-      { companyName:"Confidential Company", email:"confidential.hr@example.com", contact:"9000000001" },
-      { companyName:"Fitness Tycoon", email:"hr@fitnesstycoon.com", contact:"9000000002" },
-      { companyName:"Paraglider Media Private Limited", email:"jobs@paraglider.in", contact:"8269893693" }
-    ];
-    // Real registered companies on top (newest first); demo clients at end.
+    // Companies come from the real data (registeredCompanies), newest first —
+    // the former hardcoded static list is now real seed data in the DB.
     const sortedCompanies = getCompanies()
       .slice()
       .sort(
@@ -103,7 +88,7 @@ export default function HRManagerDashboard() {
           new Date(b.createdAt || 0).getTime() -
           new Date(a.createdAt || 0).getTime()
       );
-    setCompanies([...sortedCompanies, ...staticCompanies]);
+    setCompanies(sortedCompanies);
 
     /* ---------- STATIC STUDENT ---------- */
     const staticStudent = {

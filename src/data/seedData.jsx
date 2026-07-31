@@ -112,8 +112,8 @@ export const SEED_COMPANIES = [
   {
     id: BASE + 7,
     name: "Confidential Company",
-    email: "",
-    contact: "9993826661",
+    email: "confidential.hr@example.com",
+    contact: "9000000001",
     streetAddress: "",
     city: "Bhopal",
     state: "Madhya Pradesh",
@@ -129,8 +129,8 @@ export const SEED_COMPANIES = [
   {
     id: BASE + 8,
     name: "Fitness Tycoon",
-    email: "",
-    contact: "9993826661",
+    email: "hr@fitnesstycoon.com",
+    contact: "9000000002",
     streetAddress: "Mansarover Complex, MF-12",
     city: "Bhopal",
     state: "Madhya Pradesh",
@@ -143,6 +143,34 @@ export const SEED_COMPANIES = [
     createdAt: new Date().toISOString(),
     __seeded: true,
   },
+  ...[
+    ["Medinatridle heath IIB", "contact@medinitriddlehealth.com", "8989954397", "Healthcare"],
+    ["Samarth Electrocare", "samathelectrocare@gmail.com", "7755990767", "Electronics / Repair"],
+    ["Neelanj business Solution LLP", "neelanjbusinesssolution@gmail.com", "7998406170", "Business Services"],
+    ["RAJRUDRA Enterprises pvt ltd", "rajrudraenterprises.mandeep@gmail.com", "9752319442", "Enterprises"],
+    ["Orphic Solution, Bhopal", "hr@orphicsolution.com", "9584360388", "IT / Solutions"],
+    ["yokohama pvt ltd engine", "hr@yokohamaengine.in", "7697651756", "Automotive / Engine"],
+    ["Raj Seeds Trades", "hr@rajseeds.co.in", "626200198", "Agriculture / Trading"],
+    ["Sasthi Enterprises Pvt. Ltd.", "hr@harenply.com", "9259538852", "Manufacturing"],
+    ["GENTRIGO SOLUTIONs", "Info.gentrigo@gmail.com", "6265389979", "IT / Solutions"],
+    ["Tendonifoodchemical", "tendonifoodchemical@gmail.com", "6269990150", "Food / Chemical"],
+  ].map(([name, email, contact, industryType], i) => ({
+    id: BASE + 9 + i,
+    name,
+    email,
+    contact,
+    streetAddress: "",
+    city: "Bhopal",
+    state: "Madhya Pradesh",
+    pincode: "",
+    gstNumber: "",
+    industryType,
+    numberOfEmployees: "11-50 employees",
+    companyWebsite: "",
+    profilePic: null,
+    createdAt: new Date().toISOString(),
+    __seeded: true,
+  })),
 ];
 
 // Helper to keep job objects consistent with what the app expects.
@@ -590,7 +618,7 @@ export const SEED_JOBS = [
 // merging with anything already there, guarded by a version flag.
 // Bump SEED_VERSION if you change the seed data and want it re-applied.
 // ===========================================================
-export const SEED_VERSION = "v6";
+export const SEED_VERSION = "v7";
 
 export function seedOnce() {
   try {
